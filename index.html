@@ -13,6 +13,7 @@
   #bottom { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
             background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
   #actions { display: flex; gap: 8px; }
+  #scan { padding: 0 14px; font-size: 16px; border: 0; border-radius: 12px; background: #188038; color: #fff; }
   #delsel { display: none; padding: 0 16px; font-size: 16px; border: 0; border-radius: 12px; background: #d93025; color: #fff; }
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
   .row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
@@ -29,6 +30,16 @@
   tr.r-month th { top: 40px; background: #e8f0fe; color: #174ea6; text-align: center; }
   tr.r-cols  th { top: 80px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
+  /* Khung xem lại kết quả quét ảnh */
+  #xem { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
+  #xem.mo { display: flex; }
+  #xem .hop { background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
+  #xem input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #xem .nut { display: flex; gap: 8px; margin-top: 16px; }
+  #xem .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
+  #xem .nut button.huy { background: #888; }
+  #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
@@ -58,11 +69,26 @@
   <div id="live"></div>
   <div id="actions">
     <button id="mic">Bấm để nói</button>
+    <button id="scan">Quét ảnh</button>
     <button id="delsel">Xóa</button>
   </div>
 </div>
 
+<input type="file" id="anh" accept="image/*" hidden>
+<div id="xem">
+  <div class="hop">
+    <b>Kết quả quét ảnh</b> <span style="color:#666;font-size:13px">(kiểm tra lại trước khi thêm)</span>
+    <label>Nội dung</label><input id="x-nd">
+    <label>Số tiền</label><input id="x-st" inputmode="numeric">
+    <label>Ngày (dd/mm hoặc dd/mm/yyyy)</label><input id="x-ngay" inputmode="numeric">
+    <div id="x-loi" style="color:#d93025;font-size:13px;margin-top:6px"></div>
+    <details style="margin-top:10px"><summary style="font-size:13px;color:#666">Chữ máy đọc được</summary><pre id="x-tho"></pre></details>
+    <div class="nut"><button class="huy" id="x-huy">Hủy</button><button id="x-them">Thêm vào bảng</button></div>
+  </div>
+</div>
+
 <script src="brands.js"></script>
+<script src="ocr.js"></script>
 <script src="parse.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -235,6 +261,69 @@ if (!SR) {
     listening ? rec.start() : rec.stop();
   };
 }
+
+// Quét ảnh hóa đơn / chuyển khoản: đọc chữ ngay trên máy (Tesseract), sau đó cho Hoan xem lại
+const taiScript = src => new Promise((ok, loi) => {
+  const el = document.createElement('script');
+  el.src = src; el.onload = ok; el.onerror = () => loi(new Error('Không tải được ' + src));
+  document.head.appendChild(el);
+});
+let worker = null, tienDo = () => {};
+async function docChu(canvas) {
+  if (!worker) {
+    if (!window.Tesseract) await taiScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js');
+    worker = await Tesseract.createWorker('vie', 1, { logger: m => tienDo(m) });
+  }
+  return (await worker.recognize(canvas)).data.text;
+}
+// Thu nhỏ ảnh (ảnh iPhone rất lớn, đọc chậm) và tự xoay đúng chiều
+async function thuNho(file, max = 1800) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement('canvas');
+  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  return c;
+}
+
+const $ = id => document.getElementById(id);
+$('scan').onclick = () => $('anh').click();
+$('anh').onchange = async e => {
+  const file = e.target.files[0];
+  e.target.value = '';                                    // cho phép chọn lại cùng một ảnh
+  if (!file) return;
+  const live = $('live');
+  try {
+    live.textContent = 'Đang chuẩn bị đọc ảnh (lần đầu cần tải dữ liệu tiếng Việt)...';
+    tienDo = m => { live.textContent = m.status === 'recognizing text' ? `Đang đọc ảnh... ${Math.round(m.progress * 100)}%` : 'Đang tải dữ liệu đọc chữ...'; };
+    const text = await docChu(await thuNho(file));
+    live.textContent = '';
+    moKhungXem(text);
+  } catch (err) {
+    live.textContent = 'Không đọc được ảnh: ' + err.message;
+  }
+};
+
+function moKhungXem(text) {
+  const r = parseBill(text);
+  const hom = new Date();
+  $('x-nd').value = r.noiDung;
+  $('x-st').value = r.soTien ? fmt(r.soTien) : '';
+  $('x-ngay').value = r.ngay ? `${pad(r.ngay.d)}/${pad(r.ngay.m)}/${r.ngay.y}` : `${pad(hom.getDate())}/${pad(hom.getMonth() + 1)}`;
+  $('x-tho').textContent = text.trim() || '(không đọc được chữ nào)';
+  $('x-loi').textContent = r.soTien ? '' : 'Không tìm thấy số tiền, Hoan nhập tay giúp mình.';
+  $('xem').classList.add('mo');
+}
+$('x-huy').onclick = () => $('xem').classList.remove('mo');
+$('x-them').onclick = () => {
+  const st = Number($('x-st').value.replace(/\D/g, '')) || 0;
+  const d = parseNgay($('x-ngay').value, new Date().toISOString());
+  if (!$('x-nd').value.trim() || !st) { $('x-loi').textContent = 'Cần có Nội dung và Số tiền.'; return; }
+  if (!d) { $('x-loi').textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; return; }
+  items.push({ id: newId(), noiDung: $('x-nd').value.trim(), soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh' });
+  xepNgay(); save(); render();
+  $('xem').classList.remove('mo');
+};
 
 // Xuất Excel: mỗi tháng một nhóm (STT bắt đầu từ 1) kèm dòng tổng tháng
 document.getElementById('export').onclick = () => {

@@ -10,6 +10,7 @@ App ghi chi tiêu bằng giọng nói tiếng Việt, chạy trên điện tho�
 - `index.html`: giao diện + nhận giọng nói + xuất Excel
 - `parse.js`: tách nội dung và số tiền từ câu nói
 - `parse.test.js`: test, chạy `node parse.test.js`
+- `ocr.js` + `ocr.test.js`: đoán Nội dung, Số tiền, Ngày từ chữ đọc được trong ảnh hóa đơn/chuyển khoản
 - `supabase/schema.sql`: bảng dữ liệu dùng chung (chưa nối)
 
 ## iPhone
