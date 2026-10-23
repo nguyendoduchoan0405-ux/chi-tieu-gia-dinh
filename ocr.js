@@ -109,6 +109,15 @@ const lanTu = l => {
   return tu.filter(t => t.length >= 2 && /[aeiouyàáảãạăâêôơưéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵ]/i.test(t)).length >= tu.length * 0.8;
 };
 
+// Nội dung chuyển khoản có thể xuống dòng: nối dòng kế nếu nó ngắn, không phải nhãn/ngày/số
+function noiDungDayDu(lines, nd) {
+  const i = lines.findIndex(l => l.includes(nd));
+  const ke = i >= 0 ? (lines[i + 1] || '').trim() : '';
+  const bi = bd(ke);
+  if (ke && ke.length <= 24 && !/[:\d]{3,}|\d{1,2}[\/:]\d{2}/.test(ke) && !/chuyen nhanh|luu mau|chia se|phi chuyen|ma giao dich|hinh thuc/.test(bi)) return `${nd} ${ke}`;
+  return nd;
+}
+
 function timNoiDung(lines, dongTen = []) {
   const chung = bd(lines.join(' '));
   // "Khách trả chuyển khoản: 0" trên hóa đơn không phải ảnh chuyển khoản
@@ -120,7 +129,8 @@ function timNoiDung(lines, dongTen = []) {
   if (chuyenKhoan) {
     const tenViTri = dongTen.map(i => lines[i]).filter(l => hoaRatio(l) >= 0.6).map(tenNganHang).filter(Boolean).join(' ');
     const ten = nhan ? nhan.replace(/\s*\d{6,}.*$/, '').trim() : (tenViTri || tenTruocNganHang(lines));   // bỏ số tài khoản dính phía sau
-    return ['Chuyển khoản', ten, nd && `(${nd})`].filter(Boolean).join(' ');
+    if (nd) return noiDungDayDu(lines, nd);                  // chỉ lấy phần "Nội dung" của giao dịch
+    return ['Chuyển khoản', ten].filter(Boolean).join(' ');
   }
   if (ncc) return nd ? `${ncc} - ${nd}` : ncc;
   // Ảnh thanh toán của ngân hàng ("Thanh toán thành công"): tên nơi nhận nằm dưới dòng giờ - ngày

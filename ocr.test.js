@@ -28,7 +28,7 @@ NGUYEN VAN A
 Ngân hàng: Vietcombank 0123456789
 Nội dung: Tien dien thang 10
 Thời gian 23/10/2026 09:15`,
-    nd: 'Chuyển khoản NGUYEN VAN A (Tien dien thang 10)', st: 2500000, ngay: [23, 10, 2026],
+    nd: 'Tien dien thang 10', st: 2500000, ngay: [23, 10, 2026],
   },
   {
     ten: 'Ví điện tử (MoMo)',
@@ -128,7 +128,7 @@ Nội dung: NGUYEN HUYNH ANH THOAI chuyen tien
 dien t9
 Chuyển nhanh 247: 10:50 09/10/2026
 Lưu mẫu Chia sẻ Gắn thẻ`,
-    nd: 'Chuyển khoản NGUYEN DO DUCHOAN (NGUYEN HUYNH ANH THOAI chuyen tien)', st: 1336090, ngay: [9, 10, 2026],
+    nd: 'NGUYEN HUYNH ANH THOAI chuyen tien dien t9', st: 1336090, ngay: [9, 10, 2026],
   },
   {
     ten: 'Không có số tiền',
