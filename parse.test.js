@@ -29,6 +29,8 @@ const cases = [
   ['cà phê hai lần 59 nghìn', 'Cà phê Highlands', 59000],
   ['highland 45k', 'Highlands', 45000],
   ['đi grap 35 nghìn', 'Đi Grab', 35000],
+  ['ăn Ca FC 150k', 'Ăn KFC', 150000],
+  ['ca fc 2 trăm rưỡi', 'KFC', 250000],
 ];
 
 let fail = 0;

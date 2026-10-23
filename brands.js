@@ -10,7 +10,7 @@ const BRANDS = {
   'Starbucks':      ['starbucks', 'starbuck', 'star bucks', 'sta bac', 'so ta bac', 'sa ta bac'],
   'The Coffee House': ['the coffee house', 'coffee house', 'do cop phi hao', 'cop phi hao'],
   'Phúc Long':      ['phuc long'],
-  'KFC':            ['kfc', 'ca ep xe', 'k f c'],
+  'KFC':            ['kfc', 'ca fc', 'ca ep xe', 'ca ep xi', 'ca ef xi', 'ca ef ci', 'ka fc', 'k fc', 'k f c', 'ke ep xi', 'ke ef xi'],
   'Lotteria':       ['lotteria', 'lot te ri a', 'lo te ri a', 'lotte ria'],
   'Jollibee':       ['jollibee', 'jolibee', 'jo li bi', 'gio li bi', 'jolly bee'],
   "McDonald's":     ['mcdonalds', 'mcdonald', 'mac do nan', 'mac donald', 'mc donald'],
