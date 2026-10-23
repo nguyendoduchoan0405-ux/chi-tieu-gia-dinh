@@ -1,5 +1,6 @@
 // Chạy: node parse.test.js
 const { parseExpense } = require('./parse.js');
+const { fixBrands } = require('./brands.js');
 
 const cases = [
   ['ăn sáng ba mươi nghìn', 'Ăn sáng', 30000],
@@ -21,11 +22,18 @@ const cases = [
   ['tiền học 2 triệu 350', 'Tiền học', 2350000],
   ['gửi tiết kiệm 1 tỷ', 'Gửi tiết kiệm', 1000000000],
   ['mua sữa ba trăm linh năm nghìn', 'Mua sữa', 305000],
+  // Tên thương hiệu
+  ['ăn hai đi lao 1 triệu 2', 'Ăn Haidilao', 1200000],
+  ['lẩu man qua 800 nghìn', 'Lẩu Manwah', 800000],
+  ['cà phê ca ti nát 55k', 'Cà phê Katinat', 55000],
+  ['cà phê hai lần 59 nghìn', 'Cà phê Highlands', 59000],
+  ['highland 45k', 'Highlands', 45000],
+  ['đi grap 35 nghìn', 'Đi Grab', 35000],
 ];
 
 let fail = 0;
 for (const [input, nd, st] of cases) {
-  const r = parseExpense(input);
+  const r = parseExpense(fixBrands(input));
   const ok = r.noiDung === nd && r.soTien === st;
   if (!ok) fail++;
   console.log(`${ok ? 'OK  ' : 'SAI '} "${input}" -> ${r.noiDung} | ${r.soTien}${ok ? '' : `  (cần: ${nd} | ${st})`}`);

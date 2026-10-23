@@ -43,6 +43,7 @@
   <button id="mic">Bấm để nói</button>
 </div>
 
+<script src="brands.js"></script>
 <script src="parse.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -62,7 +63,11 @@ function render() {
     tr.innerHTML = `<td>${i + 1}</td><td>${ngay(it.thoiGian)}</td><td contenteditable>${it.noiDung}</td>
       <td class="money" contenteditable>${fmt(it.soTien)}</td><td><button class="del">×</button></td>`;
     const [, , nd, st] = tr.children;
-    nd.onblur = () => { it.noiDung = nd.textContent.trim(); save(); };
+    nd.onblur = () => {
+      const moi = nd.textContent.trim();
+      if (moi !== it.noiDung) learnFix(it.noiDung, moi);   // nhớ cách sửa cho lần sau
+      it.noiDung = moi; save();
+    };
     st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
     tr.querySelector('.del').onclick = () => { if (confirm('Xóa dòng này?')) { items.splice(i, 1); save(); render(); } };
     list.appendChild(tr);
@@ -72,7 +77,7 @@ function render() {
 
 function addText(text) {
   if (!text.trim()) return;
-  const r = parseExpense(text);
+  const r = parseExpense(fixBrands(text));
   items.push({ ...r, thoiGian: new Date().toISOString(), cauGoc: text });
   save(); render();
 }

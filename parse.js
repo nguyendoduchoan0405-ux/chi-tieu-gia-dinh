@@ -12,11 +12,11 @@ const UNITS = {
 };
 const FILLERS = ['hết', 'mất', 'giá', 'là', 'khoảng', 'tốn', 'tổng', 'cộng', 'đồng', 'vnđ', 'vnd'];
 
+// Giữ nguyên chữ hoa (tên thương hiệu); so khớp thì dùng bản chữ thường
 function tokenize(text) {
   return text
-    .toLowerCase()
-    .replace(/(\d)([a-zđ]+)/g, '$1 $2')      // 30k -> 30 k, 1tr2 -> 1 tr2
-    .replace(/([a-zđ]+)(\d)/g, '$1 $2')      // tr2 -> tr 2
+    .replace(/(\d)([a-zđ]+)/gi, '$1 $2')     // 30k -> 30 k, 1tr2 -> 1 tr2
+    .replace(/([a-zđ]+)(\d)/gi, '$1 $2')     // tr2 -> tr 2
     .replace(/[^\p{L}\d.,\s]/gu, ' ')
     .split(/\s+/)
     .filter(Boolean);
@@ -66,7 +66,8 @@ function toAmount(tokens) {
 }
 
 function parseExpense(text) {
-  const tokens = tokenize(text);
+  const raw = tokenize(text);
+  const tokens = raw.map(t => t.toLowerCase());
   // Tìm các cụm token số liên tiếp
   const runs = [];
   let start = -1;
@@ -84,8 +85,8 @@ function parseExpense(text) {
   if (!best) return { noiDung: text.trim(), soTien: 0 };
 
   const soTien = toAmount(tokens.slice(best[0], best[1]));
-  const words = [...tokens.slice(0, best[0]), ...tokens.slice(best[1])];
-  while (words.length && FILLERS.includes(words[words.length - 1])) words.pop();
+  const words = [...raw.slice(0, best[0]), ...raw.slice(best[1])];
+  while (words.length && FILLERS.includes(words[words.length - 1].toLowerCase())) words.pop();
   const noiDung = words.join(' ');
   return { noiDung: noiDung.charAt(0).toUpperCase() + noiDung.slice(1), soTien };
 }
