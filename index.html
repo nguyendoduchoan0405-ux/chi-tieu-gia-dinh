@@ -5,24 +5,37 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 150px; background: #f6f7f9; color: #222; }
-  #mic { flex: 1; padding: 18px; font-size: 18px; border: 0; border-radius: 12px; background: #1a73e8; color: #fff; }
-  #mic.on { background: #d93025; }
-  #live { min-height: 20px; margin-bottom: 8px; color: #666; font-style: italic; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 210px; background: #f6f7f9; color: #222; }
+  #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
   #bottom { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
             background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
-  #actions { display: flex; gap: 8px; }
-  #scan { padding: 0 14px; font-size: 16px; border: 0; border-radius: 12px; background: #188038; color: #fff; }
-  #delsel { display: none; padding: 0 16px; font-size: 16px; border: 0; border-radius: 12px; background: #d93025; color: #fff; }
+  .ng-dong { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .ng-dong label { font-size: 14px; color: #555; white-space: nowrap; }
+  .ng-dong select { flex: 1; min-width: 0; height: 40px; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
+  .ng-dong button { height: 40px; padding: 0 14px; font-size: 15px; border: 1px solid #ccc; border-radius: 10px; background: #fff; color: #174ea6; }
+  #actions { display: flex; gap: 10px; }
+  #mic, #scan { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; padding: 0; font-size: 17px; border: 0; border-radius: 14px; color: #fff; }
+  #mic { background: #1a73e8; }
+  #mic.on { background: #d93025; }
+  #scan { background: #188038; }
+  #mic svg, #scan svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+  #delsel { display: none; width: 100%; height: 44px; margin-bottom: 8px; font-size: 16px; border: 0; border-radius: 12px; background: #d93025; color: #fff; }
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
   .row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
   .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; }
-  table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 15px; }
-  th, td { border-bottom: 1px solid #eee; padding: 0 4px; height: 40px; text-align: left; overflow: hidden; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 14px; }
+  th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
+  thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; }
   td.money, th.money { text-align: right; }
   td[contenteditable] { outline: none; }
-  col.c-chk { width: 36px; } col.c-stt { width: 36px; } col.c-ngay { width: 58px; } col.c-tien { width: 96px; }
+  col.c-chk { width: 28px; } col.c-stt { width: 32px; } col.c-ngay { width: 44px; } col.c-tien { width: 74px; } col.c-nguon { width: 84px; }
+  td.nguon { position: relative; }
+  .ng-hien { display: block; font-size: 12px; color: #174ea6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 11px; }
+  .ng-hien.trong { color: #aaa; }
+  td.nguon::after { content: '\25BE'; color: #888; position: absolute; right: 3px; top: 50%; transform: translateY(-50%); font-size: 11px; pointer-events: none; }
+  /* Chọn nguồn: select trong suốt phủ lên chữ để iPhone mở bảng chọn mà không bị phóng to trang */
+  .ng-chon { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; }
   input[type=checkbox] { width: 20px; height: 20px; vertical-align: middle; }
   /* Phần đầu bảng cố định khi cuộn: tiêu đề, tháng, tên cột (mỗi hàng cao 40px) */
   thead th { position: sticky; background: #fff; z-index: 2; }
@@ -31,14 +44,17 @@
   tr.r-cols  th { top: 80px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
-  #xem { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
-  #xem.mo { display: flex; }
-  #xem .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem, #ql { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
+  #xem.mo, #ql.mo { display: flex; }
+  #xem .hop, #ql .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
   #xem label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
-  #xem input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  #xem .nut { display: flex; gap: 8px; margin-top: 16px; }
-  #xem .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
+  #xem input, #ql input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #xem .nut, #ql .nut { display: flex; gap: 8px; margin-top: 16px; }
+  #xem .nut button, #ql .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
   #xem .nut button.huy { background: #888; }
+  .ql-dong { display: flex; gap: 8px; margin-top: 8px; }
+  .ql-dong button { width: 44px; border: 0; border-radius: 8px; background: #fce8e6; color: #d93025; font-size: 20px; }
+  #xem .the-nguon { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
   #xem .the { border: 1px solid #ddd; border-radius: 10px; padding: 4px 10px 10px; margin-top: 12px; }
   #xem .the-dau { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-weight: bold; font-size: 14px; }
   #xem .the-dau button { background: none; border: 0; color: #d93025; font-size: 14px; }
@@ -55,26 +71,46 @@
   <button id="add">Thêm</button>
 </div>
 <table>
-  <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col><col class="c-tien"></colgroup>
+  <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
   <thead>
-    <tr class="r-title"><th colspan="5">Chi tiêu gia đình</th></tr>
-    <tr class="r-month"><th colspan="5" id="thang"></th></tr>
+    <tr class="r-title"><th colspan="6">Chi tiêu gia đình</th></tr>
+    <tr class="r-month"><th colspan="6" id="thang"></th></tr>
     <tr class="r-cols">
       <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
-      <th>STT</th><th>Ngày</th><th>Nội dung</th><th class="money">Số tiền</th>
+      <th>STT</th><th>Ngày</th><th>Nguồn</th><th>Nội dung</th><th class="money">Số tiền</th>
     </tr>
   </thead>
   <tbody id="list"></tbody>
-  <tfoot><tr><td></td><td></td><td></td><td>Tổng cộng</td><td class="money" id="total"></td></tr></tfoot>
+  <tfoot><tr><td colspan="4">Tổng cộng</td><td class="money" id="total" colspan="2"></td></tr></tfoot>
 </table>
 <button id="export">Xuất Excel</button>
 
 <div id="bottom">
   <div id="live"></div>
+  <div class="ng-dong">
+    <label for="nguon-md">Nguồn tiền</label>
+    <select id="nguon-md"></select>
+    <button id="ng-sua">Sửa</button>
+  </div>
+  <button id="delsel">Xóa</button>
   <div id="actions">
-    <button id="mic">Bấm để nói</button>
-    <button id="scan">Quét ảnh</button>
-    <button id="delsel">Xóa</button>
+    <button id="mic">
+      <svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      <span id="mic-t">Bấm để nói</span>
+    </button>
+    <button id="scan">
+      <svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      <span>Quét ảnh</span>
+    </button>
+  </div>
+</div>
+
+<div id="ql">
+  <div class="hop">
+    <b>Danh sách nguồn tiền</b> <span style="color:#666;font-size:13px">(áp dụng cho cả cột)</span>
+    <div id="ql-ds"></div>
+    <div class="ql-dong"><input id="ql-moi" placeholder="Thêm nguồn mới, vd Techcombank"><button id="ql-them" style="background:#e6f4ea;color:#188038">+</button></div>
+    <div class="nut"><button id="ql-xong">Xong</button></div>
   </div>
 </div>
 
@@ -103,6 +139,54 @@ const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } c
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 items.forEach(it => { if (!it.id) it.id = newId(); });   // dữ liệu cũ chưa có id
 const chon = new Set();                                     // id các dòng đang được tích
+
+// ----- Nguồn tiền: danh sách dùng chung cho cả cột, mỗi dòng chọn một nguồn -----
+const NGUON_MAC = ['Vợ', 'Chồng', 'Visa Online', 'mDigi', 'Shinhan', 'HSBC'];
+const docLS = (k, mac) => { try { const v = JSON.parse(localStorage.getItem(k)); return v ?? mac; } catch { return mac; } };
+const ghiLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+let nguonDs = docLS('nguon_ds', NGUON_MAC);
+let nguonMd = docLS('nguon_md', '');                      // nguồn mặc định: các khoản mới (nói, gõ, quét ảnh) tự điền
+items.forEach(it => { if (it.nguon === undefined) it.nguon = ''; });
+const luuNguon = () => { ghiLS('nguon_ds', nguonDs); ghiLS('nguon_md', nguonMd); };
+
+function tuyChonNguon(chon) {
+  const ds = chon && !nguonDs.includes(chon) ? [...nguonDs, chon] : nguonDs;   // nguồn đã bị xóa khỏi danh sách vẫn hiện ở dòng đang dùng
+  return '<option value="">(trống)</option>' + ds.map(n => `<option${n === chon ? ' selected' : ''}>${esc(n)}</option>`).join('')
+       + '<option value="__them__">+ Thêm nguồn mới...</option>';
+}
+// Thêm nguồn mới bằng ô nhập; trả về tên (đã có thì dùng lại tên cũ), hoặc null nếu hủy
+function themNguon(ten) {
+  const t = (ten ?? prompt('Tên nguồn tiền mới (vd Techcombank):') ?? '').trim();
+  if (!t) return null;
+  const co = nguonDs.find(n => n.toLowerCase() === t.toLowerCase());
+  if (co) return co;
+  nguonDs.push(t); luuNguon();
+  return t;
+}
+// Gắn dropdown: chọn có sẵn hoặc "+ Thêm nguồn mới"; khiDoi(giá trị) cập nhật dữ liệu
+function ganNguon(sel, hienTai, khiDoi) {
+  sel.innerHTML = tuyChonNguon(hienTai);
+  sel.onchange = () => {
+    let v = sel.value;
+    if (v === '__them__') {
+      v = themNguon();
+      if (v === null) { sel.innerHTML = tuyChonNguon(hienTai); return; }
+      khiDoi(v); lamMoiNguon();                           // danh sách đổi -> làm mới mọi dropdown của cột
+      return;
+    }
+    hienTai = v; khiDoi(v);
+  };
+}
+// Vẽ lại mọi nơi có danh sách nguồn: ô mặc định, bảng, các thẻ quét ảnh đang mở
+function lamMoiNguon() {
+  ganNguon(document.getElementById('nguon-md'), nguonMd, v => { nguonMd = v; luuNguon(); });
+  document.querySelectorAll('#x-ds .the').forEach(the => {
+    ganNguon(the.querySelector('.the-nguon'), the.dataset.nguon || '', v => { the.dataset.nguon = v; });
+    the.querySelector('.the-nguon').value = the.dataset.nguon || '';
+  });
+  render();
+}
+
 
 // "23/10", "23.10", "2310", "23/10/2026" -> Date mới (giữ giờ cũ, giữ năm cũ nếu không nhập năm); sai -> null
 function parseNgay(text, iso) {
@@ -159,7 +243,7 @@ function render() {
     if (gi > 0) {                                              // sang tháng mới: dòng ngăn
       const sep = document.createElement('tr');
       sep.className = 'sep'; sep.dataset.thang = g.key;
-      sep.innerHTML = `<td colspan="5">Tháng ${g.key}</td>`;
+      sep.innerHTML = `<td colspan="6">Tháng ${g.key}</td>`;
       list.appendChild(sep);
     }
     g.ds.forEach((it, i) => {
@@ -167,9 +251,14 @@ function render() {
       tr.dataset.thang = g.key;
       tr.innerHTML = `<td><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td>${i + 1}</td>
         <td contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
+        <td class="nguon"><span class="ng-hien"></span><select class="ng-chon"></select></td>
         <td contenteditable>${esc(it.noiDung)}</td>
         <td class="money" contenteditable inputmode="numeric">${fmt(it.soTien)}</td>`;
-      const [ck, , dt, nd, st] = tr.children;
+      const [ck, , dt, ng, nd, st] = tr.children;
+      const hien = ng.querySelector('.ng-hien');
+      const veHien = () => { hien.textContent = it.nguon || '–'; hien.classList.toggle('trong', !it.nguon); };
+      veHien();
+      ganNguon(ng.querySelector('select'), it.nguon, v => { it.nguon = v; save(); veHien(); });
       ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
       dt.onblur = () => {
         const d = parseNgay(dt.textContent, it.thoiGian);
@@ -186,7 +275,7 @@ function render() {
     });
     const tong = document.createElement('tr');                // tổng riêng của tháng
     tong.className = 'tong'; tong.dataset.thang = g.key;
-    tong.innerHTML = `<td colspan="4">Tổng tháng ${g.key}</td><td class="money">${fmt(g.tong)}</td>`;
+    tong.innerHTML = `<td colspan="4">Tổng tháng ${g.key}</td><td class="money" colspan="2">${fmt(g.tong)}</td>`;
     list.appendChild(tong);
   });
   // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
@@ -210,7 +299,7 @@ document.getElementById('delsel').onclick = () => {
 function addText(text) {
   if (!text.trim()) return;
   const r = parseExpense(fixBrands(text));
-  items.push({ ...r, id: newId(), thoiGian: new Date().toISOString(), cauGoc: text });
+  items.push({ ...r, id: newId(), thoiGian: new Date().toISOString(), cauGoc: text, nguon: nguonMd });
   xepNgay(); save(); render();
 }
 
@@ -224,10 +313,10 @@ document.getElementById('add').onclick = () => {
 
 // Nhận giọng nói
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const mic = document.getElementById('mic'), live = document.getElementById('live');
+const mic = document.getElementById('mic'), micT = document.getElementById('mic-t'), live = document.getElementById('live');
 let rec = null, listening = false;
 if (!SR) {
-  mic.disabled = true; mic.textContent = 'Trình duyệt không hỗ trợ giọng nói';
+  mic.disabled = true; micT.textContent = 'Không hỗ trợ giọng nói';
 } else {
   rec = new SR();
   rec.lang = 'vi-VN';
@@ -244,7 +333,7 @@ if (!SR) {
   };
   rec.onend = () => {
     if (listening && !isIOS) return rec.start();       // Android: tự bật lại khi trình duyệt ngắt
-    listening = false; mic.classList.remove('on'); mic.textContent = 'Bấm để nói';
+    listening = false; mic.classList.remove('on'); micT.textContent = 'Bấm để nói';
   };
   rec.onerror = e => {
     if (e.error === 'service-not-allowed' || e.error === 'not-allowed') {
@@ -257,7 +346,7 @@ if (!SR) {
   mic.onclick = () => {
     listening = !listening;
     mic.classList.toggle('on', listening);
-    mic.textContent = listening ? 'Đang nghe... bấm để dừng' : 'Bấm để nói';
+    micT.textContent = listening ? 'Đang nghe...' : 'Bấm để nói';
     listening ? rec.start() : rec.stop();
   };
 }
@@ -382,11 +471,14 @@ function themThe(stt, r, text, nhieu, loi) {
     <label>Nội dung</label><input class="nd">
     <label>Số tiền</label><input class="st" inputmode="numeric">
     <label>Ngày (dd/mm hoặc dd/mm/yyyy)</label><input class="ngay" inputmode="numeric">
+    <label>Nguồn tiền</label><select class="the-nguon"></select>
     <div class="loi"></div>
     <details style="margin-top:8px"><summary style="font-size:13px;color:#666">Chữ máy đọc được</summary><pre></pre></details>`;
   the.querySelector('.nd').value = r.noiDung;
   the.querySelector('.st').value = r.soTien ? fmt(r.soTien) : '';
   the.querySelector('.ngay').value = ngay;
+  the.dataset.nguon = nguonMd;                             // thẻ mới lấy nguồn mặc định, sửa được từng thẻ
+  ganNguon(the.querySelector('.the-nguon'), nguonMd, v => { the.dataset.nguon = v; });
   the.querySelector('.loi').textContent = loi || (r.soTien ? '' : 'Không tìm thấy số tiền, Hoan nhập tay giúp mình.');
   the.querySelector('pre').textContent = text.trim() || '(không đọc được chữ nào)';
   the.querySelector('.bo').onclick = () => { the.remove(); if (!$('x-ds').children.length) $('xem').classList.remove('mo'); };
@@ -402,16 +494,52 @@ $('x-them').onclick = () => {
     const loi = the.querySelector('.loi');
     if (!nd || !st) { loi.textContent = 'Cần có Nội dung và Số tiền.'; continue; }
     if (!d) { loi.textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; continue; }
-    items.push({ id: newId(), noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh' });
+    items.push({ id: newId(), noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '' });
     the.remove();                                          // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
   }
   xepNgay(); save(); render();
   if (!$('x-ds').children.length) $('xem').classList.remove('mo');
 };
 
+
+// Quản lý danh sách nguồn tiền: đổi tên (cập nhật mọi dòng đang dùng), xóa, thêm
+function veDanhSachNguon() {
+  const ds = document.getElementById('ql-ds');
+  ds.innerHTML = '';
+  nguonDs.forEach(ten => {
+    const d = document.createElement('div');
+    d.className = 'ql-dong';
+    d.innerHTML = '<input><button aria-label="Xóa">×</button>';
+    const inp = d.querySelector('input');
+    inp.value = ten;
+    inp.onchange = () => {
+      const moi = inp.value.trim();
+      if (!moi || (moi !== ten && nguonDs.some(n => n.toLowerCase() === moi.toLowerCase()))) { inp.value = ten; return; }
+      nguonDs[nguonDs.indexOf(ten)] = moi;
+      items.forEach(it => { if (it.nguon === ten) it.nguon = moi; });
+      if (nguonMd === ten) nguonMd = moi;
+      luuNguon(); save(); lamMoiNguon(); veDanhSachNguon();
+    };
+    d.querySelector('button').onclick = () => {
+      const dung = items.filter(it => it.nguon === ten).length;
+      if (!confirm(dung ? `"${ten}" đang dùng ở ${dung} dòng. Xóa khỏi danh sách (các dòng đó vẫn giữ tên)?` : `Xóa "${ten}" khỏi danh sách?`)) return;
+      nguonDs = nguonDs.filter(n => n !== ten);
+      if (nguonMd === ten) nguonMd = '';
+      luuNguon(); lamMoiNguon(); veDanhSachNguon();
+    };
+    ds.appendChild(d);
+  });
+}
+document.getElementById('ng-sua').onclick = () => { veDanhSachNguon(); document.getElementById('ql').classList.add('mo'); };
+document.getElementById('ql-xong').onclick = () => document.getElementById('ql').classList.remove('mo');
+document.getElementById('ql-them').onclick = () => {
+  const inp = document.getElementById('ql-moi');
+  if (themNguon(inp.value) !== null) { inp.value = ''; lamMoiNguon(); veDanhSachNguon(); }
+};
+
 // Xuất Excel: mỗi tháng một nhóm (STT bắt đầu từ 1) kèm dòng tổng tháng
 document.getElementById('export').onclick = () => {
-  const aoa = [['STT', 'Ngày', 'Nội dung', 'Số tiền']];
+  const aoa = [['STT', 'Ngày', 'Nguồn tiền', 'Nội dung', 'Số tiền']];
   const ngayCells = [], tienCells = [];                    // [chỉ số dòng] cần định dạng
   const nhom = nhomThang();
   nhom.forEach((g, gi) => {
@@ -421,25 +549,25 @@ document.getElementById('export').onclick = () => {
       const d = new Date(it.thoiGian);
       // Ngày thật của Excel (lọc/sắp xếp được), hiển thị dd/mm
       const serial = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000;
-      aoa.push([i + 1, serial, it.noiDung, it.soTien]);
+      aoa.push([i + 1, serial, it.nguon || '', it.noiDung, it.soTien]);
       ngayCells.push(aoa.length); tienCells.push(aoa.length);
     });
-    aoa.push(['', '', `Tổng tháng ${g.key}`, g.tong]); tienCells.push(aoa.length);
+    aoa.push(['', '', '', `Tổng tháng ${g.key}`, g.tong]); tienCells.push(aoa.length);
   });
   if (nhom.length > 1) {
     aoa.push([]);
-    aoa.push(['', '', 'Tổng cộng', items.reduce((s, it) => s + it.soTien, 0)]); tienCells.push(aoa.length);
+    aoa.push(['', '', '', 'Tổng cộng', items.reduce((s, it) => s + it.soTien, 0)]); tienCells.push(aoa.length);
   }
   const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{ wch: 5 }, { wch: 8 }, { wch: 35 }, { wch: 15 }];
+  ws['!cols'] = [{ wch: 5 }, { wch: 8 }, { wch: 14 }, { wch: 35 }, { wch: 15 }];
   ngayCells.forEach(r => { ws['B' + r].z = 'dd/mm'; });
-  tienCells.forEach(r => { ws['D' + r].z = '#,##0'; });
+  tienCells.forEach(r => { ws['E' + r].z = '#,##0'; });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Chi tiêu');
   XLSX.writeFile(wb, `chi-tieu-${new Date().toISOString().slice(0, 10)}.xlsx`);
 };
 
-render();
+lamMoiNguon();
 </script>
 </body>
 </html>
