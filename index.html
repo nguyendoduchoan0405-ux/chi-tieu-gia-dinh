@@ -5,42 +5,59 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px 16px 140px; background: #f6f7f9; color: #222; }
-  h1 { font-size: 20px; margin: 0 0 12px; }
-  #mic { width: 100%; padding: 18px; font-size: 18px; border: 0; border-radius: 12px; background: #1a73e8; color: #fff; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 150px; background: #f6f7f9; color: #222; }
+  #mic { flex: 1; padding: 18px; font-size: 18px; border: 0; border-radius: 12px; background: #1a73e8; color: #fff; }
   #mic.on { background: #d93025; }
   #live { min-height: 20px; margin-bottom: 8px; color: #666; font-style: italic; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
   #bottom { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
-            background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); }
+            background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
+  #actions { display: flex; gap: 8px; }
+  #delsel { display: none; padding: 0 16px; font-size: 16px; border: 0; border-radius: 12px; background: #d93025; color: #fff; }
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
   .row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
   .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; }
-  table { width: 100%; border-collapse: collapse; background: #fff; font-size: 15px; }
-  th, td { border-bottom: 1px solid #eee; padding: 8px 4px; text-align: left; }
+  table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 15px; }
+  th, td { border-bottom: 1px solid #eee; padding: 0 4px; height: 40px; text-align: left; overflow: hidden; }
   td.money, th.money { text-align: right; }
   td[contenteditable] { outline: none; }
-  .del { background: none; border: 0; color: #d93025; font-size: 18px; }
+  col.c-chk { width: 36px; } col.c-stt { width: 36px; } col.c-ngay { width: 58px; } col.c-tien { width: 96px; }
+  input[type=checkbox] { width: 20px; height: 20px; vertical-align: middle; }
+  /* Phần đầu bảng cố định khi cuộn: tiêu đề, tháng, tên cột (mỗi hàng cao 40px) */
+  thead th { position: sticky; background: #fff; z-index: 2; }
+  tr.r-title th { top: 0;    font-size: 20px; background: #f6f7f9; border-bottom: 0; }
+  tr.r-month th { top: 40px; background: #e8f0fe; color: #174ea6; text-align: center; }
+  tr.r-cols  th { top: 80px; }
   tfoot td { font-weight: bold; }
-  #export { width: 100%; margin-top: 12px; }
+  #export { width: 100%; margin: 12px 0; }
 </style>
 </head>
 <body>
-<h1>Chi tiêu gia đình</h1>
-<div class="row">
+<div class="row" style="margin-top:16px">
   <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
   <button id="add">Thêm</button>
 </div>
 <table>
-  <thead><tr><th>STT</th><th>Ngày</th><th>Nội dung</th><th class="money">Số tiền</th><th></th></tr></thead>
+  <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col><col class="c-tien"></colgroup>
+  <thead>
+    <tr class="r-title"><th colspan="5">Chi tiêu gia đình</th></tr>
+    <tr class="r-month"><th colspan="5" id="thang"></th></tr>
+    <tr class="r-cols">
+      <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
+      <th>STT</th><th>Ngày</th><th>Nội dung</th><th class="money">Số tiền</th>
+    </tr>
+  </thead>
   <tbody id="list"></tbody>
-  <tfoot><tr><td></td><td></td><td>Tổng</td><td class="money" id="total"></td><td></td></tr></tfoot>
+  <tfoot><tr><td></td><td></td><td></td><td>Tổng</td><td class="money" id="total"></td></tr></tfoot>
 </table>
 <button id="export">Xuất Excel</button>
 
 <div id="bottom">
   <div id="live"></div>
-  <button id="mic">Bấm để nói</button>
+  <div id="actions">
+    <button id="mic">Bấm để nói</button>
+    <button id="delsel">Xóa</button>
+  </div>
 </div>
 
 <script src="brands.js"></script>
@@ -52,33 +69,85 @@ let items = [];
 try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 const fmt = n => n.toLocaleString('vi-VN');
 const pad = n => String(n).padStart(2, '0');
-const ngay = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`; };
+const ngay = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
+const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {} };
+const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+items.forEach(it => { if (!it.id) it.id = newId(); });   // dữ liệu cũ chưa có id
+const chon = new Set();                                     // id các dòng đang được tích
+
+// "23/10", "23.10", "2310", "23/10/2026" -> Date mới (giữ giờ cũ, giữ năm cũ nếu không nhập năm); sai -> null
+function parseNgay(text, iso) {
+  const old = new Date(iso);
+  const m = text.trim().match(/^(\d{1,2})\s*[\/.\-\s]?\s*(\d{1,2})(?:\s*[\/.\-\s]?\s*(\d{4}))?$/);
+  if (!m) return null;
+  const [d, mo, y] = [+m[1], +m[2], m[3] ? +m[3] : old.getFullYear()];
+  const nd = new Date(old); nd.setFullYear(y, mo - 1, d);
+  return nd.getDate() === d && nd.getMonth() === mo - 1 ? nd : null;
+}
+
+// Dòng "Tháng mm/yyyy" theo các ngày đang có (nhiều tháng thì hiện khoảng)
+function tieuDeThang() {
+  const mm = d => `${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  if (!items.length) return 'Tháng ' + mm(new Date());
+  const ts = items.map(it => new Date(it.thoiGian));
+  const lo = mm(new Date(Math.min(...ts))), hi = mm(new Date(Math.max(...ts)));
+  return lo === hi ? 'Tháng ' + lo : `Tháng ${lo} – ${hi}`;
+}
+
+function capNhatChon() {
+  const n = chon.size, btn = document.getElementById('delsel');
+  btn.style.display = n ? 'block' : 'none';
+  btn.textContent = `Xóa (${n})`;
+  const all = document.getElementById('chkall');
+  all.checked = n > 0 && n === items.length;
+  all.indeterminate = n > 0 && n < items.length;
+}
 
 function render() {
   const list = document.getElementById('list');
   list.innerHTML = '';
   items.forEach((it, i) => {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${i + 1}</td><td>${ngay(it.thoiGian)}</td><td contenteditable>${it.noiDung}</td>
-      <td class="money" contenteditable>${fmt(it.soTien)}</td><td><button class="del">×</button></td>`;
-    const [, , nd, st] = tr.children;
+    tr.innerHTML = `<td><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td>${i + 1}</td>
+      <td contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
+      <td contenteditable>${esc(it.noiDung)}</td>
+      <td class="money" contenteditable inputmode="numeric">${fmt(it.soTien)}</td>`;
+    const [ck, , dt, nd, st] = tr.children;
+    ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
+    dt.onblur = () => {
+      const d = parseNgay(dt.textContent, it.thoiGian);
+      if (d) { it.thoiGian = d.toISOString(); save(); }
+      render();                                           // sai định dạng thì hiện lại ngày cũ
+    };
     nd.onblur = () => {
       const moi = nd.textContent.trim();
       if (moi !== it.noiDung) learnFix(it.noiDung, moi);   // nhớ cách sửa cho lần sau
       it.noiDung = moi; save();
     };
     st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
-    tr.querySelector('.del').onclick = () => { if (confirm('Xóa dòng này?')) { items.splice(i, 1); save(); render(); } };
     list.appendChild(tr);
   });
   document.getElementById('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
+  document.getElementById('thang').textContent = tieuDeThang();
+  capNhatChon();
 }
+
+document.getElementById('chkall').onchange = e => {
+  chon.clear();
+  if (e.target.checked) items.forEach(it => chon.add(it.id));
+  render();
+};
+document.getElementById('delsel').onclick = () => {
+  if (!chon.size || !confirm(`Xóa ${chon.size} dòng đã chọn?`)) return;
+  items = items.filter(it => !chon.has(it.id));
+  chon.clear(); save(); render();
+};
 
 function addText(text) {
   if (!text.trim()) return;
   const r = parseExpense(fixBrands(text));
-  items.push({ ...r, thoiGian: new Date().toISOString(), cauGoc: text });
+  items.push({ ...r, id: newId(), thoiGian: new Date().toISOString(), cauGoc: text });
   save(); render();
 }
 
@@ -134,7 +203,7 @@ if (!SR) {
 document.getElementById('export').onclick = () => {
   const rows = items.map((it, i) => ({
     'STT': i + 1,
-    'Ngày': ngay(it.thoiGian),
+    'Ngày': '',
     'Nội dung': it.noiDung,
     'Số tiền': it.soTien,
   }));
@@ -142,11 +211,11 @@ document.getElementById('export').onclick = () => {
   const ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 35 }, { wch: 15 }];
   for (let r = 2; r <= rows.length + 1; r++) if (ws['D' + r]) ws['D' + r].z = '#,##0';
-  // Cột Ngày: lưu dạng ngày thật của Excel (lọc/sắp xếp được), hiển thị dd/mm/yyyy
+  // Cột Ngày: lưu dạng ngày thật của Excel (lọc/sắp xếp được), hiển thị dd/mm (năm vẫn nằm trong ô)
   items.forEach((it, i) => {
     const d = new Date(it.thoiGian);
     const serial = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000;
-    ws['B' + (i + 2)] = { t: 'n', v: serial, z: 'dd/mm/yyyy' };
+    ws['B' + (i + 2)] = { t: 'n', v: serial, z: 'dd/mm' };
   });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Chi tiêu');
