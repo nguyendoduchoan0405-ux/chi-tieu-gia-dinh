@@ -28,6 +28,7 @@
   tr.r-title th { top: 0;    font-size: 20px; background: #f6f7f9; border-bottom: 0; }
   tr.r-month th { top: 40px; background: #e8f0fe; color: #174ea6; text-align: center; }
   tr.r-cols  th { top: 80px; }
+  tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
 </style>
@@ -86,14 +87,21 @@ function parseNgay(text, iso) {
   return nd.getDate() === d && nd.getMonth() === mo - 1 ? nd : null;
 }
 
-// Dòng "Tháng mm/yyyy" theo các ngày đang có (nhiều tháng thì hiện khoảng)
-function tieuDeThang() {
-  const mm = d => `${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-  if (!items.length) return 'Tháng ' + mm(new Date());
-  const ts = items.map(it => new Date(it.thoiGian));
-  const lo = mm(new Date(Math.min(...ts))), hi = mm(new Date(Math.max(...ts)));
-  return lo === hi ? 'Tháng ' + lo : `Tháng ${lo} – ${hi}`;
+// Khóa tháng của một khoản: "10/2026"
+const thangCua = iso => { const d = new Date(iso); return `${pad(d.getMonth() + 1)}/${d.getFullYear()}`; };
+// Luôn xếp theo ngày (Array.sort ổn định nên cùng ngày giữ thứ tự ghi)
+const xepNgay = () => items.sort((a, b) => new Date(a.thoiGian) - new Date(b.thoiGian));
+xepNgay();
+
+// Dòng tháng cố định trên đầu bảng luôn hiện tháng của khoản đang nằm ngay dưới nó
+function capNhatThang() {
+  const th = document.getElementById('thang');
+  const duoi = document.querySelector('tr.r-cols th').getBoundingClientRect().bottom;
+  const dong = [...document.querySelectorAll('#list tr')].find(tr => tr.getBoundingClientRect().bottom > duoi + 1);
+  const key = dong ? dong.dataset.thang : (items.length ? thangCua(items[items.length - 1].thoiGian) : thangCua(new Date().toISOString()));
+  th.textContent = 'Tháng ' + key;
 }
+window.addEventListener('scroll', capNhatThang, { passive: true });
 
 function capNhatChon() {
   const n = chon.size, btn = document.getElementById('delsel');
@@ -108,7 +116,15 @@ function render() {
   const list = document.getElementById('list');
   list.innerHTML = '';
   items.forEach((it, i) => {
+    const key = thangCua(it.thoiGian);
+    if (i > 0 && key !== thangCua(items[i - 1].thoiGian)) {     // sang tháng mới: thêm dòng ngăn
+      const sep = document.createElement('tr');
+      sep.className = 'sep'; sep.dataset.thang = key;
+      sep.innerHTML = `<td colspan="5">Tháng ${key}</td>`;
+      list.appendChild(sep);
+    }
     const tr = document.createElement('tr');
+    tr.dataset.thang = key;
     tr.innerHTML = `<td><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td>${i + 1}</td>
       <td contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
       <td contenteditable>${esc(it.noiDung)}</td>
@@ -117,7 +133,7 @@ function render() {
     ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
     dt.onblur = () => {
       const d = parseNgay(dt.textContent, it.thoiGian);
-      if (d) { it.thoiGian = d.toISOString(); save(); }
+      if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); }
       render();                                           // sai định dạng thì hiện lại ngày cũ
     };
     nd.onblur = () => {
@@ -129,8 +145,8 @@ function render() {
     list.appendChild(tr);
   });
   document.getElementById('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
-  document.getElementById('thang').textContent = tieuDeThang();
   capNhatChon();
+  capNhatThang();
 }
 
 document.getElementById('chkall').onchange = e => {
@@ -148,7 +164,7 @@ function addText(text) {
   if (!text.trim()) return;
   const r = parseExpense(fixBrands(text));
   items.push({ ...r, id: newId(), thoiGian: new Date().toISOString(), cauGoc: text });
-  save(); render();
+  xepNgay(); save(); render();
 }
 
 // Bấm Enter / Xong trên bàn phím cũng thêm dòng
