@@ -26,20 +26,25 @@
   .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 14px; }
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
-  thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; }
+  thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; text-align: center; }
+  td.c { text-align: center; }
+  #list tr:not(.sep):not(.tong) td:nth-child(5) { padding-left: 8px; }
   td.money, th.money { text-align: right; }
   td[contenteditable] { outline: none; }
-  col.c-chk { width: 28px; } col.c-stt { width: 32px; } col.c-ngay { width: 44px; } col.c-tien { width: 74px; } col.c-nguon { width: 84px; }
+  col.c-chk { width: 26px; } col.c-stt { width: 30px; } col.c-ngay { width: 44px; } col.c-tien { width: 74px; } col.c-nguon { width: 44px; }
   td.nguon { position: relative; }
-  .ng-hien { display: block; font-size: 12px; color: #174ea6; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 11px; }
+  .ng-hien { display: block; font-size: 12px; color: #174ea6; white-space: nowrap; overflow: hidden; text-align: center; padding-right: 7px; }
   .ng-hien.trong { color: #aaa; }
-  td.nguon::after { content: '\25BE'; color: #888; position: absolute; right: 3px; top: 50%; transform: translateY(-50%); font-size: 11px; pointer-events: none; }
+  td.nguon::after { content: '\25BE'; color: #888; position: absolute; right: 1px; top: 50%; transform: translateY(-50%); font-size: 9px; pointer-events: none; }
   /* Chọn nguồn: select trong suốt phủ lên chữ để iPhone mở bảng chọn mà không bị phóng to trang */
   .ng-chon { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; font-size: 16px; }
-  input[type=checkbox] { width: 20px; height: 20px; vertical-align: middle; }
+  /* Ô tick tròn nhỏ; bấm vào cả ô chứa nó cũng được chọn */
+  input[type=checkbox] { -webkit-appearance: none; appearance: none; width: 11px; height: 11px; margin: 0; border: 1.5px solid #888; border-radius: 50%; background: #fff; vertical-align: middle; }
+  input[type=checkbox]:checked { background: #1a73e8; border-color: #1a73e8; box-shadow: inset 0 0 0 2px #fff; }
+  input[type=checkbox]:indeterminate { border-color: #1a73e8; background: linear-gradient(#1a73e8, #1a73e8) center / 5px 2px no-repeat #fff; }
   /* Phần đầu bảng cố định khi cuộn: tiêu đề, tháng, tên cột (mỗi hàng cao 40px) */
   thead th { position: sticky; background: #fff; z-index: 2; }
-  tr.r-title th { top: 0;    font-size: 20px; background: #f6f7f9; border-bottom: 0; }
+  tr.r-title th { top: 0;    font-size: 20px; text-align: center; background: #f6f7f9; border-bottom: 0; }
   tr.r-month th { top: 40px; background: #e8f0fe; color: #174ea6; text-align: center; }
   tr.r-cols  th { top: 80px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
@@ -249,16 +254,18 @@ function render() {
     g.ds.forEach((it, i) => {
       const tr = document.createElement('tr');
       tr.dataset.thang = g.key;
-      tr.innerHTML = `<td><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td>${i + 1}</td>
-        <td contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
-        <td class="nguon"><span class="ng-hien"></span><select class="ng-chon"></select></td>
+      tr.innerHTML = `<td class="c"><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td class="c">${i + 1}</td>
+        <td class="c" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
+        <td class="nguon c"><span class="ng-hien"></span><select class="ng-chon"></select></td>
         <td contenteditable>${esc(it.noiDung)}</td>
         <td class="money" contenteditable inputmode="numeric">${fmt(it.soTien)}</td>`;
       const [ck, , dt, ng, nd, st] = tr.children;
       const hien = ng.querySelector('.ng-hien');
-      const veHien = () => { hien.textContent = it.nguon || '–'; hien.classList.toggle('trong', !it.nguon); };
+      // chỉ hiện 3 ký tự đầu cho gọn
+      const veHien = () => { hien.textContent = Array.from((it.nguon || '').normalize('NFC')).slice(0, 3).join('') || '–'; hien.classList.toggle('trong', !it.nguon); };
       veHien();
       ganNguon(ng.querySelector('select'), it.nguon, v => { it.nguon = v; save(); veHien(); });
+      ck.onclick = e => { if (e.target !== ck.firstChild) ck.firstChild.click(); };
       ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
       dt.onblur = () => {
         const d = parseNgay(dt.textContent, it.thoiGian);
@@ -285,6 +292,7 @@ function render() {
   capNhatThang();
 }
 
+document.getElementById('chkall').parentElement.onclick = e => { if (e.target.tagName !== 'INPUT') document.getElementById('chkall').click(); };
 document.getElementById('chkall').onchange = e => {
   chon.clear();
   if (e.target.checked) items.forEach(it => chon.add(it.id));
