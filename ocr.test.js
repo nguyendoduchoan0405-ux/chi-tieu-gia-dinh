@@ -58,7 +58,7 @@ NH ANH THOAI -
 Shinhan Bank
 0947792449
 NGUYEN HUYNH ANH THOAI chuyen tien`,
-    nd: 'Chuyển khoản NH ANH THOAI', st: 0, ngay: [15, 10, 2026], dong: 1,
+    nd: 'NGUYEN HUYNH ANH THOAI chuyen tien', st: 0, ngay: [15, 10, 2026], dong: 1,
   },
   {
     ten: 'MB thanh toán (ảnh thật của Hoan)',
@@ -84,7 +84,7 @@ LONG CHAU
 VPBank (VPB)
 ZLP26289120179583
 NGUYEN HUYNH ANH THOAI chuyen tien`,
-    nd: 'Chuyển khoản CONG TY CO PHAN ZION-NHA THUOC LONG CHAU', st: 1004800, ngay: [16, 10, 2026],
+    nd: 'NGUYEN HUYNH ANH THOAI chuyen tien', st: 1004800, ngay: [16, 10, 2026],
   },
   {
     ten: 'Đơn Shopee (ảnh thật của Hoan)',

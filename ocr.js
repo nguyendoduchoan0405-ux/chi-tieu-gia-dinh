@@ -118,6 +118,16 @@ function noiDungDayDu(lines, nd) {
   return nd;
 }
 
+// MB Bank: không có nhãn "Nội dung", dòng nội dung nằm dưới dòng ngân hàng/số tài khoản, trước câu "Giao dịch được xác nhận"
+function noiDungKhongNhan(lines) {
+  let cuoi = lines.findIndex(l => /duoc xac nhan|khong chinh sua/.test(bd(l)));
+  if (cuoi < 0) cuoi = lines.length;
+  const iNh = lines.findLastIndex((l, i) => i < cuoi && /bank|\(\w{2,5}\)|\d{8,}/i.test(bd(l)));
+  const l = (lines[cuoi - 1] || '').trim();
+  if (iNh < 0 || iNh >= cuoi - 1 || (l.match(/\p{L}/gu) || []).length < 6 || /\d{6,}|:/.test(l)) return '';
+  return l;
+}
+
 function timNoiDung(lines, dongTen = []) {
   const chung = bd(lines.join(' '));
   // "Khách trả chuyển khoản: 0" trên hóa đơn không phải ảnh chuyển khoản
@@ -129,7 +139,9 @@ function timNoiDung(lines, dongTen = []) {
   if (chuyenKhoan) {
     const tenViTri = dongTen.map(i => lines[i]).filter(l => hoaRatio(l) >= 0.6).map(tenNganHang).filter(Boolean).join(' ');
     const ten = nhan ? nhan.replace(/\s*\d{6,}.*$/, '').trim() : (tenViTri || tenTruocNganHang(lines));   // bỏ số tài khoản dính phía sau
-    if (nd) return noiDungDayDu(lines, nd);                  // chỉ lấy phần "Nội dung" của giao dịch
+    if (nd) return noiDungDayDu(lines, nd);
+    const ndMb = noiDungKhongNhan(lines);
+    if (ndMb) return ndMb;                  // chỉ lấy phần "Nội dung" của giao dịch
     return ['Chuyển khoản', ten].filter(Boolean).join(' ');
   }
   if (ncc) return nd ? `${ncc} - ${nd}` : ncc;
