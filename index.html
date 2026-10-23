@@ -29,6 +29,7 @@
   tr.r-month th { top: 40px; background: #e8f0fe; color: #174ea6; text-align: center; }
   tr.r-cols  th { top: 80px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
+  tr.tong td { font-weight: bold; background: #fafafa; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
 </style>
@@ -49,7 +50,7 @@
     </tr>
   </thead>
   <tbody id="list"></tbody>
-  <tfoot><tr><td></td><td></td><td></td><td>Tổng</td><td class="money" id="total"></td></tr></tfoot>
+  <tfoot><tr><td></td><td></td><td></td><td>Tổng cộng</td><td class="money" id="total"></td></tr></tfoot>
 </table>
 <button id="export">Xuất Excel</button>
 
@@ -112,38 +113,58 @@ function capNhatChon() {
   all.indeterminate = n > 0 && n < items.length;
 }
 
+// Gom theo tháng (items đã xếp theo ngày): [{ key, ds: [item...], tong }]
+function nhomThang() {
+  const nhom = [];
+  for (const it of items) {
+    const key = thangCua(it.thoiGian);
+    let g = nhom[nhom.length - 1];
+    if (!g || g.key !== key) nhom.push(g = { key, ds: [], tong: 0 });
+    g.ds.push(it); g.tong += it.soTien;
+  }
+  return nhom;
+}
+
 function render() {
   const list = document.getElementById('list');
   list.innerHTML = '';
-  items.forEach((it, i) => {
-    const key = thangCua(it.thoiGian);
-    if (i > 0 && key !== thangCua(items[i - 1].thoiGian)) {     // sang tháng mới: thêm dòng ngăn
+  const nhom = nhomThang();
+  nhom.forEach((g, gi) => {
+    if (gi > 0) {                                              // sang tháng mới: dòng ngăn
       const sep = document.createElement('tr');
-      sep.className = 'sep'; sep.dataset.thang = key;
-      sep.innerHTML = `<td colspan="5">Tháng ${key}</td>`;
+      sep.className = 'sep'; sep.dataset.thang = g.key;
+      sep.innerHTML = `<td colspan="5">Tháng ${g.key}</td>`;
       list.appendChild(sep);
     }
-    const tr = document.createElement('tr');
-    tr.dataset.thang = key;
-    tr.innerHTML = `<td><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td>${i + 1}</td>
-      <td contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
-      <td contenteditable>${esc(it.noiDung)}</td>
-      <td class="money" contenteditable inputmode="numeric">${fmt(it.soTien)}</td>`;
-    const [ck, , dt, nd, st] = tr.children;
-    ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
-    dt.onblur = () => {
-      const d = parseNgay(dt.textContent, it.thoiGian);
-      if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); }
-      render();                                           // sai định dạng thì hiện lại ngày cũ
-    };
-    nd.onblur = () => {
-      const moi = nd.textContent.trim();
-      if (moi !== it.noiDung) learnFix(it.noiDung, moi);   // nhớ cách sửa cho lần sau
-      it.noiDung = moi; save();
-    };
-    st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
-    list.appendChild(tr);
+    g.ds.forEach((it, i) => {
+      const tr = document.createElement('tr');
+      tr.dataset.thang = g.key;
+      tr.innerHTML = `<td><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td>${i + 1}</td>
+        <td contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
+        <td contenteditable>${esc(it.noiDung)}</td>
+        <td class="money" contenteditable inputmode="numeric">${fmt(it.soTien)}</td>`;
+      const [ck, , dt, nd, st] = tr.children;
+      ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
+      dt.onblur = () => {
+        const d = parseNgay(dt.textContent, it.thoiGian);
+        if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); }
+        render();                                           // sai định dạng thì hiện lại ngày cũ
+      };
+      nd.onblur = () => {
+        const moi = nd.textContent.trim();
+        if (moi !== it.noiDung) learnFix(it.noiDung, moi);   // nhớ cách sửa cho lần sau
+        it.noiDung = moi; save();
+      };
+      st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
+      list.appendChild(tr);
+    });
+    const tong = document.createElement('tr');                // tổng riêng của tháng
+    tong.className = 'tong'; tong.dataset.thang = g.key;
+    tong.innerHTML = `<td colspan="4">Tổng tháng ${g.key}</td><td class="money">${fmt(g.tong)}</td>`;
+    list.appendChild(tong);
   });
+  // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
+  document.querySelector('tfoot').style.display = nhom.length > 1 ? '' : 'none';
   document.getElementById('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
   capNhatChon();
   capNhatThang();
@@ -215,24 +236,31 @@ if (!SR) {
   };
 }
 
-// Xuất Excel
+// Xuất Excel: mỗi tháng một nhóm (STT bắt đầu từ 1) kèm dòng tổng tháng
 document.getElementById('export').onclick = () => {
-  const rows = items.map((it, i) => ({
-    'STT': i + 1,
-    'Ngày': '',
-    'Nội dung': it.noiDung,
-    'Số tiền': it.soTien,
-  }));
-  rows.push({ 'Nội dung': 'Tổng', 'Số tiền': items.reduce((s, it) => s + it.soTien, 0) });
-  const ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{ wch: 5 }, { wch: 12 }, { wch: 35 }, { wch: 15 }];
-  for (let r = 2; r <= rows.length + 1; r++) if (ws['D' + r]) ws['D' + r].z = '#,##0';
-  // Cột Ngày: lưu dạng ngày thật của Excel (lọc/sắp xếp được), hiển thị dd/mm (năm vẫn nằm trong ô)
-  items.forEach((it, i) => {
-    const d = new Date(it.thoiGian);
-    const serial = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000;
-    ws['B' + (i + 2)] = { t: 'n', v: serial, z: 'dd/mm' };
+  const aoa = [['STT', 'Ngày', 'Nội dung', 'Số tiền']];
+  const ngayCells = [], tienCells = [];                    // [chỉ số dòng] cần định dạng
+  const nhom = nhomThang();
+  nhom.forEach((g, gi) => {
+    if (gi > 0) aoa.push([]);
+    aoa.push([`Tháng ${g.key}`]);
+    g.ds.forEach((it, i) => {
+      const d = new Date(it.thoiGian);
+      // Ngày thật của Excel (lọc/sắp xếp được), hiển thị dd/mm
+      const serial = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000;
+      aoa.push([i + 1, serial, it.noiDung, it.soTien]);
+      ngayCells.push(aoa.length); tienCells.push(aoa.length);
+    });
+    aoa.push(['', '', `Tổng tháng ${g.key}`, g.tong]); tienCells.push(aoa.length);
   });
+  if (nhom.length > 1) {
+    aoa.push([]);
+    aoa.push(['', '', 'Tổng cộng', items.reduce((s, it) => s + it.soTien, 0)]); tienCells.push(aoa.length);
+  }
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  ws['!cols'] = [{ wch: 5 }, { wch: 8 }, { wch: 35 }, { wch: 15 }];
+  ngayCells.forEach(r => { ws['B' + r].z = 'dd/mm'; });
+  tienCells.forEach(r => { ws['D' + r].z = '#,##0'; });
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, 'Chi tiêu');
   XLSX.writeFile(wb, `chi-tieu-${new Date().toISOString().slice(0, 10)}.xlsx`);
