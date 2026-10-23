@@ -33,12 +33,16 @@
   /* Khung xem lại kết quả quét ảnh */
   #xem { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
   #xem.mo { display: flex; }
-  #xem .hop { background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
   #xem label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
   #xem input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
   #xem .nut { display: flex; gap: 8px; margin-top: 16px; }
   #xem .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
   #xem .nut button.huy { background: #888; }
+  #xem .the { border: 1px solid #ddd; border-radius: 10px; padding: 4px 10px 10px; margin-top: 12px; }
+  #xem .the-dau { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-weight: bold; font-size: 14px; }
+  #xem .the-dau button { background: none; border: 0; color: #d93025; font-size: 14px; }
+  #xem .loi { color: #d93025; font-size: 13px; margin-top: 6px; }
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
   tfoot td { font-weight: bold; }
@@ -74,15 +78,11 @@
   </div>
 </div>
 
-<input type="file" id="anh" accept="image/*" hidden>
+<input type="file" id="anh" accept="image/*" multiple hidden>
 <div id="xem">
   <div class="hop">
     <b>Kết quả quét ảnh</b> <span style="color:#666;font-size:13px">(kiểm tra lại trước khi thêm)</span>
-    <label>Nội dung</label><input id="x-nd">
-    <label>Số tiền</label><input id="x-st" inputmode="numeric">
-    <label>Ngày (dd/mm hoặc dd/mm/yyyy)</label><input id="x-ngay" inputmode="numeric">
-    <div id="x-loi" style="color:#d93025;font-size:13px;margin-top:6px"></div>
-    <details style="margin-top:10px"><summary style="font-size:13px;color:#666">Chữ máy đọc được</summary><pre id="x-tho"></pre></details>
+    <div id="x-ds"></div>
     <div class="nut"><button class="huy" id="x-huy">Hủy</button><button id="x-them">Thêm vào bảng</button></div>
   </div>
 </div>
@@ -329,56 +329,84 @@ async function thuNho(file, max = 1800) {
 
 const $ = id => document.getElementById(id);
 $('scan').onclick = () => $('anh').click();
-$('anh').onchange = async e => {
-  const file = e.target.files[0];
-  e.target.value = '';                                    // cho phép chọn lại cùng một ảnh
-  if (!file) return;
-  const live = $('live');
-  try {
-    live.textContent = 'Đang chuẩn bị đọc ảnh (lần đầu cần tải dữ liệu tiếng Việt)...';
-    tienDo = m => { live.textContent = m.status === 'recognizing text' ? `Đang đọc ảnh... ${Math.round(m.progress * 100)}%` : 'Đang tải dữ liệu đọc chữ...'; };
-    const canvas = await thuNho(file);
-    const { lines } = await docChu(canvas);
-    let r = parseBill(lines.map(l => l.t));
-    // Đọc lại riêng dòng số tiền và dòng tên người nhận để chính xác hơn
-    live.textContent = 'Đang đọc lại số tiền và tên...';
-    for (const i of [r.dong, ...r.dongTen]) {
-      if (i === null || !lines[i]) continue;
-      const t = await docLaiDong(canvas, lines[i].bbox);
-      const lanSo = soTrongDong(t).length;
-      const laSo = i === r.dong;
-      // Chỉ nhận kết quả đọc lại khi trông hợp lý (số tiền: đúng 1 số; tên: toàn chữ hoa)
-      const hopLy = laSo ? (lanSo === 1 && t.length < 40) : (t.length >= 3 && hoaRatio(t) >= hoaRatio(lines[i].t) - 0.05 && soTu(t) >= soTu(lines[i].t));
-      if (hopLy) lines[i].t = t;
-    }
-    r = parseBill(lines.map(l => l.t));
-    live.textContent = '';
-    moKhungXem(lines.map(l => l.t).join('\n'), r);
-    // Tesseract tự "học" theo ảnh đã đọc nên kết quả lần sau bị lệch; đọc xong thì bỏ đi, lần sau tạo mới (dữ liệu tiếng Việt đã được lưu sẵn)
-    worker.terminate(); worker = null;
-  } catch (err) {
-    live.textContent = 'Không đọc được ảnh: ' + err.message;
+
+// Đọc một ảnh -> { r: kết quả đoán, text: chữ máy đọc được }
+async function quetMotAnh(file) {
+  const canvas = await thuNho(file);
+  const { lines } = await docChu(canvas);
+  let r = parseBill(lines.map(l => l.t));
+  // Đọc lại riêng dòng số tiền và dòng tên người nhận để chính xác hơn
+  for (const i of [r.dong, ...r.dongTen]) {
+    if (i === null || !lines[i]) continue;
+    const t = await docLaiDong(canvas, lines[i].bbox);
+    const laSo = i === r.dong;
+    // Chỉ nhận kết quả đọc lại khi trông hợp lý (số tiền: đúng 1 số; tên: không dính chữ, không thêm rác)
+    const hopLy = laSo ? (soTrongDong(t).length === 1 && t.length < 40)
+                       : (t.length >= 3 && hoaRatio(t) >= hoaRatio(lines[i].t) - 0.05 && soTu(t) >= soTu(lines[i].t));
+    if (hopLy) lines[i].t = t;
   }
+  r = parseBill(lines.map(l => l.t));
+  return { r, text: lines.map(l => l.t).join('\n') };
+}
+
+$('anh').onchange = async e => {
+  const files = [...e.target.files];
+  e.target.value = '';                                    // cho phép chọn lại cùng một ảnh
+  if (!files.length) return;
+  const live = $('live');
+  $('x-ds').innerHTML = '';
+  for (const [k, file] of files.entries()) {
+    const dau = files.length > 1 ? `Ảnh ${k + 1}/${files.length}: ` : '';
+    tienDo = m => { live.textContent = dau + (m.status === 'recognizing text' ? `đang đọc... ${Math.round(m.progress * 100)}%` : 'đang tải dữ liệu đọc chữ (lần đầu hơi lâu)...'); };
+    live.textContent = dau + 'đang chuẩn bị...';
+    try {
+      const { r, text } = await quetMotAnh(file);
+      themThe(k + 1, r, text, files.length > 1);
+    } catch (err) {
+      themThe(k + 1, { noiDung: '', soTien: 0, ngay: null }, '', files.length > 1, 'Không đọc được ảnh này: ' + err.message);
+    }
+    // Tesseract tự "học" theo ảnh đã đọc nên kết quả ảnh sau bị lệch; đọc xong thì bỏ đi, ảnh sau tạo mới (dữ liệu tiếng Việt đã được lưu sẵn)
+    if (worker) { worker.terminate(); worker = null; }
+  }
+  live.textContent = '';
+  $('xem').classList.add('mo');
 };
 
-function moKhungXem(text, r) {
+// Mỗi ảnh một thẻ để xem lại / sửa / bỏ
+function themThe(stt, r, text, nhieu, loi) {
   const hom = new Date();
-  $('x-nd').value = r.noiDung;
-  $('x-st').value = r.soTien ? fmt(r.soTien) : '';
-  $('x-ngay').value = r.ngay ? `${pad(r.ngay.d)}/${pad(r.ngay.m)}/${r.ngay.y}` : `${pad(hom.getDate())}/${pad(hom.getMonth() + 1)}`;
-  $('x-tho').textContent = text.trim() || '(không đọc được chữ nào)';
-  $('x-loi').textContent = r.soTien ? '' : 'Không tìm thấy số tiền, Hoan nhập tay giúp mình.';
-  $('xem').classList.add('mo');
+  const ngay = r.ngay ? `${pad(r.ngay.d)}/${pad(r.ngay.m)}/${r.ngay.y}` : `${pad(hom.getDate())}/${pad(hom.getMonth() + 1)}`;
+  const the = document.createElement('div');
+  the.className = 'the';
+  the.innerHTML = `<div class="the-dau"><span>${nhieu ? 'Ảnh ' + stt : ''}</span><button class="bo">${nhieu ? 'Bỏ ảnh này' : ''}</button></div>
+    <label>Nội dung</label><input class="nd">
+    <label>Số tiền</label><input class="st" inputmode="numeric">
+    <label>Ngày (dd/mm hoặc dd/mm/yyyy)</label><input class="ngay" inputmode="numeric">
+    <div class="loi"></div>
+    <details style="margin-top:8px"><summary style="font-size:13px;color:#666">Chữ máy đọc được</summary><pre></pre></details>`;
+  the.querySelector('.nd').value = r.noiDung;
+  the.querySelector('.st').value = r.soTien ? fmt(r.soTien) : '';
+  the.querySelector('.ngay').value = ngay;
+  the.querySelector('.loi').textContent = loi || (r.soTien ? '' : 'Không tìm thấy số tiền, Hoan nhập tay giúp mình.');
+  the.querySelector('pre').textContent = text.trim() || '(không đọc được chữ nào)';
+  the.querySelector('.bo').onclick = () => { the.remove(); if (!$('x-ds').children.length) $('xem').classList.remove('mo'); };
+  $('x-ds').appendChild(the);
 }
-$('x-huy').onclick = () => $('xem').classList.remove('mo');
+
+$('x-huy').onclick = () => { $('x-ds').innerHTML = ''; $('xem').classList.remove('mo'); };
 $('x-them').onclick = () => {
-  const st = Number($('x-st').value.replace(/\D/g, '')) || 0;
-  const d = parseNgay($('x-ngay').value, new Date().toISOString());
-  if (!$('x-nd').value.trim() || !st) { $('x-loi').textContent = 'Cần có Nội dung và Số tiền.'; return; }
-  if (!d) { $('x-loi').textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; return; }
-  items.push({ id: newId(), noiDung: $('x-nd').value.trim(), soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh' });
+  for (const the of [...$('x-ds').children]) {
+    const nd = the.querySelector('.nd').value.trim();
+    const st = Number(the.querySelector('.st').value.replace(/\D/g, '')) || 0;
+    const d = parseNgay(the.querySelector('.ngay').value, new Date().toISOString());
+    const loi = the.querySelector('.loi');
+    if (!nd || !st) { loi.textContent = 'Cần có Nội dung và Số tiền.'; continue; }
+    if (!d) { loi.textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; continue; }
+    items.push({ id: newId(), noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh' });
+    the.remove();                                          // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
+  }
   xepNgay(); save(); render();
-  $('xem').classList.remove('mo');
+  if (!$('x-ds').children.length) $('xem').classList.remove('mo');
 };
 
 // Xuất Excel: mỗi tháng một nhóm (STT bắt đầu từ 1) kèm dòng tổng tháng
