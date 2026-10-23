@@ -17,3 +17,7 @@ App ghi chi tiêu bằng giọng nói tiếng Việt, chạy trên điện tho�
 - Mở link bằng Safari
 - Bật Cài đặt > Siri, và Cài đặt > Bàn phím > Đọc chính tả
 - Mỗi lần bấm nút ghi 1 khoản
+
+## Đồng bộ (Supabase)
+- `sync.js`: đăng nhập email + mật khẩu, đẩy/kéo chi tiêu và danh sách nguồn tiền qua REST. Xóa mềm (`xoa`), máy sửa sau thắng.
+- Chạy `supabase/schema.sql` 1 lần trong SQL Editor; tắt "Confirm email" ở Authentication > Providers > Email.

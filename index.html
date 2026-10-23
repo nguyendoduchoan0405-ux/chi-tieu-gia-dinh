@@ -81,10 +81,20 @@
   tr.tong td { font-weight: bold; background: #fafafa; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
+  #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #dongbo.loi { color: #d93025; border-color: #f3c3bf; }
+  #dn { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 20; align-items: center; justify-content: center; padding: 16px; }
+  #dn.mo { display: flex; }
+  #dn .hop { box-sizing: border-box; width: 100%; max-width: 360px; background: #fff; border-radius: 14px; padding: 16px; }
+  #dn input { box-sizing: border-box; width: 100%; margin: 6px 0; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #dn button { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; margin-top: 6px; }
+  #dn button.phu { background: #eee; color: #222; }
+  #dn-loi { color: #d93025; font-size: 13px; min-height: 18px; }
 </style>
 </head>
 <body>
-<div class="row" style="margin-top:16px">
+<div id="dongbo">Chưa đồng bộ — chạm để đăng nhập</div>
+<div class="row" style="margin-top:10px">
   <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
   <button id="add">Thêm</button>
 </div>
@@ -123,6 +133,21 @@
   </div>
 </div>
 
+<div id="dn">
+  <div class="hop">
+    <b>Đồng bộ với vợ/chồng</b>
+    <div id="dn-ai" style="font-size:14px;color:#555;margin-top:6px"></div>
+    <div id="dn-form">
+      <input id="dn-email" type="email" inputmode="email" autocapitalize="none" autocomplete="username" placeholder="Email">
+      <input id="dn-pw" type="password" autocomplete="current-password" placeholder="Mật khẩu (từ 6 ký tự)">
+      <button id="dn-vao">Đăng nhập</button> <button id="dn-moi" class="phu">Tạo tài khoản</button>
+    </div>
+    <div id="dn-loi"></div>
+    <div id="dn-xong"><button id="dn-lai">Đồng bộ ngay</button> <button id="dn-ra" class="phu">Đăng xuất</button></div>
+    <button id="dn-dong" class="phu">Đóng</button>
+  </div>
+</div>
+
 <div id="ql">
   <div class="hop">
     <b>Danh sách nguồn tiền</b> <span style="color:#666;font-size:13px">(áp dụng cho cả cột)</span>
@@ -154,7 +179,7 @@ const fmt = n => n.toLocaleString('vi-VN');
 const pad = n => String(n).padStart(2, '0');
 const ngay = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
 const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {} };
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {} window.dongBo?.hen(); };
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 items.forEach(it => { if (!it.id) it.id = newId(); });   // dữ liệu cũ chưa có id
 const chon = new Set();                                     // id các dòng đang được tích
@@ -166,7 +191,7 @@ const ghiLS = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 let nguonDs = docLS('nguon_ds', NGUON_MAC);
 let nguonMd = docLS('nguon_md', '');                      // nguồn mặc định: các khoản mới (nói, gõ, quét ảnh) tự điền
 items.forEach(it => { if (it.nguon === undefined) it.nguon = ''; });
-const luuNguon = () => { ghiLS('nguon_ds', nguonDs); ghiLS('nguon_md', nguonMd); };
+const luuNguon = () => { ghiLS('nguon_ds', nguonDs); ghiLS('nguon_md', nguonMd); window.dongBo?.hen(); };
 
 function tuyChonNguon(chon) {
   const ds = chon && !nguonDs.includes(chon) ? [...nguonDs, chon] : nguonDs;   // nguồn đã bị xóa khỏi danh sách vẫn hiện ở dòng đang dùng
@@ -612,5 +637,6 @@ document.getElementById('export').onclick = () => {
 
 lamMoiNguon();
 </script>
+<script src="sync.js"></script>
 </body>
 </html>
