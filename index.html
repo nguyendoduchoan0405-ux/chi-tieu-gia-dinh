@@ -27,7 +27,7 @@
 <button id="mic">Bấm để nói</button>
 <div id="live"></div>
 <div class="row">
-  <input id="manual" placeholder="Hoặc gõ: ăn sáng 30k">
+  <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
   <button id="add">Thêm</button>
 </div>
 <table>
@@ -69,6 +69,9 @@ function addText(text) {
   save(); render();
 }
 
+// Bấm Enter / Xong trên bàn phím cũng thêm dòng
+document.getElementById('manual').onkeydown = e => { if (e.key === 'Enter') document.getElementById('add').click(); };
+
 document.getElementById('add').onclick = () => {
   const inp = document.getElementById('manual');
   addText(inp.value); inp.value = '';
@@ -98,7 +101,14 @@ if (!SR) {
     if (listening && !isIOS) return rec.start();       // Android: tự bật lại khi trình duyệt ngắt
     listening = false; mic.classList.remove('on'); mic.textContent = 'Bấm để nói';
   };
-  rec.onerror = e => { live.textContent = 'Lỗi: ' + e.error; };
+  rec.onerror = e => {
+    if (e.error === 'service-not-allowed' || e.error === 'not-allowed') {
+      // iOS chặn nhận giọng của web -> dùng micro của bàn phím iPhone
+      listening = false;
+      live.textContent = 'iPhone chặn nhận giọng trên web. Bấm vào ô bên dưới, chọn biểu tượng micro trên bàn phím để đọc, rồi bấm Xong.';
+      document.getElementById('manual').focus();
+    } else live.textContent = 'Lỗi: ' + e.error;
+  };
   mic.onclick = () => {
     listening = !listening;
     mic.classList.toggle('on', listening);
