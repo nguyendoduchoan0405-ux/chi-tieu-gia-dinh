@@ -17,24 +17,28 @@ const NGAY_RE = [
 function soTrongDong(line) {
   const s = line.replace(/(\d{1,2})\s*[\/\-.]\s*(\d{1,2})\s*[\/\-.]\s*\d{2,4}/g, ' ')   // bỏ ngày
                 .replace(/\d{1,2}:\d{2}(:\d{2})?/g, ' ');                              // bỏ giờ
-  return [...s.matchAll(SO)].map(m => Number(m[1].replace(/[.,]/g, ''))).filter(n => n >= 1000);
+  return [...s.matchAll(SO)]
+    .filter(m => !/^0\d*$/.test(m[1]))                       // 0947792449: số điện thoại / tài khoản
+    .map(m => Number(m[1].replace(/[.,]/g, ''))).filter(n => n >= 1000);
 }
 
+// Trả về số tiền đoán được và chỉ số dòng chứa nó (để app đọc lại riêng dòng đó cho chính xác)
 function timSoTien(lines) {
   const nhan = lines.map(bd);
-  const tong = [];
+  let tot = null;
   lines.forEach((l, i) => {
     if (!TONG.test(nhan[i]) || LOAI.test(nhan[i])) return;
-    let ns = soTrongDong(l);
-    if (!ns.length && lines[i + 1]) ns = soTrongDong(lines[i + 1]);        // số nằm ở dòng kế
-    tong.push(...ns);
+    let j = i, ns = soTrongDong(l);
+    if (!ns.length && lines[i + 1]) { j = i + 1; ns = soTrongDong(lines[j]); }     // số nằm ở dòng kế
+    ns.forEach(n => { if (!tot || n > tot.soTien) tot = { soTien: n, dong: j }; });
   });
-  if (tong.length) return Math.max(...tong);
-  const coDonVi = [];
-  lines.forEach((l, i) => { if (/vnd|vnđ|₫|\dđ|\d\s*d\b/i.test(nhan[i])) coDonVi.push(...soTrongDong(l)); });
-  if (coDonVi.length) return Math.max(...coDonVi);
-  const het = lines.flatMap(soTrongDong);
-  return het.length ? Math.max(...het) : 0;
+  if (tot) return tot;
+  // Dòng có đơn vị tiền, kể cả khi OCR đọc số chưa ra (vd "898/192 VND")
+  const iVnd = nhan.findIndex(t => /vnd|vnđ|₫|\dd\b/.test(t));
+  if (iVnd >= 0) return { soTien: Math.max(0, ...soTrongDong(lines[iVnd])), dong: iVnd };
+  let best = { soTien: 0, dong: null };
+  lines.forEach((l, i) => soTrongDong(l).forEach(n => { if (n > best.soTien) best = { soTien: n, dong: i }; }));
+  return best;
 }
 
 function timNgay(lines) {
@@ -67,31 +71,77 @@ function giaTri(lines, nhanRe) {
   return '';
 }
 
-const KHONG_PHAI_TEN = /hoa don|receipt|invoice|bill|phieu|dia chi|^dc|hotline|tel|sdt|mst|ma so thue|www|http|ban hang|cam on|thanh cong|giao dich/;
+const hoaRatio = l => { const ch = l.match(/\p{L}/gu) || []; return ch.length ? ch.filter(c => c === c.toUpperCase()).length / ch.length : 0; };
+const boDauHoa = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
+// "e{e] 2 PHAN ZION-NHA THUOC i5" -> "PHAN ZION-NHA THUOC"
+const tenNganHang = t => boDauHoa(t).split(/\s+/).filter(w => /^[A-Z][A-Z\-]+$/.test(w.replace(/^[^A-Z]+|[^A-Z]+$/g, ''))).map(w => w.replace(/^[^A-Z]+|[^A-Z]+$/g, '')).join(' ');
+const lamSach = t => t.replace(/^[\s\-–_.,;:|\[\]'"‘’“”@~<>]+|[\s\-–_.,;:|\[\]'"‘’“”@~<>]+$/g, '').trim();
 
-function timNoiDung(lines) {
+// Các dòng nằm giữa dòng "giờ - ngày" và dòng ngân hàng/số tài khoản là tên người nhận
+function dongTenTheoViTri(lines) {
+  // Dòng ngắn "10:35 - 16/10/2026" (giờ có thể bị OCR đọc hỏng, nên chỉ cần dòng ngắn chứa ngày đủ năm)
+  const iGio = lines.findIndex((l, i) => i < 14 && l.length < 32 && /\d{1,2}\s*[\/.\-]\s*\d{1,2}\s*[\/.\-]\s*\d{4}/.test(l));
+  if (iGio < 0) return [];
+  const kq = [];
+  for (let i = iGio + 1; i < lines.length && kq.length < 3; i++) {
+    const t = bd(lines[i]);
+    if (/bank|ngan hang|\(\w{2,5}\)|\d{8,}|giao dich|chuyen tien\s*$/.test(t)) break;
+    if ((lines[i].match(/\p{L}/gu) || []).length >= 3) kq.push(i);
+  }
+  return kq;
+}
+
+const KHONG_PHAI_TEN = /khach|tong|chuyen khoan|thanh toan|tien mat|hoa don|receipt|invoice|bill|phieu|dia chi|^dc|hotline|tel|sdt|mst|ma so thue|www|http|ban hang|cam on|thanh cong|giao dich/;
+
+// Dòng OCR rác (vd "xxgGs tr reeri 4") thường có nhiều từ không có nguyên âm hoặc quá ngắn
+const lanTu = l => {
+  const tu = l.trim().split(/\s+/);
+  return tu.filter(t => t.length >= 2 && /[aeiouyàáảãạăâêôơưéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵ]/i.test(t)).length >= tu.length * 0.8;
+};
+
+function timNoiDung(lines, dongTen = []) {
   const chung = bd(lines.join(' '));
-  const chuyenKhoan = /chuyen khoan|chuyen tien|nguoi nhan|ten nguoi nhan|transfer|beneficiary|tai khoan nhan/.test(chung);
+  // "Khách trả chuyển khoản: 0" trên hóa đơn không phải ảnh chuyển khoản
+  const chuyenKhoan = /(?:tien|khoan)\s*th[a-z]{1,3}h\s*c[o0]ng|giao dich thanh cong|nguoi nhan|tai khoan nhan|beneficiary|transfer successful/.test(chung);
   const nd = giaTri(lines, /noi dung(?: chuyen khoan| chuyen tien)?|loi nhan|message|description|mo ta/);
   const ncc = giaTri(lines, /nha cung cap|cua hang|merchant|don vi thu huong|noi nhan thanh toan/);
   const nhan = giaTri(lines, /ten nguoi nhan|nguoi nhan|nguoi thu huong|beneficiary|den|toi/);
 
   if (chuyenKhoan) {
-    const ten = nhan.replace(/\s*\d{6,}.*$/, '').trim();      // bỏ số tài khoản dính phía sau
+    const tenViTri = dongTen.map(i => lines[i]).filter(l => hoaRatio(l) >= 0.6).map(tenNganHang).filter(Boolean).join(' ');
+    const ten = nhan ? nhan.replace(/\s*\d{6,}.*$/, '').trim() : tenViTri;   // bỏ số tài khoản dính phía sau
     return ['Chuyển khoản', ten, nd && `(${nd})`].filter(Boolean).join(' ');
   }
   if (ncc) return nd ? `${ncc} - ${nd}` : ncc;
+  // Ảnh thanh toán của ngân hàng ("Thanh toán thành công"): tên nơi nhận nằm dưới dòng giờ - ngày
+  const tenThanhToan = dongTen.map(i => lines[i]).filter(l => hoaRatio(l) >= 0.6).map(tenNganHang).filter(Boolean).join(' ');
+  if (/(?:toan|toon)\s*th[a-z]{1,3}h\s*c[o0]ng/.test(chung) && tenThanhToan) return `Thanh toán ${tenThanhToan}`;
+  // Ảnh đơn hàng sàn thương mại điện tử (Shopee...): tên shop nằm dưới dòng tab trạng thái, kế đó là tên sản phẩm
+  if (/tong so tien \(|don da mua/.test(chung)) {
+    const iTab = lines.findIndex(l => /cho\s*xac\s*nhan/.test(bd(l)) && /cho\s*giao\s*hang/.test(bd(l)));
+    if (iTab >= 0 && lines[iTab + 1]) {
+      const shop = lines[iTab + 1].replace(/^\W*(Yêu thích\+?|Mall)\s*/i, '')
+        .replace(/\s*(Chờ\s*lấy\s*hàng|Chờ\s*giao\s*hàng|Chờ\s*xác\s*nhận|Đã\s*giao|Hoàn\s*thành|Đã\s*hủy).*$/i, '').trim();
+      const sp = (lines[iTab + 2] || '').split(/\s+/);
+      while (sp.length && /[^\p{L}\-]/u.test(sp[0])) sp.shift();   // bỏ rác OCR ở đầu ("q1 Z;")
+      const ten = [shop, sp.join(' ')].filter(Boolean).join(' - ');
+      if (ten) return ten;
+    }
+  }
   // Hóa đơn cửa hàng: lấy dòng tên đầu tiên có chữ
-  for (const l of lines.slice(0, 7)) {
+  for (const l of lines.slice(0, 5)) {
     const chu = (l.match(/\p{L}/gu) || []).length;
-    if (chu >= 3 && chu >= l.replace(/\s/g, '').length * 0.6 && !KHONG_PHAI_TEN.test(bd(l))) return l.trim();
+    if (chu >= 4 && chu >= l.replace(/\s/g, '').length * 0.8 && lanTu(l) && !KHONG_PHAI_TEN.test(bd(l))) return l.trim();
   }
   return nd || 'Hóa đơn';
 }
 
+// text: chuỗi, hoặc mảng các dòng (để chỉ số dòng trả về khớp với dòng OCR)
 function parseBill(text) {
-  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
-  return { noiDung: timNoiDung(lines), soTien: timSoTien(lines), ngay: timNgay(lines) };
+  const lines = (Array.isArray(text) ? text : text.split(/\r?\n/)).map(l => l.trim()).filter(Boolean);
+  const { soTien, dong } = timSoTien(lines);
+  const dongTen = dongTenTheoViTri(lines);
+  return { noiDung: timNoiDung(lines, dongTen), soTien, dong, dongTen, ngay: timNgay(lines) };
 }
 
-if (typeof module !== 'undefined') module.exports = { parseBill };
+if (typeof module !== 'undefined') module.exports = { parseBill, soTrongDong };

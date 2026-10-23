@@ -269,12 +269,53 @@ const taiScript = src => new Promise((ok, loi) => {
   document.head.appendChild(el);
 });
 let worker = null, tienDo = () => {};
-async function docChu(canvas) {
+async function lamViecVoiTesseract() {
   if (!worker) {
     if (!window.Tesseract) await taiScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.1.1/tesseract.min.js');
     worker = await Tesseract.createWorker('vie', 1, { logger: m => tienDo(m) });
   }
-  return (await worker.recognize(canvas)).data.text;
+  return worker;
+}
+// Đọc cả ảnh: trả về các dòng chữ kèm vị trí (bỏ dòng trống)
+async function docChu(canvas) {
+  const w = await lamViecVoiTesseract();
+  const { data } = await w.recognize(canvas);
+  const lines = (data.lines || []).map(l => ({ t: l.text.trim(), bbox: l.bbox })).filter(l => l.t);
+  return { text: data.text, lines };
+}
+// Đọc lại riêng một dòng: cắt, phóng to, đảo màu nếu nền tối, tăng tương phản. Chữ to trên nền xanh/ảnh đọc đúng hơn hẳn.
+function chuanBiDong(canvas, b) {
+  const rong = b.x1 - b.x0, cao = b.y1 - b.y0, padY = Math.round(cao * 0.4), padX = Math.round(rong * 0.6);
+  const x0 = Math.max(0, b.x0 - padX), x1 = Math.min(canvas.width, b.x1 + padX);
+  const y0 = Math.max(0, b.y0 - padY), y1 = Math.min(canvas.height, b.y1 + padY);
+  const k = Math.min(2, 3000 / (x1 - x0));
+  const c = document.createElement('canvas');
+  c.width = Math.round((x1 - x0) * k); c.height = Math.round((y1 - y0) * k);
+  const g = c.getContext('2d');
+  g.imageSmoothingQuality = 'high';
+  g.drawImage(canvas, x0, y0, x1 - x0, y1 - y0, 0, 0, c.width, c.height);
+  const img = g.getImageData(0, 0, c.width, c.height), d = img.data, n = d.length / 4;
+  const xam = new Float32Array(n);
+  let tong = 0;
+  for (let i = 0; i < n; i++) { xam[i] = 0.299 * d[4 * i] + 0.587 * d[4 * i + 1] + 0.114 * d[4 * i + 2]; tong += xam[i]; }
+  const toi = tong / n < 128;                                    // nền tối, chữ sáng -> đảo lại
+  const hist = new Uint32Array(256);
+  for (let i = 0; i < n; i++) { if (toi) xam[i] = 255 - xam[i]; hist[Math.round(xam[i])]++; }
+  const phanVi = p => { let acc = 0; for (let v = 0; v < 256; v++) { acc += hist[v]; if (acc >= n * p) return v; } return 255; };
+  const lo = phanVi(0.02), hi = Math.max(lo + 1, phanVi(0.98));
+  for (let i = 0; i < n; i++) {
+    const v = Math.max(0, Math.min(255, (xam[i] - lo) / (hi - lo) * 255));
+    d[4 * i] = d[4 * i + 1] = d[4 * i + 2] = v; d[4 * i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  return c;
+}
+const soTu = t => t.split(/\s+/).filter(w => (w.match(/\p{L}/gu) || []).length >= 2).length;   // đọc lại mà dính chữ thì không nhận
+async function docLaiDong(canvas, bbox) {
+  const w = await lamViecVoiTesseract();
+  await w.setParameters({ tessedit_pageseg_mode: '7' });         // một dòng duy nhất
+  try { return (await w.recognize(chuanBiDong(canvas, bbox))).data.text.trim(); }
+  finally { await w.setParameters({ tessedit_pageseg_mode: '6' }); }   // 6 là chế độ mặc định của lần đọc cả ảnh
 }
 // Thu nhỏ ảnh (ảnh iPhone rất lớn, đọc chậm) và tự xoay đúng chiều
 async function thuNho(file, max = 1800) {
@@ -296,16 +337,31 @@ $('anh').onchange = async e => {
   try {
     live.textContent = 'Đang chuẩn bị đọc ảnh (lần đầu cần tải dữ liệu tiếng Việt)...';
     tienDo = m => { live.textContent = m.status === 'recognizing text' ? `Đang đọc ảnh... ${Math.round(m.progress * 100)}%` : 'Đang tải dữ liệu đọc chữ...'; };
-    const text = await docChu(await thuNho(file));
+    const canvas = await thuNho(file);
+    const { lines } = await docChu(canvas);
+    let r = parseBill(lines.map(l => l.t));
+    // Đọc lại riêng dòng số tiền và dòng tên người nhận để chính xác hơn
+    live.textContent = 'Đang đọc lại số tiền và tên...';
+    for (const i of [r.dong, ...r.dongTen]) {
+      if (i === null || !lines[i]) continue;
+      const t = await docLaiDong(canvas, lines[i].bbox);
+      const lanSo = soTrongDong(t).length;
+      const laSo = i === r.dong;
+      // Chỉ nhận kết quả đọc lại khi trông hợp lý (số tiền: đúng 1 số; tên: toàn chữ hoa)
+      const hopLy = laSo ? (lanSo === 1 && t.length < 40) : (t.length >= 3 && hoaRatio(t) >= hoaRatio(lines[i].t) - 0.05 && soTu(t) >= soTu(lines[i].t));
+      if (hopLy) lines[i].t = t;
+    }
+    r = parseBill(lines.map(l => l.t));
     live.textContent = '';
-    moKhungXem(text);
+    moKhungXem(lines.map(l => l.t).join('\n'), r);
+    // Tesseract tự "học" theo ảnh đã đọc nên kết quả lần sau bị lệch; đọc xong thì bỏ đi, lần sau tạo mới (dữ liệu tiếng Việt đã được lưu sẵn)
+    worker.terminate(); worker = null;
   } catch (err) {
     live.textContent = 'Không đọc được ảnh: ' + err.message;
   }
 };
 
-function moKhungXem(text) {
-  const r = parseBill(text);
+function moKhungXem(text, r) {
   const hom = new Date();
   $('x-nd').value = r.noiDung;
   $('x-st').value = r.soTien ? fmt(r.soTien) : '';
