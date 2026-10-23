@@ -28,12 +28,16 @@
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
   thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; text-align: center; }
   td.c { text-align: center; }
+  /* Mọi ô dữ liệu dùng cùng một cỡ chữ, kiểu chữ, màu chữ */
+  tbody td, tfoot td { font: 14px/1.25 system-ui, sans-serif; color: #222; }
+  .ng-hien.trong { color: #aaa; }
+  tr.tong td, tfoot td { white-space: nowrap; }
   #list tr:not(.sep):not(.tong) td:nth-child(5) { padding-left: 8px; }
-  td.money, th.money { text-align: right; }
+  td.money, th.money { text-align: right; white-space: nowrap; }
   td[contenteditable] { outline: none; }
-  col.c-chk { width: 26px; } col.c-stt { width: 30px; } col.c-ngay { width: 44px; } col.c-tien { width: 74px; } col.c-nguon { width: 44px; }
+  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 44px; } col.c-tien { width: 88px; } col.c-nguon { width: 44px; }
   td.nguon { position: relative; }
-  .ng-hien { display: block; font-size: 12px; color: #174ea6; white-space: nowrap; overflow: hidden; text-align: center; padding-right: 7px; }
+  .ng-hien { display: block; font: inherit; color: inherit; white-space: nowrap; overflow: hidden; text-align: center; padding-right: 7px; }
   .ng-hien.trong { color: #aaa; }
   td.nguon::after { content: '\25BE'; color: #888; position: absolute; right: 1px; top: 50%; transform: translateY(-50%); font-size: 9px; pointer-events: none; }
   /* Chọn nguồn: select trong suốt phủ lên chữ để iPhone mở bảng chọn mà không bị phóng to trang */
@@ -82,11 +86,11 @@
     <tr class="r-month"><th colspan="6" id="thang"></th></tr>
     <tr class="r-cols">
       <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
-      <th>STT</th><th>Ngày</th><th>Nguồn</th><th>Nội dung</th><th class="money">Số tiền</th>
+      <th>No</th><th>Ngày</th><th>Nguồn</th><th>Nội dung</th><th class="money">Số tiền</th>
     </tr>
   </thead>
   <tbody id="list"></tbody>
-  <tfoot><tr><td colspan="4">Tổng cộng</td><td class="money" id="total" colspan="2"></td></tr></tfoot>
+  <tfoot><tr><td colspan="5">Tổng cộng</td><td class="money" id="total"></td></tr></tfoot>
 </table>
 <button id="export">Xuất Excel</button>
 
@@ -282,7 +286,7 @@ function render() {
     });
     const tong = document.createElement('tr');                // tổng riêng của tháng
     tong.className = 'tong'; tong.dataset.thang = g.key;
-    tong.innerHTML = `<td colspan="4">Tổng tháng ${g.key}</td><td class="money" colspan="2">${fmt(g.tong)}</td>`;
+    tong.innerHTML = `<td colspan="5">Tổng tháng ${g.key}</td><td class="money">${fmt(g.tong)}</td>`;
     list.appendChild(tong);
   });
   // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
