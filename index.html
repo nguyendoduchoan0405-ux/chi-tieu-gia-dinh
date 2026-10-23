@@ -27,7 +27,7 @@
   table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 14px; }
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
   thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; text-align: center; }
-  td.c { text-align: center; }
+  td.c { text-align: center; white-space: nowrap; }
   /* Mọi ô dữ liệu dùng cùng một cỡ chữ, kiểu chữ, màu chữ */
   tbody td, tfoot td { font: 14px/1.25 system-ui, sans-serif; color: #222; }
   .ng-hien.trong { color: #aaa; }
@@ -35,7 +35,7 @@
   #list tr:not(.sep):not(.tong) td:nth-child(5) { padding-left: 8px; }
   td.money, th.money { text-align: right; white-space: nowrap; }
   td[contenteditable] { outline: none; }
-  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 44px; } col.c-tien { width: 88px; } col.c-nguon { width: 44px; }
+  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 52px; } col.c-tien { width: 88px; } col.c-nguon { width: 44px; }
   td.nguon { position: relative; }
   .ng-hien { display: block; font: inherit; color: inherit; white-space: nowrap; overflow: hidden; text-align: center; padding-right: 7px; }
   .ng-hien.trong { color: #aaa; }
@@ -65,7 +65,16 @@
   .ql-dong button { width: 44px; border: 0; border-radius: 8px; background: #fce8e6; color: #d93025; font-size: 20px; }
   #xem .the-nguon { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
   #xem .the { border: 1px solid #ddd; border-radius: 10px; padding: 4px 10px 10px; margin-top: 12px; }
-  #xem .the-dau { display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-weight: bold; font-size: 14px; }
+  #xem .the-anh { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; flex: none; background: #eee; }
+  #xem .the-tieu { flex: 1; font-size: 14px; }
+  #phong { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 30; }
+  #phong.mo { display: block; }
+  #phong .khung { position: absolute; inset: 0; overflow: auto; -webkit-overflow-scrolling: touch; }
+  #phong img { display: block; width: 100%; }
+  #phong img.zoom { width: 250%; max-width: none; }
+  #phong-dong { position: fixed; top: calc(10px + env(safe-area-inset-top)); right: 12px; z-index: 31; width: 40px; height: 40px; border: 0; border-radius: 20px; background: rgba(255,255,255,.9); font-size: 22px; }
+  #phong-goi { position: fixed; left: 0; right: 0; bottom: calc(12px + env(safe-area-inset-bottom)); text-align: center; color: #ddd; font-size: 13px; z-index: 31; pointer-events: none; }
+  #xem .the-dau { gap: 10px; display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-weight: bold; font-size: 14px; }
   #xem .the-dau button { background: none; border: 0; color: #d93025; font-size: 14px; }
   #xem .loi { color: #d93025; font-size: 13px; margin-top: 6px; }
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
@@ -123,6 +132,7 @@
   </div>
 </div>
 
+<div id="phong"><button id="phong-dong" aria-label="Đóng">×</button><div class="khung"><img id="phong-anh" alt=""></div><div id="phong-goi">Chạm vào ảnh để phóng to / thu nhỏ</div></div>
 <input type="file" id="anh" accept="image/*" multiple hidden>
 <div id="xem">
   <div class="hop">
@@ -447,22 +457,40 @@ async function quetMotAnh(file) {
     if (hopLy) lines[i].t = t;
   }
   r = parseBill(lines.map(l => l.t));
-  return { r, text: lines.map(l => l.t).join('\n') };
+  return { r, text: lines.map(l => l.t).join('\n'), anh: await luuAnh(canvas) };
 }
+
+// Giữ ảnh đã thu nhỏ (JPEG nhẹ) + ảnh bé làm hình đại diện, để đối chiếu với kết quả đọc được
+const canvasRaBlob = (c, q) => new Promise(ok => c.toBlob(ok, 'image/jpeg', q));
+async function luuAnh(canvas) {
+  const nho = document.createElement('canvas');
+  const k = Math.min(1, 160 / Math.max(canvas.width, canvas.height));
+  nho.width = Math.round(canvas.width * k); nho.height = Math.round(canvas.height * k);
+  nho.getContext('2d').drawImage(canvas, 0, 0, nho.width, nho.height);
+  const [full, thumb] = await Promise.all([canvasRaBlob(canvas, 0.8), canvasRaBlob(nho, 0.7)]);
+  return { full: URL.createObjectURL(full), thumb: URL.createObjectURL(thumb) };
+}
+function boThe(the) {                                       // gỡ thẻ và giải phóng ảnh
+  if (the._anh) { URL.revokeObjectURL(the._anh.full); URL.revokeObjectURL(the._anh.thumb); }
+  the.remove();
+}
+function donThe() { [...$('x-ds').children].forEach(boThe); }
+$('phong-anh').onclick = e => e.target.classList.toggle('zoom');
+$('phong-dong').onclick = () => { $('phong').classList.remove('mo'); $('phong-anh').classList.remove('zoom'); };
 
 $('anh').onchange = async e => {
   const files = [...e.target.files];
   e.target.value = '';                                    // cho phép chọn lại cùng một ảnh
   if (!files.length) return;
   const live = $('live');
-  $('x-ds').innerHTML = '';
+  donThe();
   for (const [k, file] of files.entries()) {
     const dau = files.length > 1 ? `Ảnh ${k + 1}/${files.length}: ` : '';
     tienDo = m => { live.textContent = dau + (m.status === 'recognizing text' ? `đang đọc... ${Math.round(m.progress * 100)}%` : 'đang tải dữ liệu đọc chữ (lần đầu hơi lâu)...'); };
     live.textContent = dau + 'đang chuẩn bị...';
     try {
-      const { r, text } = await quetMotAnh(file);
-      themThe(k + 1, r, text, files.length > 1);
+      const { r, text, anh } = await quetMotAnh(file);
+      themThe(k + 1, r, text, files.length > 1, '', anh);
     } catch (err) {
       themThe(k + 1, { noiDung: '', soTien: 0, ngay: null }, '', files.length > 1, 'Không đọc được ảnh này: ' + err.message);
     }
@@ -474,12 +502,13 @@ $('anh').onchange = async e => {
 };
 
 // Mỗi ảnh một thẻ để xem lại / sửa / bỏ
-function themThe(stt, r, text, nhieu, loi) {
+function themThe(stt, r, text, nhieu, loi, anh) {
   const hom = new Date();
   const ngay = r.ngay ? `${pad(r.ngay.d)}/${pad(r.ngay.m)}/${r.ngay.y}` : `${pad(hom.getDate())}/${pad(hom.getMonth() + 1)}`;
   const the = document.createElement('div');
   the.className = 'the';
-  the.innerHTML = `<div class="the-dau"><span>${nhieu ? 'Ảnh ' + stt : ''}</span><button class="bo">${nhieu ? 'Bỏ ảnh này' : ''}</button></div>
+  the._anh = anh;
+  the.innerHTML = `<div class="the-dau">${anh ? `<img class="the-anh" src="${anh.thumb}" alt="Ảnh ${stt}">` : ''}<span class="the-tieu">${nhieu ? 'Ảnh ' + stt : 'Ảnh quét'}${anh ? '<br><small style="color:#888;font-weight:normal">Chạm vào ảnh để xem lớn</small>' : ''}</span><button class="bo">${nhieu ? 'Bỏ ảnh này' : ''}</button></div>
     <label>Nội dung</label><input class="nd">
     <label>Số tiền</label><input class="st" inputmode="numeric">
     <label>Ngày (dd/mm hoặc dd/mm/yyyy)</label><input class="ngay" inputmode="numeric">
@@ -493,11 +522,13 @@ function themThe(stt, r, text, nhieu, loi) {
   ganNguon(the.querySelector('.the-nguon'), nguonMd, v => { the.dataset.nguon = v; });
   the.querySelector('.loi').textContent = loi || (r.soTien ? '' : 'Không tìm thấy số tiền, Hoan nhập tay giúp mình.');
   the.querySelector('pre').textContent = text.trim() || '(không đọc được chữ nào)';
-  the.querySelector('.bo').onclick = () => { the.remove(); if (!$('x-ds').children.length) $('xem').classList.remove('mo'); };
+  the.querySelector('.bo').onclick = () => { boThe(the); if (!$('x-ds').children.length) $('xem').classList.remove('mo'); };
+  const hinh = the.querySelector('.the-anh');
+  if (hinh) hinh.onclick = () => { $('phong-anh').src = anh.full; $('phong-anh').classList.remove('zoom'); $('phong').classList.add('mo'); };
   $('x-ds').appendChild(the);
 }
 
-$('x-huy').onclick = () => { $('x-ds').innerHTML = ''; $('xem').classList.remove('mo'); };
+$('x-huy').onclick = () => { donThe(); $('xem').classList.remove('mo'); };
 $('x-them').onclick = () => {
   for (const the of [...$('x-ds').children]) {
     const nd = the.querySelector('.nd').value.trim();
@@ -507,7 +538,7 @@ $('x-them').onclick = () => {
     if (!nd || !st) { loi.textContent = 'Cần có Nội dung và Số tiền.'; continue; }
     if (!d) { loi.textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; continue; }
     items.push({ id: newId(), noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '' });
-    the.remove();                                          // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
+    boThe(the);                                            // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
   }
   xepNgay(); save(); render();
   if (!$('x-ds').children.length) $('xem').classList.remove('mo');
