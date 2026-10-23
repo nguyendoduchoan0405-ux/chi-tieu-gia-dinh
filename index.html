@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chi tiêu gia đình</title>
+<style>
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f6f7f9; color: #222; }
+  h1 { font-size: 20px; margin: 0 0 12px; }
+  #mic { width: 100%; padding: 18px; font-size: 18px; border: 0; border-radius: 12px; background: #1a73e8; color: #fff; }
+  #mic.on { background: #d93025; }
+  #live { min-height: 24px; margin: 8px 0; color: #666; font-style: italic; }
+  .row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; }
+  table { width: 100%; border-collapse: collapse; background: #fff; font-size: 15px; }
+  th, td { border-bottom: 1px solid #eee; padding: 8px 4px; text-align: left; }
+  td.money, th.money { text-align: right; }
+  td[contenteditable] { outline: none; }
+  .del { background: none; border: 0; color: #d93025; font-size: 18px; }
+  tfoot td { font-weight: bold; }
+  #export { width: 100%; margin-top: 12px; }
+</style>
+</head>
+<body>
+<h1>Chi tiêu gia đình</h1>
+<button id="mic">Bấm để nói</button>
+<div id="live"></div>
+<div class="row">
+  <input id="manual" placeholder="Hoặc gõ: ăn sáng 30k">
+  <button id="add">Thêm</button>
+</div>
+<table>
+  <thead><tr><th>STT</th><th>Nội dung</th><th class="money">Số tiền</th><th></th></tr></thead>
+  <tbody id="list"></tbody>
+  <tfoot><tr><td></td><td>Tổng</td><td class="money" id="total"></td><td></td></tr></tfoot>
+</table>
+<button id="export">Xuất Excel</button>
+
+<script src="parse.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+const KEY = 'chitieu';
+let items = [];
+try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
+const fmt = n => n.toLocaleString('vi-VN');
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {} };
+
+function render() {
+  const list = document.getElementById('list');
+  list.innerHTML = '';
+  items.forEach((it, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${i + 1}</td><td contenteditable>${it.noiDung}</td>
+      <td class="money" contenteditable>${fmt(it.soTien)}</td><td><button class="del">×</button></td>`;
+    const [, nd, st] = tr.children;
+    nd.onblur = () => { it.noiDung = nd.textContent.trim(); save(); };
+    st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
+    tr.querySelector('.del').onclick = () => { if (confirm('Xóa dòng này?')) { items.splice(i, 1); save(); render(); } };
+    list.appendChild(tr);
+  });
+  document.getElementById('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
+}
+
+function addText(text) {
+  if (!text.trim()) return;
+  const r = parseExpense(text);
+  items.push({ ...r, thoiGian: new Date().toISOString(), cauGoc: text });
+  save(); render();
+}
+
+document.getElementById('add').onclick = () => {
+  const inp = document.getElementById('manual');
+  addText(inp.value); inp.value = '';
+};
+
+// Nhận giọng nói
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+const mic = document.getElementById('mic'), live = document.getElementById('live');
+let rec = null, listening = false;
+if (!SR) {
+  mic.disabled = true; mic.textContent = 'Trình duyệt không hỗ trợ giọng nói';
+} else {
+  rec = new SR();
+  rec.lang = 'vi-VN';
+  rec.interimResults = true;
+  // iPhone: nghe liên tục chạy không ổn định -> mỗi lần bấm ghi 1 khoản
+  const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent);
+  rec.continuous = !isIOS;
+  rec.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) { addText(t); live.textContent = ''; }
+      else live.textContent = t;
+    }
+  };
+  rec.onend = () => {
+    if (listening && !isIOS) return rec.start();       // Android: tự bật lại khi trình duyệt ngắt
+    listening = false; mic.classList.remove('on'); mic.textContent = 'Bấm để nói';
+  };
+  rec.onerror = e => { live.textContent = 'Lỗi: ' + e.error; };
+  mic.onclick = () => {
+    listening = !listening;
+    mic.classList.toggle('on', listening);
+    mic.textContent = listening ? 'Đang nghe... bấm để dừng' : 'Bấm để nói';
+    listening ? rec.start() : rec.stop();
+  };
+}
+
+// Xuất Excel
+document.getElementById('export').onclick = () => {
+  const rows = items.map((it, i) => ({
+    'STT': i + 1,
+    'Thời gian': new Date(it.thoiGian).toLocaleString('vi-VN'),
+    'Nội dung': it.noiDung,
+    'Số tiền': it.soTien,
+  }));
+  rows.push({ 'Nội dung': 'Tổng', 'Số tiền': items.reduce((s, it) => s + it.soTien, 0) });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 35 }, { wch: 15 }];
+  for (let r = 2; r <= rows.length + 1; r++) if (ws['D' + r]) ws['D' + r].z = '#,##0';
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Chi tiêu');
+  XLSX.writeFile(wb, `chi-tieu-${new Date().toISOString().slice(0, 10)}.xlsx`);
+};
+
+render();
+</script>
+</body>
+</html>
