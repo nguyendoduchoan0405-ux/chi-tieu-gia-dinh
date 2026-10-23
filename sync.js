@@ -5,9 +5,7 @@ const SB_URL = 'https://wpxsvsbtvcoctrmwebhr.supabase.co';
 const SB_KEY = 'sb_publishable_QggNleRle-uWS98NiboTiw_HmQBlsLu';
 
 window.dongBo = (() => {
-  const $ = id => document.getElementById(id);
-  const doc = (k, mac) => { try { return JSON.parse(localStorage.getItem(k)) ?? mac; } catch { return mac; } };
-  const ghi = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+  const doc = docLS, ghi = ghiLS;                           // dùng chung bộ đọc/ghi localStorage của index.html
   let phien = doc('sb_phien', null);                       // { access_token, refresh_token, expires_at, email }
   let da = doc('sync_da', {});                              // id -> JSON dòng đã đồng bộ ('__nguon' cho danh sách nguồn)
   let moc = doc('sync_moc', { expenses: '1970-01-01T00:00:00Z' });

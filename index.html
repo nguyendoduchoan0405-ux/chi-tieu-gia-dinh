@@ -173,6 +173,7 @@
 <script src="parse.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
+const $ = id => document.getElementById(id);
 const KEY = 'chitieu';
 let items = [];
 try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
@@ -230,7 +231,7 @@ function ganNguon(sel, hienTai, khiDoi) {
 }
 // Vẽ lại mọi nơi có danh sách nguồn: ô mặc định, bảng, các thẻ quét ảnh đang mở
 function lamMoiNguon() {
-  ganNguon(document.getElementById('nguon-md'), nguonMd, v => { nguonMd = v; luuNguon(); });
+  ganNguon($('nguon-md'), nguonMd, v => { nguonMd = v; luuNguon(); });
   document.querySelectorAll('#x-ds .the').forEach(the => {
     ganNguon(the.querySelector('.the-nguon'), the.dataset.nguon || '', v => { the.dataset.nguon = v; });
     the.querySelector('.the-nguon').value = the.dataset.nguon || '';
@@ -257,7 +258,7 @@ xepNgay();
 
 // Dòng tháng cố định trên đầu bảng luôn hiện tháng của khoản đang nằm ngay dưới nó
 function capNhatThang() {
-  const th = document.getElementById('thang');
+  const th = $('thang');
   const duoi = document.querySelector('tr.r-cols th').getBoundingClientRect().bottom;
   const dong = [...document.querySelectorAll('#list tr')].find(tr => tr.getBoundingClientRect().bottom > duoi + 1);
   const key = dong ? dong.dataset.thang : (items.length ? thangCua(items[items.length - 1].thoiGian) : thangCua(new Date().toISOString()));
@@ -266,10 +267,10 @@ function capNhatThang() {
 window.addEventListener('scroll', capNhatThang, { passive: true });
 
 function capNhatChon() {
-  const n = chon.size, btn = document.getElementById('delsel');
+  const n = chon.size, btn = $('delsel');
   btn.style.display = n ? 'block' : 'none';
   btn.textContent = `Xóa (${n})`;
-  const all = document.getElementById('chkall');
+  const all = $('chkall');
   all.checked = n > 0 && n === items.length;
   all.indeterminate = n > 0 && n < items.length;
 }
@@ -287,7 +288,7 @@ function nhomThang() {
 }
 
 function render() {
-  const list = document.getElementById('list');
+  const list = $('list');
   list.innerHTML = '';
   const nhom = nhomThang();
   nhom.forEach((g, gi) => {
@@ -340,18 +341,18 @@ function render() {
   });
   // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
   document.querySelector('tfoot').style.display = nhom.length > 1 ? '' : 'none';
-  document.getElementById('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
+  $('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
   capNhatChon();
   capNhatThang();
 }
 
-document.getElementById('chkall').parentElement.onclick = e => { if (e.target.tagName !== 'INPUT') document.getElementById('chkall').click(); };
-document.getElementById('chkall').onchange = e => {
+$('chkall').parentElement.onclick = e => { if (e.target.tagName !== 'INPUT') $('chkall').click(); };
+$('chkall').onchange = e => {
   chon.clear();
   if (e.target.checked) items.forEach(it => chon.add(it.id));
   render();
 };
-document.getElementById('delsel').onclick = () => {
+$('delsel').onclick = () => {
   if (!chon.size || !confirm(`Xóa ${chon.size} dòng đã chọn?`)) return;
   items.filter(it => chon.has(it.id) && it.anh).forEach(it => kho.xoa(it.id).catch(() => {}));
   items = items.filter(it => !chon.has(it.id));
@@ -366,16 +367,16 @@ function addText(text) {
 }
 
 // Bấm Enter / Xong trên bàn phím cũng thêm dòng
-document.getElementById('manual').onkeydown = e => { if (e.key === 'Enter') document.getElementById('add').click(); };
+$('manual').onkeydown = e => { if (e.key === 'Enter') $('add').click(); };
 
-document.getElementById('add').onclick = () => {
-  const inp = document.getElementById('manual');
+$('add').onclick = () => {
+  const inp = $('manual');
   addText(inp.value); inp.value = '';
 };
 
 // Nhận giọng nói
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-const mic = document.getElementById('mic'), micT = document.getElementById('mic-t'), live = document.getElementById('live');
+const mic = $('mic'), micT = $('mic-t'), live = $('live');
 let rec = null, listening = false;
 if (!SR) {
   mic.disabled = true; micT.textContent = 'Không hỗ trợ giọng nói';
@@ -402,7 +403,7 @@ if (!SR) {
       // iOS chặn nhận giọng của web -> dùng micro của bàn phím iPhone
       listening = false;
       live.textContent = 'iPhone chặn nhận giọng trên web. Bấm vào ô bên dưới, chọn biểu tượng micro trên bàn phím để đọc, rồi bấm Xong.';
-      document.getElementById('manual').focus();
+      $('manual').focus();
     } else live.textContent = 'Lỗi: ' + e.error;
   };
   mic.onclick = () => {
@@ -468,17 +469,17 @@ async function docLaiDong(canvas, bbox) {
   try { return (await w.recognize(chuanBiDong(canvas, bbox))).data.text.trim(); }
   finally { await w.setParameters({ tessedit_pageseg_mode: '6' }); }   // 6 là chế độ mặc định của lần đọc cả ảnh
 }
-// Thu nhỏ ảnh (ảnh iPhone rất lớn, đọc chậm) và tự xoay đúng chiều
-async function thuNho(file, max = 1800) {
-  const bmp = await createImageBitmap(file);
-  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+// Vẽ ảnh/canvas vào canvas mới có cạnh dài nhất <= toiDa
+function thuCanvas(nguon, toiDa) {
+  const k = Math.min(1, toiDa / Math.max(nguon.width, nguon.height));
   const c = document.createElement('canvas');
-  c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
-  c.getContext('2d').drawImage(bmp, 0, 0, c.width, c.height);
+  c.width = Math.round(nguon.width * k); c.height = Math.round(nguon.height * k);
+  c.getContext('2d').drawImage(nguon, 0, 0, c.width, c.height);
   return c;
 }
+// Ảnh iPhone rất lớn, đọc chậm: thu nhỏ (createImageBitmap tự xoay đúng chiều)
+const thuNho = async (file, max = 1800) => thuCanvas(await createImageBitmap(file), max);
 
-const $ = id => document.getElementById(id);
 $('scan').onclick = () => $('anh').click();
 
 // Đọc một ảnh -> { r: kết quả đoán, text: chữ máy đọc được }
@@ -503,15 +504,8 @@ async function quetMotAnh(file) {
 // Giữ ảnh đã thu nhỏ (JPEG nhẹ) + ảnh bé làm hình đại diện, để đối chiếu với kết quả đọc được
 const canvasRaBlob = (c, q) => new Promise(ok => c.toBlob(ok, 'image/jpeg', q));
 async function luuAnh(canvas) {
-  const nho = document.createElement('canvas');
-  const k = Math.min(1, 160 / Math.max(canvas.width, canvas.height));
-  nho.width = Math.round(canvas.width * k); nho.height = Math.round(canvas.height * k);
-  nho.getContext('2d').drawImage(canvas, 0, 0, nho.width, nho.height);
-  const lon = document.createElement('canvas');             // bản lưu lâu dài: nhẹ (~100KB) nhưng vẫn đọc được chữ
-  const k2 = Math.min(1, 1200 / Math.max(canvas.width, canvas.height));
-  lon.width = Math.round(canvas.width * k2); lon.height = Math.round(canvas.height * k2);
-  lon.getContext('2d').drawImage(canvas, 0, 0, lon.width, lon.height);
-  const [full, thumb, luu] = await Promise.all([canvasRaBlob(canvas, 0.8), canvasRaBlob(nho, 0.7), canvasRaBlob(lon, 0.72)]);
+  // bản lưu lâu dài (<=1200px, ~100KB) vẫn đọc được chữ; thumb là hình đại diện
+  const [full, thumb, luu] = await Promise.all([canvasRaBlob(canvas, 0.8), canvasRaBlob(thuCanvas(canvas, 160), 0.7), canvasRaBlob(thuCanvas(canvas, 1200), 0.72)]);
   return { full: URL.createObjectURL(full), thumb: URL.createObjectURL(thumb), luu };
 }
 function boThe(the) {                                       // gỡ thẻ và giải phóng ảnh
@@ -595,7 +589,7 @@ $('x-them').onclick = () => {
 
 // Quản lý danh sách nguồn tiền: đổi tên (cập nhật mọi dòng đang dùng), xóa, thêm
 function veDanhSachNguon() {
-  const ds = document.getElementById('ql-ds');
+  const ds = $('ql-ds');
   ds.innerHTML = '';
   nguonDs.forEach(ten => {
     const d = document.createElement('div');
@@ -621,10 +615,10 @@ function veDanhSachNguon() {
     ds.appendChild(d);
   });
 }
-document.getElementById('ng-sua').onclick = () => { veDanhSachNguon(); document.getElementById('ql').classList.add('mo'); };
-document.getElementById('ql-xong').onclick = () => document.getElementById('ql').classList.remove('mo');
-document.getElementById('ql-them').onclick = () => {
-  const inp = document.getElementById('ql-moi');
+$('ng-sua').onclick = () => { veDanhSachNguon(); $('ql').classList.add('mo'); };
+$('ql-xong').onclick = () => $('ql').classList.remove('mo');
+$('ql-them').onclick = () => {
+  const inp = $('ql-moi');
   if (themNguon(inp.value) !== null) { inp.value = ''; lamMoiNguon(); veDanhSachNguon(); }
 };
 
@@ -633,13 +627,11 @@ async function anhChoExcel(id) {                            // thu nhỏ còn <=
   const b = await kho.doc(id).catch(() => null);
   if (!b) return null;
   const bm = await createImageBitmap(b);
-  const k = Math.min(1, 480 / Math.max(bm.width, bm.height));
-  const c = document.createElement('canvas'); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
-  c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+  const c = thuCanvas(bm, 480);
   return { buf: await (await canvasRaBlob(c, 0.75)).arrayBuffer(), w: c.width, h: c.height };
 }
-document.getElementById('export').onclick = async () => {
-  const nut = document.getElementById('export'), chu = nut.textContent;
+$('export').onclick = async () => {
+  const nut = $('export'), chu = nut.textContent;
   nut.disabled = true; nut.textContent = 'Đang xuất...';
   try {
     const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');

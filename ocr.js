@@ -85,7 +85,6 @@ const hoaRatio = l => { const ch = l.match(/\p{L}/gu) || []; return ch.length ? 
 const boDauHoa = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
 // "e{e] 2 PHAN ZION-NHA THUOC i5" -> "PHAN ZION-NHA THUOC"
 const tenNganHang = t => boDauHoa(t).split(/\s+/).filter(w => /^[A-Z][A-Z\-]+$/.test(w.replace(/^[^A-Z]+|[^A-Z]+$/g, ''))).map(w => w.replace(/^[^A-Z]+|[^A-Z]+$/g, '')).join(' ');
-const lamSach = t => t.replace(/^[\s\-–_.,;:|\[\]'"‘’“”@~<>]+|[\s\-–_.,;:|\[\]'"‘’“”@~<>]+$/g, '').trim();
 
 // Các dòng nằm giữa dòng "giờ - ngày" và dòng ngân hàng/số tài khoản là tên người nhận
 function dongTenTheoViTri(lines) {
