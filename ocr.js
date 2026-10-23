@@ -71,6 +71,16 @@ function giaTri(lines, nhanRe) {
   return '';
 }
 
+// Tên người nhận khi không có nhãn: dòng chữ HOA đứng ngay trên dòng ngân hàng / số tài khoản
+function tenTruocNganHang(lines) {
+  for (let i = 1; i < lines.length; i++) {
+    if (!/bank|vcb|vietcombank|\b\d{4}\s?\d{4}\s?\d{2,}\b/i.test(bd(lines[i]))) continue;
+    const ten = tenNganHang(lines[i - 1]);
+    if (ten.split(' ').length >= 2 && hoaRatio(lines[i - 1]) >= 0.8) return ten;
+  }
+  return '';
+}
+
 const hoaRatio = l => { const ch = l.match(/\p{L}/gu) || []; return ch.length ? ch.filter(c => c === c.toUpperCase()).length / ch.length : 0; };
 const boDauHoa = t => t.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D');
 // "e{e] 2 PHAN ZION-NHA THUOC i5" -> "PHAN ZION-NHA THUOC"
@@ -102,14 +112,14 @@ const lanTu = l => {
 function timNoiDung(lines, dongTen = []) {
   const chung = bd(lines.join(' '));
   // "Khách trả chuyển khoản: 0" trên hóa đơn không phải ảnh chuyển khoản
-  const chuyenKhoan = /(?:tien|khoan)\s*th[a-z]{1,3}h\s*c[o0]ng|giao dich thanh cong|nguoi nhan|tai khoan nhan|beneficiary|transfer successful/.test(chung);
+  const chuyenKhoan = /(?:tien|khoan)\s*th[a-z]{1,3}h\s*c[o0]ng|giao dich thanh cong|chuyen\s*th[a-z]{1,3}h\s*c[o0]ng|nguoi nhan|tai khoan nhan|beneficiary|transfer successful/.test(chung);
   const nd = giaTri(lines, /noi dung(?: chuyen khoan| chuyen tien)?|loi nhan|message|description|mo ta/);
   const ncc = giaTri(lines, /nha cung cap|cua hang|merchant|don vi thu huong|noi nhan thanh toan/);
   const nhan = giaTri(lines, /ten nguoi nhan|nguoi nhan|nguoi thu huong|beneficiary|den|toi/);
 
   if (chuyenKhoan) {
     const tenViTri = dongTen.map(i => lines[i]).filter(l => hoaRatio(l) >= 0.6).map(tenNganHang).filter(Boolean).join(' ');
-    const ten = nhan ? nhan.replace(/\s*\d{6,}.*$/, '').trim() : tenViTri;   // bỏ số tài khoản dính phía sau
+    const ten = nhan ? nhan.replace(/\s*\d{6,}.*$/, '').trim() : (tenViTri || tenTruocNganHang(lines));   // bỏ số tài khoản dính phía sau
     return ['Chuyển khoản', ten, nd && `(${nd})`].filter(Boolean).join(' ');
   }
   if (ncc) return nd ? `${ncc} - ${nd}` : ncc;
