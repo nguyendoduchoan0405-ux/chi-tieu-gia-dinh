@@ -11,6 +11,7 @@ window.dongBo = (() => {
   let phien = doc('sb_phien', null);                       // { access_token, refresh_token, expires_at, email }
   let da = doc('sync_da', {});                              // id -> JSON dòng đã đồng bộ ('__nguon' cho danh sách nguồn)
   let moc = doc('sync_moc', { expenses: '1970-01-01T00:00:00Z' });
+  let anhLen = new Set(doc('sync_anh', []));                // id các ảnh đã có trên Storage
   let dangChay = false, canChayLai = false, hen = null;
 
   const hienTrang = (t, loi) => { const e = $('dongbo'); e.textContent = t; e.className = loi ? 'loi' : ''; };
@@ -43,10 +44,16 @@ window.dongBo = (() => {
     return r.status === 204 ? null : r.json().catch(() => null);
   }
 
+  // ----- Ảnh trên Supabase Storage (bucket riêng tư 'hoa-don') -----
+  const hdAnh = async () => ({ apikey: SB_KEY, Authorization: 'Bearer ' + await token() });
+  const dayAnh = async (id, blob) => { try { const r = await fetch(`${SB_URL}/storage/v1/object/hoa-don/${id}.jpg`, { method: 'POST', headers: { ...await hdAnh(), 'Content-Type': 'image/jpeg', 'x-upsert': 'true' }, body: blob }); return r.ok; } catch { return false; } };
+  const taiAnh = async id => { try { const r = await fetch(`${SB_URL}/storage/v1/object/authenticated/hoa-don/${id}.jpg`, { headers: await hdAnh() }); return r.ok ? await r.blob() : null; } catch { return null; } };
+  const xoaAnh = async id => { try { await fetch(`${SB_URL}/storage/v1/object/hoa-don/${id}.jpg`, { method: 'DELETE', headers: await hdAnh() }); } catch {} };
+
   // ----- Chuyển đổi dòng <-> hàng -----
-  const raHang = it => ({ id: it.id, noi_dung: it.noiDung, so_tien: it.soTien, thoi_gian: it.thoiGian, nguon: it.nguon || '', cau_goc: it.cauGoc || '', xoa: false });
-  const tuHang = h => ({ id: h.id, noiDung: h.noi_dung, soTien: Number(h.so_tien), thoiGian: new Date(h.thoi_gian).toISOString(), nguon: h.nguon || '', cauGoc: h.cau_goc || '' });
-  const chup = h => JSON.stringify([h.noi_dung, h.so_tien, new Date(h.thoi_gian).getTime(), h.nguon, h.cau_goc]);
+  const raHang = it => ({ id: it.id, noi_dung: it.noiDung, so_tien: it.soTien, thoi_gian: it.thoiGian, nguon: it.nguon || '', cau_goc: it.cauGoc || '', xoa: false, ...(it.anh ? { co_anh: true } : {}) });
+  const tuHang = h => ({ id: h.id, noiDung: h.noi_dung, soTien: Number(h.so_tien), thoiGian: new Date(h.thoi_gian).toISOString(), nguon: h.nguon || '', cauGoc: h.cau_goc || '', anh: !!h.co_anh });
+  const chup = h => JSON.stringify([h.noi_dung, h.so_tien, new Date(h.thoi_gian).getTime(), h.nguon, h.cau_goc, !!h.co_anh]);
 
   async function dongBoMot() {
     // 1. Kéo về những gì máy khác đã sửa
@@ -58,6 +65,7 @@ window.dongBo = (() => {
         const i = items.findIndex(x => x.id === h.id);
         const choDay = i >= 0 && da[h.id] !== chup(raHang(items[i]));   // máy này đang sửa dở: để máy này thắng, lát nữa đẩy lên
         if (h.xoa) { if (i >= 0 && !choDay) { items.splice(i, 1); thayDoi = true; } delete da[h.id]; }
+        else if (i < 0 && da[h.id] !== undefined) { /* máy này vừa xóa dòng này: giữ xóa, lát nữa đẩy dấu xóa lên */ }
         else if (!choDay) {
           const it = tuHang(h);
           if (i >= 0) items[i] = { ...items[i], ...it }; else items.push(it);
@@ -67,6 +75,18 @@ window.dongBo = (() => {
       moc.expenses = ds[ds.length - 1].updated_at;
       if (ds.length < 1000) break;
     }
+    // 1b. Ảnh hóa đơn: tải về những ảnh máy khác đã đưa lên
+    for (const it of items) {
+      if (!it.anh || await kho.doc(it.id).catch(() => null)) continue;
+      const b = await taiAnh(it.id);
+      if (b) { await kho.ghi(it.id, b).catch(() => {}); anhLen.add(it.id); ghi('sync_anh', [...anhLen]); thayDoi = true; }
+    }
+    // 2a. Ảnh mới của máy này: đưa lên kho trước, rồi mới đẩy dòng
+    for (const it of items) {
+      if (!it.anh || anhLen.has(it.id)) continue;
+      const b = await kho.doc(it.id).catch(() => null);
+      if (b && await dayAnh(it.id, b)) { anhLen.add(it.id); ghi('sync_anh', [...anhLen]); }
+    }
     // 2. Đẩy lên những gì máy này đã thêm/sửa/xóa
     const len = [];
     for (const it of items) { const h = raHang(it); if (da[it.id] !== chup(h)) len.push(h); }
@@ -74,7 +94,10 @@ window.dongBo = (() => {
     for (const id of Object.keys(da)) if (id !== '__nguon' && !co.has(id)) len.push({ id, noi_dung: '', so_tien: 0, thoi_gian: new Date().toISOString(), nguon: '', cau_goc: '', xoa: true });
     if (len.length) {
       await api('/expenses?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(len) });
-      for (const h of len) { if (h.xoa) delete da[h.id]; else da[h.id] = chup(h); }
+      for (const h of len) {
+        if (h.xoa) { delete da[h.id]; if (anhLen.has(h.id)) { await xoaAnh(h.id); anhLen.delete(h.id); ghi('sync_anh', [...anhLen]); } }
+        else da[h.id] = chup(h);
+      }
     }
     // 3. Danh sách nguồn tiền (thắng theo lần sửa gần nhất; máy mới chưa từng đồng bộ thì lấy bản trên mạng)
     const cs = await api('/cai_dat?khoa=eq.nguon_ds&select=gia_tri,updated_at');

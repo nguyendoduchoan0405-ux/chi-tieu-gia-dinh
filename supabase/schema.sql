@@ -54,3 +54,14 @@ create policy "tv sua"  on cai_dat for update using (is_member()) with check (is
 -- 2 vợ chồng (viết thường):
 insert into members (email) values ('nguyendoduchoan0405@gmail.com'), ('nguyenhuynhanhthoai@gmail.com')
 on conflict do nothing;
+
+insert into storage.buckets (id, name, public) values ('hoa-don', 'hoa-don', false) on conflict (id) do nothing;
+
+drop policy if exists "hoa-don doc"  on storage.objects;
+drop policy if exists "hoa-don them" on storage.objects;
+drop policy if exists "hoa-don sua"  on storage.objects;
+drop policy if exists "hoa-don xoa"  on storage.objects;
+create policy "hoa-don doc"  on storage.objects for select using (bucket_id = 'hoa-don' and public.is_member());
+create policy "hoa-don them" on storage.objects for insert with check (bucket_id = 'hoa-don' and public.is_member());
+create policy "hoa-don sua"  on storage.objects for update using (bucket_id = 'hoa-don' and public.is_member());
+create policy "hoa-don xoa"  on storage.objects for delete using (bucket_id = 'hoa-don' and public.is_member());

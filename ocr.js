@@ -120,7 +120,7 @@ function noiDungDayDu(lines, nd) {
 
 // MB Bank: không có nhãn "Nội dung", dòng nội dung nằm dưới dòng ngân hàng/số tài khoản, trước câu "Giao dịch được xác nhận"
 function noiDungKhongNhan(lines) {
-  let cuoi = lines.findIndex(l => /duoc xac nhan|khong chinh sua/.test(bd(l)));
+  let cuoi = lines.findIndex(l => /giao dich duoc|nhan boi|vui long|chinh sua|hinh anh/.test(bd(l)));   // OCR hay đọc sai chữ trong câu này, nên khớp nhiều mảnh
   if (cuoi < 0) cuoi = lines.length;
   const iNh = lines.findLastIndex((l, i) => i < cuoi && /bank|\(\w{2,5}\)|\d{8,}/i.test(bd(l)));
   const l = (lines[cuoi - 1] || '').trim();

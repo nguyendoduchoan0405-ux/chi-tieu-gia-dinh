@@ -131,6 +131,19 @@ Lưu mẫu Chia sẻ Gắn thẻ`,
     nd: 'NGUYEN HUYNH ANH THOAI chuyen tien dien t9', st: 1336090, ngay: [9, 10, 2026],
   },
   {
+    ten: 'MB: OCR thật, câu xác nhận bị đọc sai chữ',
+    text: `Chuyển tiền thành công
+„9898192 VND r
+08:12 - 15/10/2026
+NGUYEN HUỲNH ANH THOÁAI
+@ an Bank Rz
+; 792449
+NGUYEN \\NH THOẠI chuyen tien
+Giao dịch được xóc nhận bởi MB.
+Vui lòng không chỉnh sửa hình ảnh nòy.`,
+    nd: 'NGUYEN \\NH THOẠI chuyen tien', st: 9898192, ngay: [15, 10, 2026],
+  },
+  {
     ten: 'Không có số tiền',
     text: `Cảm ơn quý khách`,
     nd: 'Hóa đơn', st: 0, ngay: null,

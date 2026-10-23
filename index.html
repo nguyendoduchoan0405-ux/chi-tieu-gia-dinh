@@ -28,6 +28,7 @@
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
   thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; text-align: center; }
   td.c { text-align: center; white-space: nowrap; }
+  td.co-anh { color: #1a73e8; font-weight: 600; text-decoration: underline; }
   /* Mọi ô dữ liệu dùng cùng một cỡ chữ, kiểu chữ, màu chữ */
   tbody td, tfoot td { font: 14px/1.25 system-ui, sans-serif; color: #222; }
   .ng-hien.trong { color: #aaa; }
@@ -170,7 +171,7 @@
 <script src="brands.js"></script>
 <script src="ocr.js"></script>
 <script src="parse.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 const KEY = 'chitieu';
 let items = [];
@@ -182,6 +183,12 @@ const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {} window.dongBo?.hen(); };
 const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 items.forEach(it => { if (!it.id) it.id = newId(); });   // dữ liệu cũ chưa có id
+// Kho ảnh trên máy (IndexedDB): id dòng -> Blob JPEG đã nén
+const kho = (() => {
+  const mo = () => new Promise((ok, loi) => { const q = indexedDB.open('chitieu_anh', 1); q.onupgradeneeded = () => q.result.createObjectStore('anh'); q.onsuccess = () => ok(q.result); q.onerror = () => loi(q.error); });
+  const chay = (che, f) => mo().then(db => new Promise((ok, loi) => { const t = db.transaction('anh', che), r = f(t.objectStore('anh')); t.oncomplete = () => ok(r.result); t.onerror = () => loi(t.error); }));
+  return { ghi: (id, b) => chay('readwrite', s => s.put(b, id)), doc: id => chay('readonly', s => s.get(id)), xoa: id => chay('readwrite', s => s.delete(id)) };
+})();
 const chon = new Set();                                     // id các dòng đang được tích
 
 // ----- Nguồn tiền: danh sách dùng chung cho cả cột, mỗi dòng chọn một nguồn -----
@@ -304,6 +311,13 @@ function render() {
       const veHien = () => { hien.textContent = Array.from((it.nguon || '').normalize('NFC')).slice(0, 3).join('') || '–'; hien.classList.toggle('trong', !it.nguon); };
       veHien();
       ganNguon(ng.querySelector('select'), it.nguon, v => { it.nguon = v; save(); veHien(); });
+      if (it.anh) {                                         // dòng có ảnh: số thứ tự màu xanh, chạm để xem
+        const so = tr.children[1]; so.classList.add('co-anh');
+        so.onclick = async () => {
+          const b = await kho.doc(it.id).catch(() => null);
+          if (b) moPhong(URL.createObjectURL(b), true); else alert('Ảnh chưa tải về máy này, thử lại sau ít giây.');
+        };
+      }
       ck.onclick = e => { if (e.target !== ck.firstChild) ck.firstChild.click(); };
       ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
       dt.onblur = () => {
@@ -339,6 +353,7 @@ document.getElementById('chkall').onchange = e => {
 };
 document.getElementById('delsel').onclick = () => {
   if (!chon.size || !confirm(`Xóa ${chon.size} dòng đã chọn?`)) return;
+  items.filter(it => chon.has(it.id) && it.anh).forEach(it => kho.xoa(it.id).catch(() => {}));
   items = items.filter(it => !chon.has(it.id));
   chon.clear(); save(); render();
 };
@@ -492,16 +507,22 @@ async function luuAnh(canvas) {
   const k = Math.min(1, 160 / Math.max(canvas.width, canvas.height));
   nho.width = Math.round(canvas.width * k); nho.height = Math.round(canvas.height * k);
   nho.getContext('2d').drawImage(canvas, 0, 0, nho.width, nho.height);
-  const [full, thumb] = await Promise.all([canvasRaBlob(canvas, 0.8), canvasRaBlob(nho, 0.7)]);
-  return { full: URL.createObjectURL(full), thumb: URL.createObjectURL(thumb) };
+  const lon = document.createElement('canvas');             // bản lưu lâu dài: nhẹ (~100KB) nhưng vẫn đọc được chữ
+  const k2 = Math.min(1, 1200 / Math.max(canvas.width, canvas.height));
+  lon.width = Math.round(canvas.width * k2); lon.height = Math.round(canvas.height * k2);
+  lon.getContext('2d').drawImage(canvas, 0, 0, lon.width, lon.height);
+  const [full, thumb, luu] = await Promise.all([canvasRaBlob(canvas, 0.8), canvasRaBlob(nho, 0.7), canvasRaBlob(lon, 0.72)]);
+  return { full: URL.createObjectURL(full), thumb: URL.createObjectURL(thumb), luu };
 }
 function boThe(the) {                                       // gỡ thẻ và giải phóng ảnh
   if (the._anh) { URL.revokeObjectURL(the._anh.full); URL.revokeObjectURL(the._anh.thumb); }
   the.remove();
 }
 function donThe() { [...$('x-ds').children].forEach(boThe); }
+let phongTam = null;                                        // URL tạm của ảnh lấy từ kho, thu hồi khi đóng
+function moPhong(url, tam) { $('phong-anh').src = url; $('phong-anh').classList.remove('zoom'); phongTam = tam ? url : null; $('phong').classList.add('mo'); }
 $('phong-anh').onclick = e => e.target.classList.toggle('zoom');
-$('phong-dong').onclick = () => { $('phong').classList.remove('mo'); $('phong-anh').classList.remove('zoom'); };
+$('phong-dong').onclick = () => { $('phong').classList.remove('mo'); $('phong-anh').classList.remove('zoom'); if (phongTam) { URL.revokeObjectURL(phongTam); phongTam = null; } };
 
 $('anh').onchange = async e => {
   const files = [...e.target.files];
@@ -549,7 +570,7 @@ function themThe(stt, r, text, nhieu, loi, anh) {
   the.querySelector('pre').textContent = text.trim() || '(không đọc được chữ nào)';
   the.querySelector('.bo').onclick = () => { boThe(the); if (!$('x-ds').children.length) $('xem').classList.remove('mo'); };
   const hinh = the.querySelector('.the-anh');
-  if (hinh) hinh.onclick = () => { $('phong-anh').src = anh.full; $('phong-anh').classList.remove('zoom'); $('phong').classList.add('mo'); };
+  if (hinh) hinh.onclick = () => moPhong(anh.full, false);
   $('x-ds').appendChild(the);
 }
 
@@ -562,7 +583,9 @@ $('x-them').onclick = () => {
     const loi = the.querySelector('.loi');
     if (!nd || !st) { loi.textContent = 'Cần có Nội dung và Số tiền.'; continue; }
     if (!d) { loi.textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; continue; }
-    items.push({ id: newId(), noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '' });
+    const id = newId(), luu = the._anh?.luu;
+    if (luu) kho.ghi(id, luu).catch(() => {});
+    items.push({ id, noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '', anh: !!luu });
     boThe(the);                                            // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
   }
   xepNgay(); save(); render();
@@ -605,34 +628,56 @@ document.getElementById('ql-them').onclick = () => {
   if (themNguon(inp.value) !== null) { inp.value = ''; lamMoiNguon(); veDanhSachNguon(); }
 };
 
-// Xuất Excel: mỗi tháng một nhóm (STT bắt đầu từ 1) kèm dòng tổng tháng
-document.getElementById('export').onclick = () => {
-  const aoa = [['STT', 'Ngày', 'Nguồn tiền', 'Nội dung', 'Số tiền']];
-  const ngayCells = [], tienCells = [];                    // [chỉ số dòng] cần định dạng
-  const nhom = nhomThang();
-  nhom.forEach((g, gi) => {
-    if (gi > 0) aoa.push([]);
-    aoa.push([`Tháng ${g.key}`]);
-    g.ds.forEach((it, i) => {
-      const d = new Date(it.thoiGian);
-      // Ngày thật của Excel (lọc/sắp xếp được), hiển thị dd/mm
-      const serial = (Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - Date.UTC(1899, 11, 30)) / 86400000;
-      aoa.push([i + 1, serial, it.nguon || '', it.noiDung, it.soTien]);
-      ngayCells.push(aoa.length); tienCells.push(aoa.length);
-    });
-    aoa.push(['', '', '', `Tổng tháng ${g.key}`, g.tong]); tienCells.push(aoa.length);
-  });
-  if (nhom.length > 1) {
-    aoa.push([]);
-    aoa.push(['', '', '', 'Tổng cộng', items.reduce((s, it) => s + it.soTien, 0)]); tienCells.push(aoa.length);
-  }
-  const ws = XLSX.utils.aoa_to_sheet(aoa);
-  ws['!cols'] = [{ wch: 5 }, { wch: 8 }, { wch: 14 }, { wch: 35 }, { wch: 15 }];
-  ngayCells.forEach(r => { ws['B' + r].z = 'dd/mm'; });
-  tienCells.forEach(r => { ws['E' + r].z = '#,##0'; });
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Chi tiêu');
-  XLSX.writeFile(wb, `chi-tieu-${new Date().toISOString().slice(0, 10)}.xlsx`);
+// Xuất Excel (ExcelJS): mỗi tháng một nhóm (STT từ 1) kèm dòng tổng tháng; cột Ảnh chứa hình hóa đơn
+async function anhChoExcel(id) {                            // thu nhỏ còn <= 480px để file nhẹ
+  const b = await kho.doc(id).catch(() => null);
+  if (!b) return null;
+  const bm = await createImageBitmap(b);
+  const k = Math.min(1, 480 / Math.max(bm.width, bm.height));
+  const c = document.createElement('canvas'); c.width = Math.round(bm.width * k); c.height = Math.round(bm.height * k);
+  c.getContext('2d').drawImage(bm, 0, 0, c.width, c.height);
+  return { buf: await (await canvasRaBlob(c, 0.75)).arrayBuffer(), w: c.width, h: c.height };
+}
+document.getElementById('export').onclick = async () => {
+  const nut = document.getElementById('export'), chu = nut.textContent;
+  nut.disabled = true; nut.textContent = 'Đang xuất...';
+  try {
+    const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');
+    ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 38 }, { width: 15 }, { width: 24 }];
+    const dam = r => { r.font = { bold: true }; };
+    dam(ws.addRow(['STT', 'Ngày', 'Nguồn tiền', 'Nội dung', 'Số tiền', 'Ảnh']));
+    const nhom = nhomThang();
+    for (const [gi, g] of nhom.entries()) {
+      if (gi > 0) ws.addRow([]);
+      dam(ws.addRow([`Tháng ${g.key}`]));
+      for (const [i, it] of g.ds.entries()) {
+        const d = new Date(it.thoiGian);
+        const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, it.soTien]);
+        r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = '#,##0';
+        r.alignment = { vertical: 'middle' }; r.getCell(1).alignment = r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+        r.getCell(4).alignment = { vertical: 'middle', wrapText: true };
+        const a = it.anh ? await anhChoExcel(it.id) : null;
+        if (a) {
+          const k = Math.min(165 / a.w, 200 / a.h);           // vừa ô: tối đa 165 x 200 px
+          const w = Math.round(a.w * k), h = Math.round(a.h * k);
+          r.height = Math.max(20, h * 0.75 + 6);
+          ws.addImage(wb.addImage({ buffer: a.buf, extension: 'jpeg' }), { tl: { col: 5.05, row: r.number - 1 + 0.05 }, ext: { width: w, height: h } });
+        }
+      }
+      const t = ws.addRow(['', '', '', `Tổng tháng ${g.key}`, g.tong]); t.getCell(5).numFmt = '#,##0'; dam(t);
+    }
+    if (nhom.length > 1) {
+      ws.addRow([]);
+      const t = ws.addRow(['', '', '', 'Tổng cộng', items.reduce((s, it) => s + it.soTien, 0)]); t.getCell(5).numFmt = '#,##0'; dam(t);
+    }
+    const buf = await wb.xlsx.writeBuffer();
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+    a.download = `chi-tieu-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+  } catch (e) { alert('Không xuất được Excel: ' + e.message); }
+  nut.disabled = false; nut.textContent = chu;
 };
 
 lamMoiNguon();

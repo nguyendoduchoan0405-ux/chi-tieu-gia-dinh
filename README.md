@@ -21,3 +21,4 @@ App ghi chi tiêu bằng giọng nói tiếng Việt, chạy trên điện tho�
 ## Đồng bộ (Supabase)
 - `sync.js`: đăng nhập email + mật khẩu, đẩy/kéo chi tiêu và danh sách nguồn tiền qua REST. Xóa mềm (`xoa`), máy sửa sau thắng.
 - Chạy `supabase/schema.sql` 1 lần trong SQL Editor; tắt "Confirm email" ở Authentication > Providers > Email.
+- Ảnh hóa đơn: bucket riêng tư `hoa-don` (chạy `supabase/anh.sql`), lưu cục bộ ở IndexedDB; xuất Excel bằng ExcelJS kèm cột Ảnh.
