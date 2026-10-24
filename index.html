@@ -54,14 +54,17 @@
   tr.r-cols  th { top: 80px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
-  #xem, #ql { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
-  #xem.mo, #ql.mo { display: flex; }
-  #xem .hop, #ql .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem, #ql, #xk { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
+  #xem.mo, #ql.mo, #xk.mo { display: flex; }
+  #xem .hop, #ql .hop, #xk .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
   #xem label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
   #xem input, #ql input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  #xem .nut, #ql .nut { display: flex; gap: 8px; margin-top: 16px; }
-  #xem .nut button, #ql .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
-  #xem .nut button.huy { background: #888; }
+  #xem .nut, #ql .nut, #xk .nut { display: flex; gap: 8px; margin-top: 16px; }
+  #xem .nut button, #ql .nut button, #xk .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
+  #xem .nut button.huy, #xk .nut button.huy { background: #888; }
+  #xk .nut button:disabled { background: #bbb; }
+  #xk select { box-sizing: border-box; width: 100%; height: 44px; margin: 8px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
+  #xk-tt { min-height: 20px; font-size: 13px; color: #555; }
   .ql-dong { display: flex; gap: 8px; margin-top: 8px; }
   .ql-dong button { width: 44px; border: 0; border-radius: 8px; background: #fce8e6; color: #d93025; font-size: 20px; }
   #xem .the-nguon { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
@@ -146,6 +149,16 @@
     <div id="dn-loi"></div>
     <div id="dn-xong"><button id="dn-lai">Đồng bộ ngay</button> <button id="dn-ra" class="phu">Đăng xuất</button></div>
     <button id="dn-dong" class="phu">Đóng</button>
+  </div>
+</div>
+
+<div id="xk">
+  <div class="hop">
+    <b>Xuất Excel</b>
+    <select id="xk-thang" aria-label="Chọn tháng"></select>
+    <div id="xk-tt"></div>
+    <div class="nut"><button id="xk-tai">Tải về máy</button><button id="xk-chia">Gửi / Lưu vào Drive</button></div>
+    <div class="nut"><button class="huy" id="xk-dong">Đóng</button></div>
   </div>
 </div>
 
@@ -630,46 +643,66 @@ async function anhChoExcel(id) {                            // thu nhỏ còn <=
   const c = thuCanvas(bm, 480);
   return { buf: await (await canvasRaBlob(c, 0.75)).arrayBuffer(), w: c.width, h: c.height };
 }
-$('export').onclick = async () => {
-  const nut = $('export'), chu = nut.textContent;
-  nut.disabled = true; nut.textContent = 'Đang xuất...';
-  try {
-    const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');
-    ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 38 }, { width: 15 }, { width: 24 }];
-    const dam = r => { r.font = { bold: true }; };
-    dam(ws.addRow(['STT', 'Ngày', 'Nguồn tiền', 'Nội dung', 'Số tiền', 'Ảnh']));
-    const nhom = nhomThang();
-    for (const [gi, g] of nhom.entries()) {
-      if (gi > 0) ws.addRow([]);
-      dam(ws.addRow([`Tháng ${g.key}`]));
-      for (const [i, it] of g.ds.entries()) {
-        const d = new Date(it.thoiGian);
-        const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, it.soTien]);
-        r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = '#,##0';
-        r.alignment = { vertical: 'middle' }; r.getCell(1).alignment = r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
-        r.getCell(4).alignment = { vertical: 'middle', wrapText: true };
-        const a = it.anh ? await anhChoExcel(it.id) : null;
-        if (a) {
-          const k = Math.min(165 / a.w, 200 / a.h);           // vừa ô: tối đa 165 x 200 px
-          const w = Math.round(a.w * k), h = Math.round(a.h * k);
-          r.height = Math.max(20, h * 0.75 + 6);
-          ws.addImage(wb.addImage({ buffer: a.buf, extension: 'jpeg' }), { tl: { col: 5.05, row: r.number - 1 + 0.05 }, ext: { width: w, height: h } });
-        }
+async function taoExcel(nhom) {
+  const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');
+  ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 38 }, { width: 15 }, { width: 24 }];
+  const dam = r => { r.font = { bold: true }; };
+  dam(ws.addRow(['STT', 'Ngày', 'Nguồn tiền', 'Nội dung', 'Số tiền', 'Ảnh']));
+  for (const [gi, g] of nhom.entries()) {
+    if (gi > 0) ws.addRow([]);
+    dam(ws.addRow([`Tháng ${g.key}`]));
+    for (const [i, it] of g.ds.entries()) {
+      const d = new Date(it.thoiGian);
+      const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, it.soTien]);
+      r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = '#,##0';
+      r.alignment = { vertical: 'middle' }; r.getCell(1).alignment = r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
+      r.getCell(4).alignment = { vertical: 'middle', wrapText: true };
+      const a = it.anh ? await anhChoExcel(it.id) : null;
+      if (a) {
+        const k = Math.min(165 / a.w, 200 / a.h);           // vừa ô: tối đa 165 x 200 px
+        const w = Math.round(a.w * k), h = Math.round(a.h * k);
+        r.height = Math.max(20, h * 0.75 + 6);
+        ws.addImage(wb.addImage({ buffer: a.buf, extension: 'jpeg' }), { tl: { col: 5.05, row: r.number - 1 + 0.05 }, ext: { width: w, height: h } });
       }
-      const t = ws.addRow(['', '', '', `Tổng tháng ${g.key}`, g.tong]); t.getCell(5).numFmt = '#,##0'; dam(t);
     }
-    if (nhom.length > 1) {
-      ws.addRow([]);
-      const t = ws.addRow(['', '', '', 'Tổng cộng', items.reduce((s, it) => s + it.soTien, 0)]); t.getCell(5).numFmt = '#,##0'; dam(t);
-    }
-    const buf = await wb.xlsx.writeBuffer();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
-    a.download = `chi-tieu-${new Date().toISOString().slice(0, 10)}.xlsx`;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 60000);
-  } catch (e) { alert('Không xuất được Excel: ' + e.message); }
-  nut.disabled = false; nut.textContent = chu;
+    const t = ws.addRow(['', '', '', `Tổng tháng ${g.key}`, g.tong]); t.getCell(5).numFmt = '#,##0'; dam(t);
+  }
+  if (nhom.length > 1) {
+    ws.addRow([]);
+    const t = ws.addRow(['', '', '', 'Tổng cộng', nhom.reduce((s, g) => s + g.tong, 0)]); t.getCell(5).numFmt = '#,##0'; dam(t);
+  }
+  return new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+
+// Hộp "Xuất Excel": chọn tháng (hoặc tất cả); file tạo sẵn để nút Chia sẻ bấm là mở bảng chia sẻ ngay (iOS bắt buộc)
+let xkFile = null, xkLan = 0;
+async function lamXk() {
+  const lan = ++xkLan, thang = $('xk-thang').value;
+  xkFile = null; $('xk-tai').disabled = $('xk-chia').disabled = true; $('xk-tt').textContent = 'Đang tạo file...';
+  try {
+    const blob = await taoExcel(nhomThang().filter(g => !thang || g.key === thang));
+    if (lan !== xkLan) return;                              // đã đổi tháng trong lúc tạo
+    const ten = `chi-tieu-${thang ? thang.split('/').reverse().join('-') : new Date().toISOString().slice(0, 10)}.xlsx`;
+    xkFile = new File([blob], ten, { type: blob.type });
+    $('xk-tt').textContent = `${ten} · ${blob.size > 1048576 ? (blob.size / 1048576).toFixed(1) + ' MB' : Math.round(blob.size / 1024) + ' KB'}`;
+    $('xk-tai').disabled = false; $('xk-chia').disabled = !navigator.canShare?.({ files: [xkFile] });
+  } catch (e) { if (lan === xkLan) $('xk-tt').textContent = 'Không tạo được file: ' + e.message; }
+}
+$('export').onclick = () => {
+  $('xk-thang').innerHTML = '<option value="">Tất cả các tháng</option>' + nhomThang().map(g => g.key).reverse().map(k => `<option>${k}</option>`).join('');
+  $('xk').classList.add('mo'); lamXk();
+};
+$('xk-thang').onchange = lamXk;
+$('xk-dong').onclick = () => { $('xk').classList.remove('mo'); xkLan++; };
+$('xk-tai').onclick = () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(xkFile); a.download = xkFile.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+};
+$('xk-chia').onclick = async () => {
+  try { await navigator.share({ files: [xkFile], title: xkFile.name }); }
+  catch (e) { if (e.name !== 'AbortError') alert('Máy này không mở được bảng chia sẻ, dùng nút Tải về.'); }
 };
 
 lamMoiNguon();
