@@ -91,10 +91,13 @@ function parseExpense(text) {
   return { noiDung: noiDung.charAt(0).toUpperCase() + noiDung.slice(1), soTien };
 }
 
-// Ngày ở đầu câu: "01/02/2027 lương 40tr", "ngày 5/10 ăn trưa 50k" -> { ngay: { d, m, y }, text: "lương 40tr" }.
+// Ngày ở đầu câu: "01/02/2027 lương 40tr", "010227 lương 40tr" (ddmmyy), "ngày 5/10 ăn trưa 50k" -> { ngay: { d, m, y }, text: "lương 40tr" }.
 // Không có ngày hợp lệ -> ngay: null, text giữ nguyên. Dấu chấm chỉ nhận khi có năm, để "1.5 triệu" không bị hiểu là ngày.
 function tachNgay(text, homNay = new Date()) {
-  const m = text.trim().match(/^(?:ngày\s+)?(\d{1,2})\s*([\/\-.])\s*(\d{1,2})(?:\s*\2\s*(\d{4}|\d{2}))?(?=\s|$)\s*/i);
+  // Viết liền ddmmyy hoặc ddmmyyyy: "010227" -> 01/02/2027
+  let m = text.trim().match(/^(?:ngày\s+)?(\d{2})(\d{2})(\d{4}|\d{2})(?=\s)\s*/i);
+  if (m) m = [m[0], m[1], '/', m[2], m[3]];
+  else m = text.trim().match(/^(?:ngày\s+)?(\d{1,2})\s*([\/\-.])\s*(\d{1,2})(?:\s*\2\s*(\d{4}|\d{2}))?(?=\s|$)\s*/i);
   if (!m || (m[2] === '.' && !m[4])) return { ngay: null, text };
   const d = +m[1], mo = +m[3], y = m[4] ? (m[4].length === 2 ? 2000 + +m[4] : +m[4]) : homNay.getFullYear();
   const dt = new Date(y, mo - 1, d), rest = text.trim().slice(m[0].length).trim();
