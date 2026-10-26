@@ -50,14 +50,14 @@
   tr.r-cols  th { top: 40px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
-  #xem, #ql, #xk, #tkm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
-  #xem.mo, #ql.mo, #xk.mo, #tkm.mo { display: flex; }
-  #xem .hop, #ql .hop, #xk .hop, #tkm .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
-  #xem label, #tkm label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
-  #xem input, #ql input, #tkm input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  #xem .nut, #ql .nut, #xk .nut, #tkm .nut { display: flex; gap: 8px; margin-top: 16px; }
-  #xem .nut button, #ql .nut button, #xk .nut button, #tkm .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
-  #xem .nut button.huy, #xk .nut button.huy, #tkm .nut button.huy { background: #888; }
+  #xem, #ql, #xk, #tkm, #thm, #vgm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
+  #xem.mo, #ql.mo, #xk.mo, #tkm.mo, #thm.mo, #vgm.mo { display: flex; }
+  #xem .hop, #ql .hop, #xk .hop, #tkm .hop, #thm .hop, #vgm .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem label, #tkm label, #thm label, #vgm label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
+  #xem input, #ql input, #tkm input, #thm input, #vgm input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #xem .nut, #ql .nut, #xk .nut, #tkm .nut, #thm .nut, #vgm .nut { display: flex; gap: 8px; margin-top: 16px; }
+  #xem .nut button, #ql .nut button, #xk .nut button, #tkm .nut button, #thm .nut button, #vgm .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
+  #xem .nut button.huy, #xk .nut button.huy, #tkm .nut button.huy, #thm .nut button.huy, #vgm .nut button.huy { background: #888; }
   #xk .nut button:disabled { background: #bbb; }
   #xk select { box-sizing: border-box; width: 100%; height: 44px; margin: 8px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
   #xk-tt { min-height: 20px; font-size: 13px; color: #555; }
@@ -114,8 +114,16 @@
   #tk-bang th:first-child, #tk-bang td:first-child { text-align: left; }
   #tk-bang tr.het td { color: #999; }
   #tk-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
-  #sk-bang th, #sk-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
+  #sk-bang th, #sk-bang td, #vg-bang th, #vg-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
   #sk-bang td:last-child, #sk-bang th:last-child { text-align: right; }
+  #vg-bang { min-width: 520px; table-layout: auto; }
+  #vg-bang th, #vg-bang td { white-space: nowrap; text-align: right; }
+  #vg-bang th:first-child, #vg-bang td:first-child { text-align: left; }
+  #vg-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
+  #thm select, #thm .chon-the { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
+  #sk-chon { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ddd; border-radius: 10px; background: #fff; margin-top: 10px; }
+  #sk-info { margin: 8px 0; padding: 10px; background: #fff; border: 1px solid #e3e3e3; border-radius: 10px; font-size: 14px; line-height: 1.6; }
+  #sk-info b { font-size: 16px; }
   #tq-lai { position: absolute; left: 4px; top: 4px; width: 40px; height: 32px; }
   .thang-nav { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; font-size: 16px; }
   .thang-nav button { width: 44px; height: 36px; font-size: 22px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #174ea6; }
@@ -139,11 +147,21 @@
     <button class="o-tq" id="o-nam">Thu - chi năm</button>
     <div class="o-tq" id="o-mat"><small>Tiền mặt (thu − chi)</small><b></b></div>
     <button class="o-tq" id="o-tk"><small>Tiền tiết kiệm</small><b></b></button>
+    <button class="o-tq" id="o-vang"><small>Vàng vật chất</small><b></b></button>
   </div>
   <div id="tq-sk" style="display:none">
-    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Sao kê tín dụng</span></div>
-    <div class="thang-nav"><button id="sk-truoc" aria-label="Tháng trước">‹</button><b id="sk-ten"></b><button id="sk-sau" aria-label="Tháng sau">›</button></div>
-    <table id="sk-bang"><thead><tr><th>Thẻ / nguồn</th><th>Số khoản</th><th>Tổng chi</th></tr></thead><tbody id="sk-ds"></tbody></table>
+    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Sao kê tín dụng</span><button class="them" id="sk-them">+ Thẻ</button></div>
+    <select id="sk-chon" aria-label="Chọn thẻ"></select>
+    <div class="thang-nav"><button id="sk-truoc" aria-label="Kỳ trước">‹</button><b id="sk-ten"></b><button id="sk-sau" aria-label="Kỳ sau">›</button></div>
+    <div id="sk-info"></div>
+    <table id="sk-bang"><thead><tr><th>Ngày chi</th><th>Số khoản</th><th>Số tiền</th></tr></thead><tbody id="sk-ds"></tbody></table>
+  </div>
+  <div id="tq-vang" style="display:none">
+    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Vàng vật chất</span><button class="them" id="vg-them">+ Thêm</button></div>
+    <div class="cuon-ngang"><table id="vg-bang">
+      <thead><tr><th>Ngày mua</th><th>Số lượng (chỉ)</th><th>Giá mua (đ/chỉ)</th><th>Thành tiền</th></tr></thead>
+      <tbody id="vg-ds"></tbody>
+    </table></div>
   </div>
   <div id="tq-tk" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Tiền tiết kiệm</span><button class="them" id="tk-them">+ Thêm</button></div>
@@ -239,6 +257,34 @@
     <div id="tkm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
     <div class="nut"><button id="tkm-luu">Lưu</button><button class="huy" id="tkm-huy">Hủy</button></div>
     <div class="nut" id="tkm-xoa-hang"><button id="tkm-xoa" style="background:#d93025">Xóa khoản này</button></div>
+  </div>
+</div>
+
+<div id="thm">
+  <div class="hop">
+    <b id="thm-ten">Khai báo thẻ</b>
+    <label>Nguồn tiền của thẻ (chọn từ danh sách nguồn)</label><select id="thm-nguon" class="chon-the"></select>
+    <label>Số thẻ (4 số cuối)</label><input id="thm-so" inputmode="numeric" maxlength="19">
+    <label>Ngân hàng</label><input id="thm-nh">
+    <label>Ngày chốt sao kê hàng tháng (1-31)</label><input id="thm-chot" inputmode="numeric" placeholder="vd 20">
+    <label>Ngày thanh toán hàng tháng (1-31)</label><input id="thm-tt" inputmode="numeric" placeholder="vd 5">
+    <div id="thm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
+    <div id="thm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
+    <div class="nut"><button id="thm-luu">Lưu</button><button class="huy" id="thm-huy">Hủy</button></div>
+    <div class="nut" id="thm-xoa-hang"><button id="thm-xoa" style="background:#d93025">Xóa thẻ này</button></div>
+  </div>
+</div>
+
+<div id="vgm">
+  <div class="hop">
+    <b id="vgm-ten">Khoản vàng</b>
+    <label>Ngày mua (dd/mm/yyyy)</label><input id="vgm-ngay" inputmode="numeric">
+    <label>Số lượng (chỉ)</label><input id="vgm-sl" inputmode="decimal" placeholder="vd 2 hoặc 0,5">
+    <label>Giá mua (đồng/chỉ)</label><input id="vgm-gia" inputmode="numeric">
+    <div id="vgm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
+    <div id="vgm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
+    <div class="nut"><button id="vgm-luu">Lưu</button><button class="huy" id="vgm-huy">Hủy</button></div>
+    <div class="nut" id="vgm-xoa-hang"><button id="vgm-xoa" style="background:#d93025">Xóa khoản này</button></div>
   </div>
 </div>
 
@@ -843,7 +889,7 @@ window.addEventListener('scroll', capNhatNam, { passive: true });
 
 // ----- Tổng quan: các ô bấm (Sao kê tín dụng, Thu - chi năm, Tiền mặt, Tiền tiết kiệm) -----
 // Mỗi ô mở một màn riêng; nút ‹ hoặc bấm lại tab Tổng quan để quay về
-const MAN_TQ = { menu: 'tq-menu', sk: 'tq-sk', nam: 'tq-noi', tk: 'tq-tk' };
+const MAN_TQ = { menu: 'tq-menu', sk: 'tq-sk', nam: 'tq-noi', tk: 'tq-tk', vang: 'tq-vang' };
 function moMan(ten) {
   for (const [k, id] of Object.entries(MAN_TQ)) $(id).style.display = k === ten ? '' : 'none';
   window.scrollTo(0, 0);
@@ -851,10 +897,12 @@ function moMan(ten) {
   if (ten === 'nam') { renderTq(); capNhatNam(); }
   if (ten === 'sk') renderSk();
   if (ten === 'tk') renderTk();
+  if (ten === 'vang') renderVang();
 }
 $('o-sk').onclick = () => moMan('sk');
 $('o-nam').onclick = () => moMan('nam');
 $('o-tk').onclick = () => moMan('tk');
+$('o-vang').onclick = () => moMan('vang');
 document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => moMan('menu'); });
 
 // Tiền mặt = tổng thu − tổng chi của toàn bộ dữ liệu
@@ -863,26 +911,134 @@ function renderMenuTq() {
   const mat = $('o-mat'); mat.className = 'o-tq ' + (con >= 0 ? 'thu' : 'chi');
   mat.querySelector('b').textContent = co(con, con >= 0 ? '+' : '-');
   $('o-tk').querySelector('b').textContent = fmt(tkDangGui());
+  $('o-vang').querySelector('b').textContent = `${chiStr(vang.reduce((s, v) => s + v.chi, 0))} chỉ`;
 }
 
-// ----- Sao kê tín dụng: chi theo từng thẻ/nguồn (không tính Vợ/Chồng) trong một tháng -----
-let thangSk = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 };
-function renderSk() {
-  $('sk-ten').textContent = `Tháng ${pad(thangSk.m)}/${thangSk.y}`;
-  const key = `${pad(thangSk.m)}/${thangSk.y}`, the = new Map();
-  for (const it of items) {
-    const n = it.nguon || '';
-    if (laThu(it) || thangCua(it.thoiGian) !== key || !n || theoNguon(n) !== 'khac') continue;
-    const g = the.get(n) || { sl: 0, tong: 0 }; g.sl++; g.tong += it.soTien; the.set(n, g);
-  }
-  const ds = [...the].sort((a, b) => b[1].tong - a[1].tong);
-  $('sk-ds').innerHTML = ds.map(([n, g]) => `<tr><td>${esc(n)}</td><td>${g.sl}</td><td class="money chi">${co(g.tong, '-')}</td></tr>`).join('')
-    + (ds.length ? `<tr class="tong"><td colspan="2">Tổng</td><td class="money chi">${co(ds.reduce((s, [, g]) => s + g.tong, 0), '-')}</td></tr>` : '<tr><td colspan="3" style="text-align:center;color:#888">Chưa có khoản chi từ thẻ trong tháng này</td></tr>');
+// ----- Sao kê tín dụng: mỗi thẻ gắn với một nguồn tiền; kỳ sao kê = (ngày chốt tháng trước + 1) đến ngày chốt tháng này -----
+let theTd = docLS('the_td', []);                            // { id, nguon, soThe, nganHang, chot (ngày), tt (ngày) }
+const luuThe = () => { ghiLS('the_td', theTd); window.dongBo?.hen(); };
+let kySk = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 }, theSk = null;
+const ngayTrongThang = (y, m, d) => new Date(y, m - 1, Math.min(d, new Date(y, m, 0).getDate()));   // kẹp ngày 31 vào tháng ngắn
+const ddmm = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
+function kyCua(the, y, m) {
+  const cuoi = ngayTrongThang(y, m, the.chot), p = new Date(y, m - 2, 1);
+  const dau = ngayTrongThang(p.getFullYear(), p.getMonth() + 1, the.chot); dau.setDate(dau.getDate() + 1);
+  const t = the.tt > the.chot ? new Date(y, m - 1, 1) : new Date(y, m, 1);   // hạn thanh toán rơi cùng tháng hoặc tháng sau ngày chốt
+  return { dau, cuoi, tt: ngayTrongThang(t.getFullYear(), t.getMonth() + 1, the.tt) };
 }
-const theoNguon = n => { n = (n || '').normalize('NFC').trim().toLowerCase(); return n === 'vợ' ? 'vo' : n === 'chồng' ? 'chong' : 'khac'; };
-const doiThangSk = d => { const x = new Date(thangSk.y, thangSk.m - 1 + d, 1); thangSk = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderSk(); };
-$('sk-truoc').onclick = () => doiThangSk(-1);
-$('sk-sau').onclick = () => doiThangSk(1);
+const tenThe = t => `${t.nguon}${t.soThe ? ' ' + t.soThe : ''}`;
+function renderSk() {
+  const sel = $('sk-chon');
+  if (!theTd.some(t => t.id === theSk)) theSk = theTd[0]?.id || null;
+  sel.innerHTML = theTd.map(t => `<option value="${t.id}">${esc(tenThe(t))}${t.nganHang ? ' - ' + esc(t.nganHang) : ''}</option>`).join('') || '<option>Chưa có thẻ - bấm + Thẻ</option>';
+  sel.value = theSk || ''; sel.style.display = theTd.length ? '' : 'none';
+  $('sk-ten').textContent = `Kỳ sao kê tháng ${pad(kySk.m)}/${kySk.y}`;
+  const the = theTd.find(t => t.id === theSk);
+  if (!the) { $('sk-info').textContent = 'Bấm "+ Thẻ" để khai báo thẻ (số thẻ, ngân hàng, ngày chốt sao kê, ngày thanh toán).'; $('sk-ds').innerHTML = ''; return; }
+  const k = kyCua(the, kySk.y, kySk.m), tu = k.dau.getTime(), den = k.cuoi.getTime() + 86400000, ngay = new Map();
+  for (const it of items) {
+    const t = new Date(it.thoiGian).getTime();
+    if (laThu(it) || it.nguon !== the.nguon || t < tu || t >= den) continue;
+    const key = ddmm(new Date(it.thoiGian)), g = ngay.get(key) || { t, sl: 0, tong: 0 };
+    g.sl++; g.tong += it.soTien; ngay.set(key, g);
+  }
+  const ds = [...ngay].sort((a, b) => a[1].t - b[1].t), tong = ds.reduce((s, [, g]) => s + g.tong, 0);
+  $('sk-info').innerHTML = `Kỳ: ${ngayDayDu(k.dau)} - ${ngayDayDu(k.cuoi)}<br>Ngày thanh toán: <b>${ngayDayDu(k.tt)}</b><br>Số tiền cần thanh toán: <b style="color:#d93025">${fmt(tong)}</b>`
+    + `<br><a href="#" id="sk-sua" style="font-size:13px;color:#1a73e8">Sửa thẻ ${esc(tenThe(the))}</a>`;
+  $('sk-sua').onclick = e => { e.preventDefault(); moThm(the.id); };
+  $('sk-ds').innerHTML = ds.map(([n, g]) => `<tr><td>${n}</td><td>${g.sl}</td><td class="money chi">${fmt(g.tong)}</td></tr>`).join('')
+    + (ds.length ? `<tr class="tong"><td colspan="2">Cần thanh toán</td><td class="money chi">${fmt(tong)}</td></tr>` : '<tr><td colspan="3" style="text-align:center;color:#888">Chưa có khoản chi trong kỳ này</td></tr>');
+}
+const doiKySk = d => { const x = new Date(kySk.y, kySk.m - 1 + d, 1); kySk = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderSk(); };
+$('sk-truoc').onclick = () => doiKySk(-1);
+$('sk-sau').onclick = () => doiKySk(1);
+$('sk-chon').onchange = e => { theSk = e.target.value; renderSk(); };
+
+let thSua = null;                                           // id thẻ đang sửa, null = thêm mới
+const ngayThu = t => { const n = soDuong(t); return n >= 1 && n <= 31 ? n : 0; };
+function docThm() {
+  const t = { id: thSua || newId(), nguon: $('thm-nguon').value, soThe: $('thm-so').value.trim(), nganHang: $('thm-nh').value.trim(), chot: ngayThu($('thm-chot').value), tt: ngayThu($('thm-tt').value) };
+  if (!t.nguon) return { loi: 'Chọn nguồn tiền của thẻ.' };
+  if (!t.chot || !t.tt) return { loi: 'Ngày chốt và ngày thanh toán phải từ 1 đến 31.' };
+  return { t };
+}
+function xemThm() {
+  const { t } = docThm(); if (!t) { $('thm-xem').textContent = ''; return; }
+  const h = new Date(), k = kyCua(t, h.getFullYear(), h.getMonth() + 1);
+  $('thm-xem').textContent = `Ví dụ kỳ tháng ${pad(h.getMonth() + 1)}: ${ddmm(k.dau)} - ${ddmm(k.cuoi)}, thanh toán ${ddmm(k.tt)}`;
+}
+function moThm(id) {
+  thSua = id || null;
+  const t = theTd.find(x => x.id === id);
+  $('thm-ten').textContent = t ? 'Sửa thẻ' : 'Khai báo thẻ';
+  $('thm-nguon').innerHTML = nguonDs.map(n => `<option>${esc(n)}</option>`).join('');
+  $('thm-nguon').value = t ? t.nguon : (nguonDs.find(n => !theTd.some(x => x.nguon === n)) || nguonDs[0] || '');
+  $('thm-so').value = t ? t.soThe : ''; $('thm-nh').value = t ? t.nganHang : '';
+  $('thm-chot').value = t ? t.chot : ''; $('thm-tt').value = t ? t.tt : '';
+  $('thm-xoa-hang').style.display = t ? '' : 'none'; $('thm-loi').textContent = '';
+  $('thm').classList.add('mo'); xemThm();
+}
+['thm-nguon', 'thm-chot', 'thm-tt'].forEach(id => { $(id).oninput = xemThm; });
+$('sk-them').onclick = () => moThm(null);
+$('thm-huy').onclick = () => $('thm').classList.remove('mo');
+$('thm-luu').onclick = () => {
+  const { t, loi } = docThm();
+  if (loi) { $('thm-loi').textContent = loi; return; }
+  const i = theTd.findIndex(x => x.id === t.id);
+  if (i >= 0) theTd[i] = t; else theTd.push(t);
+  theSk = t.id; luuThe(); $('thm').classList.remove('mo'); renderSk();
+};
+$('thm-xoa').onclick = () => {
+  if (!confirm('Xóa thẻ này? Các khoản chi vẫn giữ nguyên.')) return;
+  theTd = theTd.filter(x => x.id !== thSua);
+  luuThe(); $('thm').classList.remove('mo'); renderSk();
+};
+
+// ----- Vàng vật chất: ngày mua, số lượng (chỉ), giá mua mỗi chỉ -----
+let vang = docLS('vang', []);                               // { id, ngay (yyyy-mm-dd), chi, gia (đồng/chỉ) }
+const luuVang = () => { ghiLS('vang', vang); window.dongBo?.hen(); };
+const chiStr = n => String(Math.round(n * 100) / 100).replace('.', ',');
+function renderVang() {
+  const ds = [...vang].sort((a, b) => a.ngay < b.ngay ? -1 : 1);
+  const tien = v => Math.round(v.chi * v.gia);
+  $('vg-ds').innerHTML = (ds.map(v => `<tr data-id="${v.id}"><td>${ngayDayDu(new Date(v.ngay + 'T12:00:00'))}</td><td>${chiStr(v.chi)}</td><td>${fmt(v.gia)}</td><td>${fmt(tien(v))}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
+    + (ds.length ? `<tr class="tong-tk"><td>Tổng</td><td>${chiStr(ds.reduce((s, v) => s + v.chi, 0))}</td><td>${fmt(Math.round(ds.reduce((s, v) => s + tien(v), 0) / ds.reduce((s, v) => s + v.chi, 0)))}</td><td>${fmt(ds.reduce((s, v) => s + tien(v), 0))}</td></tr>` : '');
+  $('vg-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moVgm(tr.dataset.id); });
+}
+let vgSua = null;
+function docVgm() {
+  const d = parseNgay($('vgm-ngay').value, new Date().toISOString());
+  const v = { id: vgSua || newId(), chi: Number($('vgm-sl').value.replace(',', '.')) || 0, gia: soDuong($('vgm-gia').value) };
+  if (!d) return { loi: 'Ngày mua chưa đúng (vd 26/10/2026).' };
+  v.ngay = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  if (v.chi <= 0 || !v.gia) return { loi: 'Cần nhập số lượng (chỉ) và giá mua.' };
+  return { v };
+}
+function xemVgm() { const { v } = docVgm(); $('vgm-xem').textContent = v ? `Thành tiền: ${fmt(Math.round(v.chi * v.gia))}` : ''; }
+function moVgm(id) {
+  vgSua = id || null;
+  const v = vang.find(x => x.id === id);
+  $('vgm-ten').textContent = v ? 'Sửa khoản vàng' : 'Thêm khoản vàng';
+  $('vgm-ngay').value = v ? ngayDayDu(new Date(v.ngay + 'T12:00:00')) : ngayDayDu(new Date());
+  $('vgm-sl').value = v ? chiStr(v.chi) : ''; $('vgm-gia').value = v ? fmt(v.gia) : '';
+  $('vgm-xoa-hang').style.display = v ? '' : 'none'; $('vgm-loi').textContent = '';
+  $('vgm').classList.add('mo'); xemVgm();
+}
+['vgm-ngay', 'vgm-sl', 'vgm-gia'].forEach(id => { $(id).oninput = xemVgm; });
+$('vg-them').onclick = () => moVgm(null);
+$('vgm-huy').onclick = () => $('vgm').classList.remove('mo');
+$('vgm-luu').onclick = () => {
+  const { v, loi } = docVgm();
+  if (loi) { $('vgm-loi').textContent = loi; return; }
+  const i = vang.findIndex(x => x.id === v.id);
+  if (i >= 0) vang[i] = v; else vang.push(v);
+  luuVang(); $('vgm').classList.remove('mo'); renderVang();
+};
+$('vgm-xoa').onclick = () => {
+  if (!confirm('Xóa khoản vàng này?')) return;
+  vang = vang.filter(x => x.id !== vgSua);
+  luuVang(); $('vgm').classList.remove('mo'); renderVang();
+};
 
 // ----- Tiền tiết kiệm: sổ gửi có kỳ hạn, lãi đơn (số tiền x lãi%/năm x số tháng / 12) -----
 let tietKiem = docLS('tiet_kiem', []);                      // { id, ngay (yyyy-mm-dd), soTien, ky (tháng), lai (%/năm), nganHang }
