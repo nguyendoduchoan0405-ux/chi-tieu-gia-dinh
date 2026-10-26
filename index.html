@@ -27,9 +27,9 @@
   td.c { text-align: center; white-space: nowrap; }
   td.co-anh { color: #1a73e8; font-weight: 600; text-decoration: underline; }
   /* Mọi ô dữ liệu dùng cùng một cỡ chữ, kiểu chữ, màu chữ */
-  tbody td, tfoot td { font: 14px/1.25 system-ui, sans-serif; color: #222; }
+  tbody td { font: 14px/1.25 system-ui, sans-serif; color: #222; }
   .ng-hien.trong { color: #aaa; }
-  tr.tong td, tfoot td { white-space: nowrap; }
+  tr.tong td { white-space: nowrap; }
   #list tr:not(.sep):not(.tong) td:nth-child(5) { padding-left: 8px; }
   td.money, th.money { text-align: right; white-space: nowrap; }
   td[contenteditable] { outline: none; }
@@ -79,12 +79,11 @@
   #xem .loi { color: #d93025; font-size: 13px; margin-top: 6px; }
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
-  tr.tong td, tfoot td { height: 30px; padding-top: 2px; padding-bottom: 2px; font-size: 13px; }
+  tr.tong td { height: 30px; padding-top: 2px; padding-bottom: 2px; font-size: 13px; }
   td.thu { color: #188038; }
   th.th-nguon { font-size: 12px; }
   th small { font-size: 9px; margin-left: 1px; color: #555; }
   td.chi, td.am { color: #d93025; }
-  tfoot td { font-weight: bold; }
   #export { position: absolute; right: 6px; top: 6px; height: 28px; padding: 0 10px; font-size: 13px; border: 1px solid #1a73e8; border-radius: 8px; background: #fff; color: #1a73e8; }
   #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #dongbo.loi { color: #d93025; border-color: #f3c3bf; }
@@ -137,7 +136,6 @@
     </tr>
   </thead>
   <tbody id="list"></tbody>
-  <tfoot><tr><td colspan="5">Còn lại (thu − chi)</td><td class="money" id="total"></td></tr></tfoot>
 </table>
 
 <div id="bottom">
@@ -404,9 +402,6 @@ function render() {
     });
   });
   // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
-  document.querySelector('tfoot').style.display = nhom.length > 1 ? '' : 'none';
-  const net = hien().reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
-  $('total').textContent = co(net, net >= 0 ? '+' : '-'); $('total').className = 'money ' + (net >= 0 ? 'thu' : 'am');
   capNhatChon();
   capNhatThang();
 }
@@ -725,10 +720,6 @@ async function taoExcel(nhom) {
       const t = ws.addRow(['', '', '', ten, v]); t.getCell(5).numFmt = fm; dam(t);
       t.getCell(5).font = { bold: true, color: { argb: v < 0 ? 'FFD93025' : 'FF188038' } };
     }
-  }
-  if (nhom.length > 1) {
-    ws.addRow([]);
-    const t = ws.addRow(['', '', '', 'Còn lại (thu − chi)', nhom.reduce((s, g) => s + g.thu - g.chi, 0)]); t.getCell(5).numFmt = SO_DAU; dam(t);
   }
   return new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
