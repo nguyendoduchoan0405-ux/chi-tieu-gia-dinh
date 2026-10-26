@@ -8,7 +8,7 @@
   body { font-family: system-ui, sans-serif; margin: 0; padding: 10px 16px 250px; background: #f6f7f9; color: #222; }
   #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
-  #bottom { position: fixed; left: 0; right: 0; bottom: calc(40px + env(safe-area-inset-bottom)); padding: 10px 16px 12px;
+  #bottom { position: fixed; left: 0; right: 0; bottom: calc(40px + env(safe-area-inset-bottom)); padding: 8px 16px 10px;
             background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
   #actions { display: flex; gap: 10px; }
   #mic, #scan { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0; font-size: 16px; border: 0; border-radius: 14px; color: #fff; }
@@ -20,7 +20,7 @@
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
   .row select { flex: none; width: 92px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; padding: 0 4px; }
   .row input { flex: 1; min-width: 0; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #1a73e8; color: #fff; }
+  .row button { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #1a73e8; color: #fff; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 14px; }
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
   thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; text-align: center; }
@@ -85,7 +85,7 @@
   th small { font-size: 9px; margin-left: 1px; color: #555; }
   td.chi, td.am { color: #d93025; }
   tfoot td { font-weight: bold; }
-  #export { width: 100%; margin: 12px 0; }
+  #export { position: absolute; right: 6px; top: 6px; height: 28px; padding: 0 10px; font-size: 13px; border: 1px solid #1a73e8; border-radius: 8px; background: #fff; color: #1a73e8; }
   #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #dongbo.loi { color: #d93025; border-color: #f3c3bf; }
   #dn { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 20; align-items: center; justify-content: center; padding: 16px; }
@@ -130,7 +130,7 @@
 <table style="margin-top:10px">
   <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
   <thead>
-    <tr class="r-month"><th colspan="6" id="thang"></th></tr>
+    <tr class="r-month"><th colspan="6"><span id="thang"></span><button id="export">Xuất Excel</button></th></tr>
     <tr class="r-cols">
       <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
       <th>No</th><th>Ngày</th><th class="th-nguon">Nguồn<small>▾</small><select id="loc-nguon" class="ng-chon" aria-label="Xem theo nguồn"></select></th><th>Nội dung</th><th class="money">Số tiền</th>
@@ -139,7 +139,6 @@
   <tbody id="list"></tbody>
   <tfoot><tr><td colspan="5">Còn lại (thu − chi)</td><td class="money" id="total"></td></tr></tfoot>
 </table>
-<button id="export">Xuất Excel</button>
 
 <div id="bottom">
   <div id="live"></div>
