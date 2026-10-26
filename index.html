@@ -84,7 +84,9 @@
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
   td.thu { color: #188038; }
-  td.am { color: #d93025; }
+  td.chi, td.am { color: #d93025; }
+  #tq-thu b { color: #188038; }
+  #tq-chi b { color: #d93025; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
   #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -352,7 +354,7 @@ function render() {
         <td class="c" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
         <td class="nguon c"><span class="ng-hien"></span><select class="ng-chon"></select></td>
         <td contenteditable>${esc(it.noiDung)}</td>
-        <td class="money ${laThu(it) ? 'thu' : ''}" contenteditable inputmode="numeric">${co(it.soTien, laThu(it) ? '+' : '-')}</td>`;
+        <td class="money ${laThu(it) ? 'thu' : 'chi'}" contenteditable inputmode="numeric">${co(it.soTien, laThu(it) ? '+' : '-')}</td>`;
       const [ck, , dt, ng, nd, st] = tr.children;
       const hien = ng.querySelector('.ng-hien');
       // chỉ hiện 3 ký tự đầu cho gọn
@@ -383,7 +385,7 @@ function render() {
       st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
       list.appendChild(tr);
     });
-    [[`Tổng thu tháng ${g.key}`, fmt(g.thu), 'thu'], [`Tổng chi tháng ${g.key}`, fmt(g.chi), ''],
+    [[`Tổng thu tháng ${g.key}`, fmt(g.thu), 'thu'], [`Tổng chi tháng ${g.key}`, fmt(g.chi), 'chi'],
      [`Còn lại tháng ${g.key}`, co(g.thu - g.chi, g.thu >= g.chi ? '+' : '-'), g.thu >= g.chi ? 'thu' : 'am']].forEach(([ten, so, cl]) => {
       const tong = document.createElement('tr');              // tổng riêng của tháng
       tong.className = 'tong'; tong.dataset.thang = g.key;
@@ -695,7 +697,7 @@ async function taoExcel(nhom) {
     for (const [i, it] of g.ds.entries()) {
       const d = new Date(it.thoiGian);
       const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, laThu(it) ? it.soTien : -it.soTien]);
-      r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = SO_DAU; r.getCell(5).font = { color: { argb: laThu(it) ? 'FF188038' : 'FF000000' } };
+      r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = SO_DAU; r.getCell(5).font = { color: { argb: laThu(it) ? 'FF188038' : 'FFD93025' } };
       r.alignment = { vertical: 'middle' }; r.getCell(1).alignment = r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(4).alignment = { vertical: 'middle', wrapText: true };
       const a = it.anh ? await anhChoExcel(it.id) : null;
@@ -708,6 +710,7 @@ async function taoExcel(nhom) {
     }
     for (const [ten, v, fm] of [[`Tổng thu tháng ${g.key}`, g.thu, '#,##0'], [`Tổng chi tháng ${g.key}`, g.chi, '#,##0'], [`Còn lại tháng ${g.key}`, g.thu - g.chi, SO_DAU]]) {
       const t = ws.addRow(['', '', '', ten, v]); t.getCell(5).numFmt = fm; dam(t);
+      t.getCell(5).font = { bold: true, color: { argb: ten.startsWith('Tổng chi') || v < 0 ? 'FFD93025' : 'FF188038' } };
     }
   }
   if (nhom.length > 1) {
