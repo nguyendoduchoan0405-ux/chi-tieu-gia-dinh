@@ -5,22 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 270px; background: #f6f7f9; color: #222; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 10px 16px 250px; background: #f6f7f9; color: #222; }
   #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
   #bottom { position: fixed; left: 0; right: 0; bottom: calc(40px + env(safe-area-inset-bottom)); padding: 10px 16px 12px;
             background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
   #actions { display: flex; gap: 10px; }
-  #mic, #scan { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; padding: 0; font-size: 17px; border: 0; border-radius: 14px; color: #fff; }
+  #mic, #scan { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0; font-size: 16px; border: 0; border-radius: 14px; color: #fff; }
   #mic { background: #1a73e8; }
   #mic.on { background: #d93025; }
-  #scan { background: #188038; }
+  #scan { background: #1a73e8; }
   #mic svg, #scan svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   #delsel { display: none; width: 100%; height: 44px; margin-bottom: 8px; font-size: 16px; border: 0; border-radius: 12px; background: #d93025; color: #fff; }
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
   .row select { flex: none; width: 92px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; padding: 0 4px; }
   .row input { flex: 1; min-width: 0; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; }
+  .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #1a73e8; color: #fff; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 14px; }
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
   thead th { white-space: nowrap; padding: 0 2px; font-size: 13px; text-align: center; }
@@ -46,9 +46,8 @@
   input[type=checkbox]:indeterminate { border-color: #1a73e8; background: linear-gradient(#1a73e8, #1a73e8) center / 5px 2px no-repeat #fff; }
   /* Phần đầu bảng cố định khi cuộn: tiêu đề, tháng, tên cột (mỗi hàng cao 40px) */
   thead th { position: sticky; background: #fff; z-index: 2; }
-  tr.r-title th { top: 0;    font-size: 20px; text-align: center; background: #f6f7f9; border-bottom: 0; }
-  tr.r-month th { top: 40px; background: #e8f0fe; color: #174ea6; text-align: center; }
-  tr.r-cols  th { top: 80px; }
+  tr.r-month th { top: 0; background: #e8f0fe; color: #174ea6; text-align: center; }
+  tr.r-cols  th { top: 40px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
   #xem, #ql, #xk { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
@@ -57,7 +56,7 @@
   #xem label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
   #xem input, #ql input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
   #xem .nut, #ql .nut, #xk .nut { display: flex; gap: 8px; margin-top: 16px; }
-  #xem .nut button, #ql .nut button, #xk .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #188038; }
+  #xem .nut button, #ql .nut button, #xk .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
   #xem .nut button.huy, #xk .nut button.huy { background: #888; }
   #xk .nut button:disabled { background: #bbb; }
   #xk select { box-sizing: border-box; width: 100%; height: 44px; margin: 8px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
@@ -80,6 +79,7 @@
   #xem .loi { color: #d93025; font-size: 13px; margin-top: 6px; }
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
+  tr.tong td, tfoot td { height: 30px; padding-top: 2px; padding-bottom: 2px; font-size: 13px; }
   td.thu { color: #188038; }
   th.th-nguon { font-size: 12px; }
   th small { font-size: 9px; margin-left: 1px; color: #555; }
@@ -92,7 +92,7 @@
   #dn.mo { display: flex; }
   #dn .hop { box-sizing: border-box; width: 100%; max-width: 360px; background: #fff; border-radius: 14px; padding: 16px; }
   #dn input { box-sizing: border-box; width: 100%; margin: 6px 0; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  #dn button { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; margin-top: 6px; }
+  #dn button { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #1a73e8; color: #fff; margin-top: 6px; }
   #dn button.phu { background: #eee; color: #222; }
   #dn-loi { color: #d93025; font-size: 13px; min-height: 18px; }
   /* Thanh tab dưới cùng */
@@ -130,7 +130,6 @@
 <table style="margin-top:10px">
   <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
   <thead>
-    <tr class="r-title"><th colspan="6">Chi tiêu gia đình</th></tr>
     <tr class="r-month"><th colspan="6" id="thang"></th></tr>
     <tr class="r-cols">
       <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
@@ -195,7 +194,7 @@
   <div class="hop">
     <b>Danh sách nguồn tiền</b> <span style="color:#666;font-size:13px">(áp dụng cho cả cột)</span>
     <div id="ql-ds"></div>
-    <div class="ql-dong"><input id="ql-moi" placeholder="Thêm nguồn mới, vd Techcombank"><button id="ql-them" style="background:#e6f4ea;color:#188038">+</button></div>
+    <div class="ql-dong"><input id="ql-moi" placeholder="Thêm nguồn mới, vd Techcombank"><button id="ql-them" style="background:#e8f0fe;color:#1a73e8">+</button></div>
     <div class="nut"><button id="ql-xong">Xong</button></div>
   </div>
 </div>
