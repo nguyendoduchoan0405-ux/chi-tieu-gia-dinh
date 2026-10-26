@@ -87,7 +87,6 @@
   th.th-nguon { font-size: 12px; }
   th small { font-size: 9px; margin-left: 1px; color: #555; }
   #loc-bar { display: none; margin-bottom: 8px; padding: 6px 10px; font-size: 14px; background: #e8f0fe; color: #174ea6; border-radius: 8px; }
-  #loc-bar button { margin-left: 8px; padding: 4px 10px; font-size: 14px; border: 1px solid #aac; border-radius: 8px; background: #fff; color: #174ea6; }
   td.chi, td.am { color: #d93025; }
   #tq-thu b { color: #188038; }
   #tq-chi b { color: #d93025; }
@@ -136,7 +135,7 @@
   <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
   <button id="add">Thêm</button>
 </div>
-<div id="loc-bar">Đang xem nguồn: <b></b> <button id="loc-bo">Bỏ lọc</button></div>
+<div id="loc-bar">Đang xem nguồn: <b></b></div>
 <table>
   <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
   <thead>
@@ -425,7 +424,6 @@ function render() {
 }
 
 $('loc-nguon').onchange = e => { locNguon = e.target.value; chon.clear(); lamMoiNguon(); capNhatChon(); };
-$('loc-bo').onclick = () => { locNguon = ''; chon.clear(); lamMoiNguon(); capNhatChon(); };
 $('chkall').parentElement.onclick = e => { if (e.target.tagName !== 'INPUT') $('chkall').click(); };
 $('chkall').onchange = e => {
   chon.clear();
