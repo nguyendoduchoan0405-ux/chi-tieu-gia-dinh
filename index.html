@@ -116,6 +116,8 @@
   #tk-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
   #sk-bang th, #sk-bang td, #vg-bang th, #vg-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
   #sk-bang td:last-child, #sk-bang th:last-child { text-align: right; }
+  #nhac { margin: 10px 0 0; padding: 10px 12px; background: #fef7e0; border: 1px solid #f9ab00; border-radius: 10px; font-size: 14px; line-height: 1.5; position: relative; }
+  #nhac .x { position: absolute; right: 4px; top: 2px; width: 32px; height: 32px; border: 0; background: none; font-size: 20px; color: #555; }
   .ct-dong { display: flex; gap: 8px; padding: 3px 0; font-size: 13px; }
   .ct-dong { text-align: left; }
   .ct-dong span:first-child { width: 44px; flex: none; }
@@ -145,6 +147,7 @@
 </head>
 <body>
 <div id="dongbo">Chưa đồng bộ — chạm để đăng nhập</div>
+<div id="nhac" style="display:none"></div>
 <div id="p-tq" style="display:none">
   <div id="tq-menu" class="o-tq-ds">
     <button class="o-tq" id="o-sk">Sao kê tín dụng</button>
@@ -910,6 +913,7 @@ document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => m
 
 // Tiền mặt = tổng thu − tổng chi của toàn bộ dữ liệu
 function renderMenuTq() {
+  nhacSaoKe();
   const con = items.reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
   const mat = $('o-mat'); mat.className = 'o-tq ' + (con >= 0 ? 'thu' : 'chi');
   mat.querySelector('b').textContent = co(con, con >= 0 ? '+' : '-');
@@ -949,6 +953,23 @@ function renderSk() {
   $('sk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => { moThe.has(tr.dataset.id) ? moThe.delete(tr.dataset.id) : moThe.add(tr.dataset.id); renderSk(); }; });
   $('sk-ds').querySelectorAll('a[data-sua]').forEach(a => { a.onclick = e => { e.preventDefault(); moThm(a.dataset.sua); }; });
 }
+// Nhắc thanh toán: hạn thanh toán của thẻ còn 0-2 ngày và kỳ đó có khoản cần trả; ✕ để ẩn trong ngày
+const NGAY_NHAC = 2;
+function nhacSaoKe() {
+  const h0 = new Date(new Date().toDateString()), hom = `${h0.getFullYear()}-${pad(h0.getMonth() + 1)}-${pad(h0.getDate())}`, ds = [];
+  for (const the of theTd) for (let d = -1; d <= 1; d++) {
+    const x = new Date(h0.getFullYear(), h0.getMonth() + d, 1), k = kyCua(the, x.getFullYear(), x.getMonth() + 1);
+    const con = Math.round((k.tt - h0) / 86400000);
+    const tien = khoanCuaKy(the, k).reduce((s, it) => s + it.soTien, 0);
+    if (con >= 0 && con <= NGAY_NHAC && tien > 0) ds.push(`${esc(tenThe(the))}: <b>${fmt(tien)}</b> hạn ${ngayDayDu(k.tt)} (${con ? 'còn ' + con + ' ngày' : 'hôm nay'})`);
+  }
+  let an = ''; try { an = localStorage.getItem('nhac_an'); } catch {}
+  const o = $('nhac');
+  o.style.display = ds.length && an !== hom ? '' : 'none';
+  o.innerHTML = `<b>Sắp đến hạn thanh toán sao kê</b><br>${ds.join('<br>')}<button class="x" aria-label="Ẩn">✕</button>`;
+  o.querySelector('.x').onclick = () => { try { localStorage.setItem('nhac_an', hom); } catch {} o.style.display = 'none'; };
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) nhacSaoKe(); });
 const doiKySk = d => { const x = new Date(kySk.y, kySk.m - 1 + d, 1); kySk = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderSk(); };
 $('sk-truoc').onclick = () => doiKySk(-1);
 $('sk-sau').onclick = () => doiKySk(1);
