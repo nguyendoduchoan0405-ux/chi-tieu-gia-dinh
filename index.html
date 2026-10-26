@@ -50,14 +50,14 @@
   tr.r-cols  th { top: 40px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
-  #xem, #ql, #xk { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
-  #xem.mo, #ql.mo, #xk.mo { display: flex; }
-  #xem .hop, #ql .hop, #xk .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
-  #xem label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
-  #xem input, #ql input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  #xem .nut, #ql .nut, #xk .nut { display: flex; gap: 8px; margin-top: 16px; }
-  #xem .nut button, #ql .nut button, #xk .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
-  #xem .nut button.huy, #xk .nut button.huy { background: #888; }
+  #xem, #ql, #xk, #tkm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
+  #xem.mo, #ql.mo, #xk.mo, #tkm.mo { display: flex; }
+  #xem .hop, #ql .hop, #xk .hop, #tkm .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem label, #tkm label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
+  #xem input, #ql input, #tkm input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #xem .nut, #ql .nut, #xk .nut, #tkm .nut { display: flex; gap: 8px; margin-top: 16px; }
+  #xem .nut button, #ql .nut button, #xk .nut button, #tkm .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
+  #xem .nut button.huy, #xk .nut button.huy, #tkm .nut button.huy { background: #888; }
   #xk .nut button:disabled { background: #bbb; }
   #xk select { box-sizing: border-box; width: 100%; height: 44px; margin: 8px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
   #xk-tt { min-height: 20px; font-size: 13px; color: #555; }
@@ -99,10 +99,26 @@
   #tabs button { flex: 1; border: 0; background: none; font-size: 14px; color: #777; padding: 0; }
   #tabs button.on { color: #1a73e8; font-weight: 700; box-shadow: inset 0 2px 0 #1a73e8; }
   /* Tab Tổng quan */
-  #tq-nut { display: flex; align-items: center; width: 100%; margin-top: 10px; padding: 14px 16px; font-size: 17px; font-weight: 600; text-align: left; border: 1px solid #e3e3e3; border-radius: 12px; background: #fff; color: #222; }
-  #tq-nut span { flex: 1; }
-  #tq-nut i { font-style: normal; color: #888; font-size: 22px; }
-  #tq-lai { position: absolute; left: 4px; top: 4px; width: 40px; height: 32px; border: 0; background: none; font-size: 28px; line-height: 1; color: #1a73e8; }
+  .o-tq-ds { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+  .o-tq { display: flex; flex-direction: column; justify-content: center; min-height: 76px; padding: 12px; border: 1px solid #e3e3e3; border-radius: 12px; background: #fff; color: #222; font-size: 16px; font-weight: 600; text-align: left; }
+  .o-tq small { font-weight: 400; font-size: 12px; color: #777; margin-bottom: 4px; }
+  .o-tq b { font-size: 18px; }
+  .o-tq.chi b { color: #d93025; } .o-tq.thu b { color: #188038; }
+  .man-dau { display: flex; align-items: center; gap: 4px; margin-top: 10px; font-size: 20px; font-weight: bold; }
+  .man-dau button.lai { width: 40px; height: 36px; border: 0; background: none; font-size: 28px; line-height: 1; color: #1a73e8; }
+  .man-dau span { flex: 1; }
+  .man-dau button.them { padding: 8px 12px; font-size: 14px; font-weight: normal; border: 1px solid #1a73e8; border-radius: 8px; background: #fff; color: #1a73e8; }
+  .cuon-ngang { overflow-x: auto; margin-top: 10px; -webkit-overflow-scrolling: touch; }
+  #tk-bang { min-width: 640px; table-layout: auto; }
+  #tk-bang th, #tk-bang td { height: 40px; padding: 4px 8px; font-size: 13px; white-space: nowrap; text-align: right; }
+  #tk-bang th:first-child, #tk-bang td:first-child { text-align: left; }
+  #tk-bang tr.het td { color: #999; }
+  #tk-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
+  #sk-bang th, #sk-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
+  #sk-bang td:last-child, #sk-bang th:last-child { text-align: right; }
+  #tq-lai { position: absolute; left: 4px; top: 4px; width: 40px; height: 32px; }
+  .thang-nav { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; font-size: 16px; }
+  .thang-nav button { width: 44px; height: 36px; font-size: 22px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #174ea6; }
   #tq-bang { margin-top: 10px; table-layout: fixed; }
   #tq-bang th, #tq-bang td { height: 40px; padding: 4px 4px; white-space: nowrap; }
   #tq-bang td { font-size: 13px; }
@@ -118,12 +134,29 @@
 <body>
 <div id="dongbo">Chưa đồng bộ — chạm để đăng nhập</div>
 <div id="p-tq" style="display:none">
-  <button id="tq-nut"><span>Thu - chi năm</span><i>›</i></button>
+  <div id="tq-menu" class="o-tq-ds">
+    <button class="o-tq" id="o-sk">Sao kê tín dụng</button>
+    <button class="o-tq" id="o-nam">Thu - chi năm</button>
+    <div class="o-tq" id="o-mat"><small>Tiền mặt (thu − chi)</small><b></b></div>
+    <button class="o-tq" id="o-tk"><small>Tiền tiết kiệm</small><b></b></button>
+  </div>
+  <div id="tq-sk" style="display:none">
+    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Sao kê tín dụng</span></div>
+    <div class="thang-nav"><button id="sk-truoc" aria-label="Tháng trước">‹</button><b id="sk-ten"></b><button id="sk-sau" aria-label="Tháng sau">›</button></div>
+    <table id="sk-bang"><thead><tr><th>Thẻ / nguồn</th><th>Số khoản</th><th>Tổng chi</th></tr></thead><tbody id="sk-ds"></tbody></table>
+  </div>
+  <div id="tq-tk" style="display:none">
+    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Tiền tiết kiệm</span><button class="them" id="tk-them">+ Thêm</button></div>
+    <div class="cuon-ngang"><table id="tk-bang">
+      <thead><tr><th>Ngày gửi</th><th>Ngày đáo hạn</th><th>Số tiền tiết kiệm</th><th>Kỳ hạn</th><th>Lãi suất/năm</th><th>Ngân hàng</th><th>Tổng tiền đáo hạn</th></tr></thead>
+      <tbody id="tk-ds"></tbody>
+    </table></div>
+  </div>
   <div id="tq-noi" style="display:none">
   <table id="tq-bang">
     <colgroup><col style="width:76px"><col><col><col></colgroup>
     <thead>
-      <tr class="tq-tieude"><th colspan="4"><button id="tq-lai" aria-label="Quay lại Tổng quan">‹</button>Tiny Family</th></tr>
+      <tr class="tq-tieude"><th colspan="4"><button class="lai" id="tq-lai" aria-label="Quay lại Tổng quan">‹</button>Tiny Family</th></tr>
       <tr class="tq-namr"><th colspan="4" id="tq-nam"></th></tr>
       <tr class="tq-cot"><th>Tháng</th><th class="money">Tổng thu</th><th class="money">Tổng chi</th><th class="money">Số dư</th></tr>
     </thead>
@@ -191,6 +224,21 @@
     <div id="xk-tt"></div>
     <div class="nut"><button id="xk-tai">Tải về máy</button><button id="xk-chia">Gửi / Lưu vào Drive</button></div>
     <div class="nut"><button class="huy" id="xk-dong">Đóng</button></div>
+  </div>
+</div>
+
+<div id="tkm">
+  <div class="hop">
+    <b id="tkm-ten">Khoản tiết kiệm</b>
+    <label>Ngày gửi (dd/mm/yyyy)</label><input id="tkm-ngay" inputmode="numeric">
+    <label>Số tiền gửi</label><input id="tkm-tien" inputmode="numeric">
+    <label>Kỳ hạn (tháng)</label><input id="tkm-ky" inputmode="numeric">
+    <label>Lãi suất (%/năm)</label><input id="tkm-lai" inputmode="decimal" placeholder="vd 5,5">
+    <label>Ngân hàng</label><input id="tkm-nh">
+    <div id="tkm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
+    <div id="tkm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
+    <div class="nut"><button id="tkm-luu">Lưu</button><button class="huy" id="tkm-huy">Hủy</button></div>
+    <div class="nut" id="tkm-xoa-hang"><button id="tkm-xoa" style="background:#d93025">Xóa khoản này</button></div>
   </div>
 </div>
 
@@ -793,24 +841,116 @@ function capNhatNam() {
 }
 window.addEventListener('scroll', capNhatNam, { passive: true });
 
-// Tổng quan có 2 màn: danh sách ô bấm, và màn "Thu - chi năm" (nút ‹ hoặc bấm lại tab Tổng quan để quay về)
-function moThuChiNam(mo) {
-  $('tq-nut').style.display = mo ? 'none' : ''; $('tq-noi').style.display = mo ? '' : 'none';
+// ----- Tổng quan: các ô bấm (Sao kê tín dụng, Thu - chi năm, Tiền mặt, Tiền tiết kiệm) -----
+// Mỗi ô mở một màn riêng; nút ‹ hoặc bấm lại tab Tổng quan để quay về
+const MAN_TQ = { menu: 'tq-menu', sk: 'tq-sk', nam: 'tq-noi', tk: 'tq-tk' };
+function moMan(ten) {
+  for (const [k, id] of Object.entries(MAN_TQ)) $(id).style.display = k === ten ? '' : 'none';
   window.scrollTo(0, 0);
-  if (mo) { renderTq(); capNhatNam(); }
+  if (ten === 'menu') renderMenuTq();
+  if (ten === 'nam') { renderTq(); capNhatNam(); }
+  if (ten === 'sk') renderSk();
+  if (ten === 'tk') renderTk();
 }
-$('tq-nut').onclick = () => moThuChiNam(true);
-$('tq-lai').onclick = () => moThuChiNam(false);
+$('o-sk').onclick = () => moMan('sk');
+$('o-nam').onclick = () => moMan('nam');
+$('o-tk').onclick = () => moMan('tk');
+document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => moMan('menu'); });
+
+// Tiền mặt = tổng thu − tổng chi của toàn bộ dữ liệu
+function renderMenuTq() {
+  const con = items.reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
+  const mat = $('o-mat'); mat.className = 'o-tq ' + (con >= 0 ? 'thu' : 'chi');
+  mat.querySelector('b').textContent = co(con, con >= 0 ? '+' : '-');
+  $('o-tk').querySelector('b').textContent = fmt(tkDangGui());
+}
+
+// ----- Sao kê tín dụng: chi theo từng thẻ/nguồn (không tính Vợ/Chồng) trong một tháng -----
+let thangSk = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 };
+function renderSk() {
+  $('sk-ten').textContent = `Tháng ${pad(thangSk.m)}/${thangSk.y}`;
+  const key = `${pad(thangSk.m)}/${thangSk.y}`, the = new Map();
+  for (const it of items) {
+    const n = it.nguon || '';
+    if (laThu(it) || thangCua(it.thoiGian) !== key || !n || theoNguon(n) !== 'khac') continue;
+    const g = the.get(n) || { sl: 0, tong: 0 }; g.sl++; g.tong += it.soTien; the.set(n, g);
+  }
+  const ds = [...the].sort((a, b) => b[1].tong - a[1].tong);
+  $('sk-ds').innerHTML = ds.map(([n, g]) => `<tr><td>${esc(n)}</td><td>${g.sl}</td><td class="money chi">${co(g.tong, '-')}</td></tr>`).join('')
+    + (ds.length ? `<tr class="tong"><td colspan="2">Tổng</td><td class="money chi">${co(ds.reduce((s, [, g]) => s + g.tong, 0), '-')}</td></tr>` : '<tr><td colspan="3" style="text-align:center;color:#888">Chưa có khoản chi từ thẻ trong tháng này</td></tr>');
+}
+const theoNguon = n => { n = (n || '').normalize('NFC').trim().toLowerCase(); return n === 'vợ' ? 'vo' : n === 'chồng' ? 'chong' : 'khac'; };
+const doiThangSk = d => { const x = new Date(thangSk.y, thangSk.m - 1 + d, 1); thangSk = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderSk(); };
+$('sk-truoc').onclick = () => doiThangSk(-1);
+$('sk-sau').onclick = () => doiThangSk(1);
+
+// ----- Tiền tiết kiệm: sổ gửi có kỳ hạn, lãi đơn (số tiền x lãi%/năm x số tháng / 12) -----
+let tietKiem = docLS('tiet_kiem', []);                      // { id, ngay (yyyy-mm-dd), soTien, ky (tháng), lai (%/năm), nganHang }
+const luuTk = () => { ghiLS('tiet_kiem', tietKiem); window.dongBo?.hen(); };
+const denHan = k => { const d = new Date(k.ngay + 'T12:00:00'); d.setMonth(d.getMonth() + k.ky); return d; };
+const tienDenHan = k => Math.round(k.soTien * (1 + k.lai / 100 * k.ky / 12));
+const ngayDayDu = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+const dangGui = k => denHan(k) >= new Date(new Date().toDateString());
+const tkDangGui = () => tietKiem.filter(dangGui).reduce((s, k) => s + k.soTien, 0);
+
+function renderTk() {
+  const ds = [...tietKiem].sort((a, b) => a.ngay < b.ngay ? -1 : 1);
+  const hang = ds.map(k => `<tr data-id="${k.id}" class="${dangGui(k) ? '' : 'het'}"><td>${ngayDayDu(new Date(k.ngay + 'T12:00:00'))}</td><td>${ngayDayDu(denHan(k))}</td><td>${fmt(k.soTien)}</td><td>${k.ky} tháng</td><td>${String(k.lai).replace('.', ',')}%</td><td>${esc(k.nganHang)}</td><td>${fmt(tienDenHan(k))}</td></tr>`);
+  const gui = ds.filter(dangGui);
+  $('tk-ds').innerHTML = (hang.join('') || '<tr><td colspan="7" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
+    + (gui.length ? `<tr class="tong-tk"><td colspan="2">Đang gửi</td><td>${fmt(gui.reduce((s, k) => s + k.soTien, 0))}</td><td colspan="3"></td><td>${fmt(gui.reduce((s, k) => s + tienDenHan(k), 0))}</td></tr>` : '');
+  $('tk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moTkm(tr.dataset.id); });
+}
+
+let tkSua = null;                                           // id khoản đang sửa, null = thêm mới
+const soDuong = t => Number(String(t).replace(/\D/g, '')) || 0;
+function docTkm() {                                          // đọc form; trả về khoản hoặc lỗi
+  const d = parseNgay($('tkm-ngay').value, new Date().toISOString());
+  const k = { id: tkSua || newId(), soTien: soDuong($('tkm-tien').value), ky: soDuong($('tkm-ky').value), lai: Number($('tkm-lai').value.replace(',', '.')) || 0, nganHang: $('tkm-nh').value.trim() };
+  if (!d) return { loi: 'Ngày gửi chưa đúng (vd 26/10/2026).' };
+  k.ngay = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  if (!k.soTien || !k.ky) return { loi: 'Cần nhập số tiền và kỳ hạn (tháng).' };
+  return { k };
+}
+function xemTkm() {
+  const { k } = docTkm();
+  $('tkm-xem').textContent = k ? `Đáo hạn ${ngayDayDu(denHan(k))}, nhận ${fmt(tienDenHan(k))}` : '';
+}
+function moTkm(id) {
+  tkSua = id || null;
+  const k = tietKiem.find(x => x.id === id), h = new Date();
+  $('tkm-ten').textContent = k ? 'Sửa khoản tiết kiệm' : 'Thêm khoản tiết kiệm';
+  $('tkm-ngay').value = k ? ngayDayDu(new Date(k.ngay + 'T12:00:00')) : ngayDayDu(h);
+  $('tkm-tien').value = k ? fmt(k.soTien) : ''; $('tkm-ky').value = k ? k.ky : '';
+  $('tkm-lai').value = k ? String(k.lai).replace('.', ',') : ''; $('tkm-nh').value = k ? k.nganHang : '';
+  $('tkm-xoa-hang').style.display = k ? '' : 'none'; $('tkm-loi').textContent = '';
+  $('tkm').classList.add('mo'); xemTkm();
+}
+['tkm-ngay', 'tkm-tien', 'tkm-ky', 'tkm-lai'].forEach(id => { $(id).oninput = xemTkm; });
+$('tk-them').onclick = () => moTkm(null);
+$('tkm-huy').onclick = () => $('tkm').classList.remove('mo');
+$('tkm-luu').onclick = () => {
+  const { k, loi } = docTkm();
+  if (loi) { $('tkm-loi').textContent = loi; return; }
+  const i = tietKiem.findIndex(x => x.id === k.id);
+  if (i >= 0) tietKiem[i] = k; else tietKiem.push(k);
+  luuTk(); $('tkm').classList.remove('mo'); renderTk();
+};
+$('tkm-xoa').onclick = () => {
+  if (!confirm('Xóa khoản tiết kiệm này?')) return;
+  tietKiem = tietKiem.filter(x => x.id !== tkSua);
+  luuTk(); $('tkm').classList.remove('mo'); renderTk();
+};
 
 function chonTab(tq) {
   $('p-tq').style.display = tq ? '' : 'none'; $('p-ct').style.display = tq ? 'none' : '';
   $('tab-tq').classList.toggle('on', tq); $('tab-ct').classList.toggle('on', !tq);
-  if (tq) moThuChiNam(false); else capNhatThang();             // vào hoặc bấm lại tab Tổng quan thì về màn danh sách
+  if (tq) moMan('menu'); else capNhatThang();                   // vào hoặc bấm lại tab Tổng quan thì về màn các ô
 }
 $('tab-tq').onclick = () => chonTab(true);
 $('tab-ct').onclick = () => chonTab(false);
 
-lamMoiNguon();
+lamMoiNguon(); renderMenuTq();
 </script>
 <script src="sync.js"></script>
 </body>

@@ -97,20 +97,23 @@ window.dongBo = (() => {
         else da[h.id] = chup(h);
       }
     }
-    // 3. Danh sách nguồn tiền: máy chưa sửa gì thì theo mạng, máy vừa sửa thì đẩy lên
-    const cs = await api('/cai_dat?khoa=eq.nguon_ds&select=gia_tri'), tren = cs[0]?.gia_tri, local = JSON.stringify(nguonDs);
-    if (tren && (da.__nguon === undefined || da.__nguon === local)) {
-      if (JSON.stringify(tren) !== local) { nguonDs = tren; thayDoi = true; }
-      da.__nguon = JSON.stringify(nguonDs);
-    } else if (!tren || da.__nguon !== local) {
-      await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ khoa: 'nguon_ds', gia_tri: nguonDs }]) });
-      da.__nguon = local;
+    // 3. Cài đặt dùng chung (danh sách nguồn, sổ tiết kiệm): máy chưa sửa gì thì theo mạng, máy vừa sửa thì đẩy lên
+    const caiDat = [['nguon_ds', '__nguon', () => nguonDs, v => { nguonDs = v; }], ['tiet_kiem', '__tk', () => tietKiem, v => { tietKiem = v; }]];
+    for (const [khoa, dau, lay, dat] of caiDat) {
+      const cs = await api(`/cai_dat?khoa=eq.${khoa}&select=gia_tri`), tren = cs[0]?.gia_tri, local = JSON.stringify(lay());
+      if (tren && (da[dau] === undefined || da[dau] === local)) {
+        if (JSON.stringify(tren) !== local) { dat(tren); thayDoi = true; }
+        da[dau] = JSON.stringify(lay());
+      } else if (!tren ? local !== '[]' || khoa === 'nguon_ds' : da[dau] !== local) {
+        await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ khoa, gia_tri: lay() }]) });
+        da[dau] = local;
+      }
     }
     ghi('sync_da', da); ghi('sync_moc', moc);
     if (thayDoi) {
       xepNgay(); try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {}
-      luuNguon(); lamMoiNguon();
-      if (!$('p-tq').contains(document.activeElement)) renderTq();
+      luuNguon(); lamMoiNguon(); try { localStorage.setItem('tiet_kiem', JSON.stringify(tietKiem)); } catch {}
+      if (!$('p-tq').contains(document.activeElement)) { renderTq(); renderMenuTq(); if ($('tq-tk').style.display !== 'none') renderTk(); }
     }
   }
 
