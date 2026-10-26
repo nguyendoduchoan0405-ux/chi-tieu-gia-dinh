@@ -89,7 +89,7 @@ window.dongBo = (() => {
     const len = [];
     for (const it of items) { const h = raHang(it); if (da[it.id] !== chup(h)) len.push(h); }
     const co = new Set(items.map(x => x.id));
-    for (const id of Object.keys(da)) if (id !== '__nguon' && !co.has(id)) len.push({ id, noi_dung: '', so_tien: 0, thoi_gian: new Date().toISOString(), nguon: '', cau_goc: '', xoa: true });
+    for (const id of Object.keys(da)) if (!id.startsWith('__') && !co.has(id)) len.push({ id, noi_dung: '', so_tien: 0, thoi_gian: new Date().toISOString(), nguon: '', cau_goc: '', xoa: true });
     if (len.length) {
       await api('/expenses?on_conflict=id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(len) });
       for (const h of len) {
@@ -97,19 +97,24 @@ window.dongBo = (() => {
         else da[h.id] = chup(h);
       }
     }
-    // 3. Danh sách nguồn tiền (thắng theo lần sửa gần nhất; máy mới chưa từng đồng bộ thì lấy bản trên mạng)
-    const cs = await api('/cai_dat?khoa=eq.nguon_ds&select=gia_tri,updated_at');
-    const tren = cs && cs[0], local = JSON.stringify(nguonDs);
-    if (tren && da.__nguon === undefined) { nguonDs = tren.gia_tri; da.__nguon = JSON.stringify(nguonDs); thayDoi = true; }
-    else if (tren && da.__nguon === local && JSON.stringify(tren.gia_tri) !== local) { nguonDs = tren.gia_tri; da.__nguon = JSON.stringify(nguonDs); thayDoi = true; }
-    else if (!tren || da.__nguon !== local) {
-      await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ khoa: 'nguon_ds', gia_tri: nguonDs }]) });
-      da.__nguon = local;
+    // 3. Cài đặt dùng chung (danh sách nguồn tiền, thu nhập từng tháng): máy chưa sửa gì thì theo mạng, máy vừa sửa thì đẩy lên
+    const tren = new Map((await api('/cai_dat?select=khoa,gia_tri')).map(r => [r.khoa, r.gia_tri]));
+    const khoa = new Set(['nguon_ds', ...[...tren.keys()].filter(k => k.startsWith('thu:')), ...Object.keys(thu).map(m => 'thu:' + m)]);
+    const len2 = [];
+    for (const k of khoa) {
+      const lay = k === 'nguon_ds' ? nguonDs : thu[k.slice(4)], nen = k === 'nguon_ds' ? '__nguon' : '__cd:' + k;
+      const cu = lay === undefined ? undefined : JSON.stringify(lay), t = tren.get(k), tt = t === undefined ? undefined : JSON.stringify(t);
+      if (tt !== undefined && (cu === undefined || da[nen] === undefined || da[nen] === cu)) {
+        if (tt !== cu) { if (k === 'nguon_ds') nguonDs = t; else thu[k.slice(4)] = t; thayDoi = true; }
+        da[nen] = tt;
+      } else if (cu !== undefined && (tt === undefined || da[nen] !== cu)) { len2.push({ khoa: k, gia_tri: lay }); da[nen] = cu; }
     }
+    if (len2.length) await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(len2) });
     ghi('sync_da', da); ghi('sync_moc', moc);
     if (thayDoi) {
       xepNgay(); try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {}
-      luuNguon(); lamMoiNguon();
+      luuNguon(); ghi('thu', thu); lamMoiNguon();
+      if (!$('p-tq').contains(document.activeElement)) renderTq();
     }
   }
 

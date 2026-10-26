@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 210px; background: #f6f7f9; color: #222; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 280px; background: #f6f7f9; color: #222; }
   #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
-  #bottom { position: fixed; left: 0; right: 0; bottom: 0; padding: 10px 16px calc(12px + env(safe-area-inset-bottom));
+  #bottom { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); padding: 10px 16px 12px;
             background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
   .ng-dong { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
   .ng-dong label { font-size: 14px; color: #555; white-space: nowrap; }
@@ -94,10 +94,36 @@
   #dn button { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; margin-top: 6px; }
   #dn button.phu { background: #eee; color: #222; }
   #dn-loi { color: #d93025; font-size: 13px; min-height: 18px; }
+  /* Thanh tab dưới cùng */
+  #tabs { position: fixed; left: 0; right: 0; bottom: 0; display: flex; height: calc(56px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: #fff; border-top: 1px solid #ddd; z-index: 6; }
+  #tabs button { flex: 1; border: 0; background: none; font-size: 15px; color: #777; }
+  #tabs button.on { color: #1a73e8; font-weight: 700; box-shadow: inset 0 3px 0 #1a73e8; }
+  /* Tab Tổng quan */
+  .tq-thang { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 10px; font-size: 17px; }
+  .tq-thang button { width: 44px; height: 40px; font-size: 22px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #174ea6; }
+  .the-tq { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
+  .the-tq .dau { display: flex; align-items: center; width: 100%; padding: 16px; border: 0; background: none; font-size: 17px; text-align: left; }
+  .the-tq .dau span { flex: 1; font-weight: 600; }
+  .the-tq .dau b { font-size: 20px; margin-right: 10px; }
+  .the-tq .dau i { font-style: normal; color: #888; transition: transform .15s; }
+  .the-tq.mo .dau i { transform: rotate(90deg); }
+  .the-tq .ct { display: none; padding: 0 16px 12px; }
+  .the-tq.mo .ct { display: block; }
+  .the-tq .dong { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid #eee; font-size: 15px; }
+  .the-tq .dong input { width: 140px; box-sizing: border-box; padding: 8px; font-size: 16px; text-align: right; border: 1px solid #ccc; border-radius: 8px; }
+  .the-tq .dong .so { font-weight: 600; }
+  .the-tq .ghi-chu { font-size: 12px; color: #888; margin-top: 4px; }
 </style>
 </head>
 <body>
 <div id="dongbo">Chưa đồng bộ — chạm để đăng nhập</div>
+<div id="p-tq" style="display:none">
+  <div class="tq-thang"><button id="tq-truoc" aria-label="Tháng trước">‹</button><b id="tq-ten"></b><button id="tq-sau" aria-label="Tháng sau">›</button></div>
+  <div class="the-tq" id="tq-thu"><button class="dau"><span>Tổng thu</span><b></b><i>▸</i></button><div class="ct"></div></div>
+  <div class="the-tq" id="tq-chi"><button class="dau"><span>Tổng chi</span><b></b><i>▸</i></button><div class="ct"></div></div>
+</div>
+
+<div id="p-ct">
 <div class="row" style="margin-top:10px">
   <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
   <button id="add">Thêm</button>
@@ -137,6 +163,8 @@
   </div>
 </div>
 
+</div>
+
 <div id="dn">
   <div class="hop">
     <b>Đồng bộ với vợ/chồng</b>
@@ -151,6 +179,7 @@
     <button id="dn-dong" class="phu">Đóng</button>
   </div>
 </div>
+<div id="tabs"><button id="tab-tq">Tổng quan</button><button id="tab-ct" class="on">Chi tiết</button></div>
 
 <div id="xk">
   <div class="hop">
@@ -704,6 +733,53 @@ $('xk-chia').onclick = async () => {
   try { await navigator.share({ files: [xkFile], title: xkFile.name }); }
   catch (e) { if (e.name !== 'AbortError') alert('Máy này không mở được bảng chia sẻ, dùng nút Tải về.'); }
 };
+
+// ----- Tab Tổng quan: thu / chi theo tháng (từ ngày 1 đến cuối tháng) -----
+let thu = docLS('thu', {});                                  // { '2026-10': { vo, chong, khac } }, nhập tay, đồng bộ qua Supabase
+let thangTq = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 };
+const THU_MUC = [['vo', 'Lương vợ'], ['chong', 'Lương chồng'], ['khac', 'Các khoản thu khác']];
+const khoaThu = () => `${thangTq.y}-${pad(thangTq.m)}`;
+const tongThu = () => THU_MUC.reduce((s, [k]) => s + (thu[khoaThu()]?.[k] || 0), 0);
+
+function renderTq() {
+  $('tq-ten').textContent = `Tháng ${pad(thangTq.m)}/${thangTq.y}`;
+  // Thu: ô nhập cho từng khoản; gõ tới đâu tổng cập nhật tới đó
+  const the = $('tq-thu'), ct = the.querySelector('.ct');
+  ct.innerHTML = THU_MUC.map(([k, ten]) => `<div class="dong"><span>${ten}</span><input data-k="${k}" inputmode="numeric" placeholder="0" value="${thu[khoaThu()]?.[k] ? fmt(thu[khoaThu()][k]) : ''}"></div>`).join('');
+  const veTongThu = () => { the.querySelector('b').textContent = fmt(tongThu()); };
+  ct.querySelectorAll('input').forEach(inp => {
+    inp.oninput = () => {
+      (thu[khoaThu()] ||= {})[inp.dataset.k] = Number(inp.value.replace(/\D/g, '')) || 0;
+      ghiLS('thu', thu); window.dongBo?.hen(); veTongThu();
+    };
+    inp.onblur = () => { const v = thu[khoaThu()]?.[inp.dataset.k]; inp.value = v ? fmt(v) : ''; };
+  });
+  veTongThu();
+  // Chi: cộng các khoản trong tháng theo nguồn tiền Vợ / Chồng; còn lại (thẻ, chưa chọn) gom riêng để tổng khớp
+  const key = `${pad(thangTq.m)}/${thangTq.y}`, tong = { vo: 0, chong: 0, khac: 0 };
+  for (const it of items) {
+    if (thangCua(it.thoiGian) !== key) continue;
+    const n = (it.nguon || '').normalize('NFC').trim().toLowerCase();
+    tong[n === 'vợ' ? 'vo' : n === 'chồng' ? 'chong' : 'khac'] += it.soTien;
+  }
+  const chi = $('tq-chi');
+  chi.querySelector('b').textContent = fmt(tong.vo + tong.chong + tong.khac);
+  chi.querySelector('.ct').innerHTML = [['Chồng chi', tong.chong], ['Vợ chi', tong.vo]].concat(tong.khac ? [['Nguồn khác (thẻ, chưa chọn)', tong.khac]] : [])
+    .map(([ten, v]) => `<div class="dong"><span>${ten}</span><span class="so">${fmt(v)}</span></div>`).join('')
+    + '<div class="ghi-chu">Tính theo cột Nguồn của tab Chi tiết.</div>';
+}
+['tq-thu', 'tq-chi'].forEach(id => { $(id).querySelector('.dau').onclick = () => $(id).classList.toggle('mo'); });
+const doiThangTq = d => { const x = new Date(thangTq.y, thangTq.m - 1 + d, 1); thangTq = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderTq(); };
+$('tq-truoc').onclick = () => doiThangTq(-1);
+$('tq-sau').onclick = () => doiThangTq(1);
+
+function chonTab(tq) {
+  $('p-tq').style.display = tq ? '' : 'none'; $('p-ct').style.display = tq ? 'none' : '';
+  $('tab-tq').classList.toggle('on', tq); $('tab-ct').classList.toggle('on', !tq);
+  if (tq) renderTq(); else capNhatThang();
+}
+$('tab-tq').onclick = () => chonTab(true);
+$('tab-ct').onclick = () => chonTab(false);
 
 lamMoiNguon();
 </script>
