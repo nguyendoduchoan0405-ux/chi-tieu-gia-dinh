@@ -87,8 +87,6 @@
   th.th-nguon { font-size: 12px; }
   th small { font-size: 9px; margin-left: 1px; color: #555; }
   td.chi, td.am { color: #d93025; }
-  #tq-thu b { color: #188038; }
-  #tq-chi b { color: #d93025; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
   #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -105,28 +103,27 @@
   #tabs button { flex: 1; border: 0; background: none; font-size: 15px; color: #777; }
   #tabs button.on { color: #1a73e8; font-weight: 700; box-shadow: inset 0 3px 0 #1a73e8; }
   /* Tab Tổng quan */
-  .tq-thang { display: flex; align-items: center; justify-content: space-between; margin: 14px 0 10px; font-size: 17px; }
-  .tq-thang button { width: 44px; height: 40px; font-size: 22px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #174ea6; }
-  .the-tq { background: #fff; border: 1px solid #e3e3e3; border-radius: 12px; margin-bottom: 12px; overflow: hidden; }
-  .the-tq .dau { display: flex; align-items: center; width: 100%; padding: 16px; border: 0; background: none; font-size: 17px; text-align: left; }
-  .the-tq .dau span { flex: 1; font-weight: 600; }
-  .the-tq .dau b { font-size: 20px; margin-right: 10px; }
-  .the-tq .dau i { font-style: normal; color: #888; transition: transform .15s; }
-  .the-tq.mo .dau i { transform: rotate(90deg); }
-  .the-tq .ct { display: none; padding: 0 16px 12px; }
-  .the-tq.mo .ct { display: block; }
-  .the-tq .dong { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid #eee; font-size: 15px; }
-  .the-tq .dong input { width: 140px; box-sizing: border-box; padding: 8px; font-size: 16px; text-align: right; border: 1px solid #ccc; border-radius: 8px; }
-  .the-tq .dong .so { font-weight: 600; }
-  .the-tq .ghi-chu { font-size: 12px; color: #888; margin-top: 4px; }
+  #tq-bang { margin-top: 10px; table-layout: fixed; }
+  #tq-bang th, #tq-bang td { height: 40px; padding: 4px 4px; white-space: nowrap; }
+  #tq-bang td { font-size: 13px; }
+  #tq-bang thead th { font-size: 14px; }
+  #tq-bang .tq-tieude th { font-size: 20px; padding: 12px 0 6px; }
+  #tq-bang td:first-child { text-align: left; }
+  #tq-bang tr.nam td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
+  #tq-bang tr.tong-nam td { background: #fafafa; font-weight: bold; }
 </style>
 </head>
 <body>
 <div id="dongbo">Chưa đồng bộ — chạm để đăng nhập</div>
 <div id="p-tq" style="display:none">
-  <div class="tq-thang"><button id="tq-truoc" aria-label="Tháng trước">‹</button><b id="tq-ten"></b><button id="tq-sau" aria-label="Tháng sau">›</button></div>
-  <div class="the-tq" id="tq-thu"><button class="dau"><span>Tổng thu</span><b></b><i>▸</i></button><div class="ct"></div></div>
-  <div class="the-tq" id="tq-chi"><button class="dau"><span>Tổng chi</span><b></b><i>▸</i></button><div class="ct"></div></div>
+  <table id="tq-bang">
+    <colgroup><col style="width:76px"><col><col><col></colgroup>
+    <thead>
+      <tr class="tq-tieude"><th colspan="4">Tiny Family</th></tr>
+      <tr><th>Tháng</th><th class="money">Tổng thu</th><th class="money">Tổng chi</th><th class="money">Số dư</th></tr>
+    </thead>
+    <tbody id="tq-ds"></tbody>
+  </table>
 </div>
 
 <div id="p-ct">
@@ -771,32 +768,23 @@ $('xk-chia').onclick = async () => {
   catch (e) { if (e.name !== 'AbortError') alert('Máy này không mở được bảng chia sẻ, dùng nút Tải về.'); }
 };
 
-// ----- Tab Tổng quan: thu / chi theo tháng (từ ngày 1 đến cuối tháng), lấy từ tab Chi tiết -----
-let thangTq = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 };
-const theoNguon = n => { n = (n || '').normalize('NFC').trim().toLowerCase(); return n === 'vợ' ? 'vo' : n === 'chồng' ? 'chong' : 'khac'; };
-const dongTq = ds => ds.map(([ten, v]) => `<div class="dong"><span>${ten}</span><span class="so">${fmt(v)}</span></div>`).join('');
-
+// ----- Tab Tổng quan: bảng Tiny Family, mỗi tháng một dòng, nhóm theo năm, cuối năm có dòng tổng -----
 function renderTq() {
-  $('tq-ten').textContent = `Tháng ${pad(thangTq.m)}/${thangTq.y}`;
-  const key = `${pad(thangTq.m)}/${thangTq.y}`, thu = { vo: 0, chong: 0, khac: 0 }, chi = { vo: 0, chong: 0, khac: 0 };
-  for (const it of items) {
-    if (thangCua(it.thoiGian) !== key) continue;
-    if (!laThu(it)) { chi[theoNguon(it.nguon)] += it.soTien; continue; }
-    // thu: lương của vợ / chồng tách riêng (theo nguồn), thưởng và thu khác gom vào "khác"
-    thu[/lương|luong/i.test(it.noiDung) ? theoNguon(it.nguon) : 'khac'] += it.soTien;
+  const theoNam = new Map();                                   // năm -> [{ thang, thu, chi }]
+  for (const g of nhomThang('')) {                             // luôn tính trên toàn bộ dữ liệu, không theo bộ lọc nguồn
+    const [m, y] = g.key.split('/');
+    if (!theoNam.has(y)) theoNam.set(y, []);
+    theoNam.get(y).push({ key: g.key, thu: g.thu, chi: g.chi });
   }
-  const tong = o => o.vo + o.chong + o.khac;
-  $('tq-thu').querySelector('b').textContent = co(tong(thu), '+');
-  $('tq-thu').querySelector('.ct').innerHTML = dongTq([['Lương vợ', thu.vo], ['Lương chồng', thu.chong], ['Các khoản thu khác', thu.khac]])
-    + '<div class="ghi-chu">Tự cộng từ các dòng có nội dung lương, thưởng... ở tab Chi tiết. Lương tính vào vợ/chồng theo cột Nguồn.</div>';
-  $('tq-chi').querySelector('b').textContent = co(tong(chi), '-');
-  $('tq-chi').querySelector('.ct').innerHTML = dongTq([['Chồng chi', chi.chong], ['Vợ chi', chi.vo]].concat(chi.khac ? [['Nguồn khác (thẻ, chưa chọn)', chi.khac]] : []))
-    + '<div class="ghi-chu">Tính theo cột Nguồn của tab Chi tiết.</div>';
+  const o = (ten, thu, chi, cl = '') => `<tr class="${cl}"><td>${ten}</td><td class="money thu">${co(thu, '+')}</td><td class="money chi">${co(chi, '-')}</td>`
+    + `<td class="money ${thu >= chi ? 'thu' : 'chi'}">${co(thu - chi, thu >= chi ? '+' : '-')}</td></tr>`;
+  let html = '';
+  for (const [nam, ds] of theoNam) {
+    html += `<tr class="nam"><td colspan="4">Năm ${nam}</td></tr>` + ds.map(d => o(d.key, d.thu, d.chi)).join('');
+    html += o(`Tổng ${nam}`, ds.reduce((s, d) => s + d.thu, 0), ds.reduce((s, d) => s + d.chi, 0), 'tong-nam');
+  }
+  $('tq-ds').innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:#888">Chưa có dữ liệu</td></tr>';
 }
-['tq-thu', 'tq-chi'].forEach(id => { $(id).querySelector('.dau').onclick = () => $(id).classList.toggle('mo'); });
-const doiThangTq = d => { const x = new Date(thangTq.y, thangTq.m - 1 + d, 1); thangTq = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderTq(); };
-$('tq-truoc').onclick = () => doiThangTq(-1);
-$('tq-sau').onclick = () => doiThangTq(1);
 
 function chonTab(tq) {
   $('p-tq').style.display = tq ? '' : 'none'; $('p-ct').style.display = tq ? 'none' : '';
