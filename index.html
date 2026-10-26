@@ -5,15 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 320px; background: #f6f7f9; color: #222; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 270px; background: #f6f7f9; color: #222; }
   #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
   #bottom { position: fixed; left: 0; right: 0; bottom: calc(40px + env(safe-area-inset-bottom)); padding: 10px 16px 12px;
             background: #f6f7f9; box-shadow: 0 -2px 8px rgba(0,0,0,.08); z-index: 5; }
-  .ng-dong { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-  .ng-dong label { font-size: 14px; color: #555; white-space: nowrap; }
-  .ng-dong select { flex: 1; min-width: 0; height: 40px; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
-  .ng-dong button { height: 40px; padding: 0 14px; font-size: 15px; border: 1px solid #ccc; border-radius: 10px; background: #fff; color: #174ea6; }
   #actions { display: flex; gap: 10px; }
   #mic, #scan { flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 56px; padding: 0; font-size: 17px; border: 0; border-radius: 14px; color: #fff; }
   #mic { background: #1a73e8; }
@@ -22,7 +18,8 @@
   #mic svg, #scan svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex: none; }
   #delsel { display: none; width: 100%; height: 44px; margin-bottom: 8px; font-size: 16px; border: 0; border-radius: 12px; background: #d93025; color: #fff; }
   .row { display: flex; gap: 8px; margin-bottom: 12px; }
-  .row input { flex: 1; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  .row select { flex: none; width: 92px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; padding: 0 4px; }
+  .row input { flex: 1; min-width: 0; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
   .row button, #export { padding: 10px 14px; font-size: 16px; border: 0; border-radius: 8px; background: #188038; color: #fff; }
   table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; background: #fff; font-size: 14px; }
   th, td { border-bottom: 1px solid #eee; padding: 4px 3px; height: 40px; text-align: left; overflow: hidden; line-height: 1.25; word-break: break-word; }
@@ -147,13 +144,9 @@
 
 <div id="bottom">
   <div id="live"></div>
-  <div class="ng-dong">
-    <label for="nguon-md">Nguồn tiền</label>
-    <select id="nguon-md"></select>
-    <button id="ng-sua">Sửa</button>
-  </div>
   <div class="row" style="margin-bottom:8px">
-    <input id="manual" placeholder="Gõ nội dung và số tiền" enterkeyhint="done">
+    <select id="nguon-md" aria-label="Nguồn tiền"></select>
+    <input id="manual" placeholder="Nội dung và số tiền" enterkeyhint="done">
     <button id="add">Thêm</button>
   </div>
   <button id="delsel">Xóa</button>
@@ -258,10 +251,10 @@ let nguonMd = docLS('nguon_md', '');                      // nguồn mặc đị
 items.forEach(it => { if (it.nguon === undefined) it.nguon = ''; });
 const luuNguon = () => { ghiLS('nguon_ds', nguonDs); ghiLS('nguon_md', nguonMd); window.dongBo?.hen(); };
 
-function tuyChonNguon(chon) {
+function tuyChonNguon(chon, coSua) {
   const ds = chon && !nguonDs.includes(chon) ? [...nguonDs, chon] : nguonDs;   // nguồn đã bị xóa khỏi danh sách vẫn hiện ở dòng đang dùng
   return '<option value="">(trống)</option>' + ds.map(n => `<option${n === chon ? ' selected' : ''}>${esc(n)}</option>`).join('')
-       + '<option value="__them__">+ Thêm nguồn mới...</option>';
+       + '<option value="__them__">+ Thêm nguồn mới...</option>' + (coSua ? '<option value="__sua__">Sửa danh sách...</option>' : '');
 }
 // Thêm nguồn mới bằng ô nhập; trả về tên (đã có thì dùng lại tên cũ), hoặc null nếu hủy
 function themNguon(ten) {
@@ -273,13 +266,14 @@ function themNguon(ten) {
   return t;
 }
 // Gắn dropdown: chọn có sẵn hoặc "+ Thêm nguồn mới"; khiDoi(giá trị) cập nhật dữ liệu
-function ganNguon(sel, hienTai, khiDoi) {
-  sel.innerHTML = tuyChonNguon(hienTai);
+function ganNguon(sel, hienTai, khiDoi, coSua) {
+  sel.innerHTML = tuyChonNguon(hienTai, coSua);
   sel.onchange = () => {
     let v = sel.value;
+    if (v === '__sua__') { sel.innerHTML = tuyChonNguon(hienTai, coSua); moQuanLy(); return; }   // mở hộp sửa/xóa/đổi tên nguồn
     if (v === '__them__') {
       v = themNguon();
-      if (v === null) { sel.innerHTML = tuyChonNguon(hienTai); return; }
+      if (v === null) { sel.innerHTML = tuyChonNguon(hienTai, coSua); return; }
       khiDoi(v); lamMoiNguon();                           // danh sách đổi -> làm mới mọi dropdown của cột
       return;
     }
@@ -298,7 +292,7 @@ function veLoc() {
 }
 function lamMoiNguon() {
   veLoc();
-  ganNguon($('nguon-md'), nguonMd, v => { nguonMd = v; luuNguon(); });
+  ganNguon($('nguon-md'), nguonMd, v => { nguonMd = v; luuNguon(); }, true);
   document.querySelectorAll('#x-ds .the').forEach(the => {
     ganNguon(the.querySelector('.the-nguon'), the.dataset.nguon || '', v => { the.dataset.nguon = v; });
     the.querySelector('.the-nguon').value = the.dataset.nguon || '';
@@ -691,7 +685,7 @@ function veDanhSachNguon() {
     ds.appendChild(d);
   });
 }
-$('ng-sua').onclick = () => { veDanhSachNguon(); $('ql').classList.add('mo'); };
+function moQuanLy() { veDanhSachNguon(); $('ql').classList.add('mo'); }
 $('ql-xong').onclick = () => $('ql').classList.remove('mo');
 $('ql-them').onclick = () => {
   const inp = $('ql-moi');
