@@ -116,6 +116,9 @@
   #tk-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
   #sk-bang th, #sk-bang td, #vg-bang th, #vg-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
   #sk-bang td:last-child, #sk-bang th:last-child { text-align: right; }
+  .ct-dong { display: flex; gap: 8px; padding: 3px 0; font-size: 13px; }
+  .ct-dong span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #sk-ds tr.ct-the td { background: #fafafa; }
   #vg-bang { min-width: 520px; table-layout: auto; }
   #vg-bang th, #vg-bang td { white-space: nowrap; text-align: right; }
   #vg-bang th:first-child, #vg-bang td:first-child { text-align: left; }
@@ -263,6 +266,7 @@
     <label>Ngân hàng</label><input id="thm-nh">
     <label>Ngày chốt sao kê hàng tháng (1-31)</label><input id="thm-chot" inputmode="numeric" placeholder="vd 20">
     <label>Ngày thanh toán hàng tháng (1-31)</label><input id="thm-tt" inputmode="numeric" placeholder="vd 5">
+    <label>Độ trễ ghi nhận (ngày): khoản chi ngày d được ngân hàng ghi vào sao kê ngày d + độ trễ</label><input id="thm-tre" inputmode="numeric" placeholder="vd 2">
     <div id="thm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
     <div id="thm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
     <div class="nut"><button id="thm-luu">Lưu</button><button class="huy" id="thm-huy">Hủy</button></div>
@@ -922,17 +926,24 @@ function kyCua(the, y, m) {
   return { dau, cuoi, tt: ngayTrongThang(t.getFullYear(), t.getMonth() + 1, the.tt) };
 }
 const tenThe = t => `${t.nguon}${t.soThe ? ' ' + t.soThe : ''}`;
+const moThe = new Set();                                    // thẻ đang xổ chi tiết
+function khoanCuaKy(the, k) {                              // chi của thẻ trong kỳ; ngày chi + độ trễ phải nằm trong kỳ
+  const tre = (the.tre || 0) * 86400000, tu = k.dau.getTime() - tre, den = k.cuoi.getTime() + 86400000 - tre;
+  return items.filter(it => { const t = new Date(it.thoiGian).getTime(); return !laThu(it) && it.nguon === the.nguon && t >= tu && t < den; })
+    .sort((a, b) => new Date(a.thoiGian) - new Date(b.thoiGian));
+}
 function renderSk() {
   $('sk-ten').textContent = `Kỳ sao kê tháng ${pad(kySk.m)}/${kySk.y}`;
   let tong = 0;
   const hang = theTd.map(the => {
-    const k = kyCua(the, kySk.y, kySk.m), tu = k.dau.getTime(), den = k.cuoi.getTime() + 86400000;
-    const tien = items.reduce((s, it) => { const t = new Date(it.thoiGian).getTime(); return s + (!laThu(it) && it.nguon === the.nguon && t >= tu && t < den ? it.soTien : 0); }, 0);
+    const k = kyCua(the, kySk.y, kySk.m), ds = khoanCuaKy(the, k), tien = ds.reduce((s, it) => s + it.soTien, 0), mo = moThe.has(the.id);
     tong += tien;
-    return `<tr data-id="${the.id}"><td>${esc(tenThe(the))}${the.nganHang ? '<br><small style="color:#777">' + esc(the.nganHang) + '</small>' : ''}</td><td>${ddmm(k.dau)} - ${ddmm(k.cuoi)}</td><td>${ngayDayDu(k.tt)}</td><td class="money chi">${fmt(tien)}</td></tr>`;
+    return `<tr data-id="${the.id}"><td>${mo ? '▾' : '▸'} ${esc(tenThe(the))}${the.nganHang ? '<br><small style="color:#777">' + esc(the.nganHang) + '</small>' : ''}</td><td>${ddmm(k.dau)} - ${ddmm(k.cuoi)}</td><td>${ngayDayDu(k.tt)}</td><td class="money chi">${fmt(tien)}</td></tr>`
+      + (mo ? `<tr class="ct-the"><td colspan="4">${ds.map(it => `<div class="ct-dong"><span>${ddmm(new Date(it.thoiGian))}</span><span>${esc(it.noiDung)}</span><span class="money chi">${fmt(it.soTien)}</span></div>`).join('') || '<div style="color:#888">Chưa có khoản chi trong kỳ này</div>'}<a href="#" data-sua="${the.id}" style="font-size:13px;color:#1a73e8">Sửa thông tin thẻ</a></td></tr>` : '');
   });
   $('sk-ds').innerHTML = hang.join('') + (theTd.length ? `<tr class="tong"><td colspan="3">Cần thanh toán kỳ này</td><td class="money chi">${fmt(tong)}</td></tr>` : '<tr><td colspan="4" style="text-align:center;color:#888">Bấm "+ Thẻ" để khai báo thẻ</td></tr>');
-  $('sk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moThm(tr.dataset.id); });
+  $('sk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => { moThe.has(tr.dataset.id) ? moThe.delete(tr.dataset.id) : moThe.add(tr.dataset.id); renderSk(); }; });
+  $('sk-ds').querySelectorAll('a[data-sua]').forEach(a => { a.onclick = e => { e.preventDefault(); moThm(a.dataset.sua); }; });
 }
 const doiKySk = d => { const x = new Date(kySk.y, kySk.m - 1 + d, 1); kySk = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderSk(); };
 $('sk-truoc').onclick = () => doiKySk(-1);
@@ -941,7 +952,7 @@ $('sk-sau').onclick = () => doiKySk(1);
 let thSua = null;                                           // id thẻ đang sửa, null = thêm mới
 const ngayThu = t => { const n = soDuong(t); return n >= 1 && n <= 31 ? n : 0; };
 function docThm() {
-  const t = { id: thSua || newId(), nguon: $('thm-nguon').value, soThe: $('thm-so').value.trim(), nganHang: $('thm-nh').value.trim(), chot: ngayThu($('thm-chot').value), tt: ngayThu($('thm-tt').value) };
+  const t = { id: thSua || newId(), nguon: $('thm-nguon').value, soThe: $('thm-so').value.trim(), nganHang: $('thm-nh').value.trim(), chot: ngayThu($('thm-chot').value), tt: ngayThu($('thm-tt').value), tre: Math.min(soDuong($('thm-tre').value), 15) };
   if (!t.nguon) return { loi: 'Chọn nguồn tiền của thẻ.' };
   if (!t.chot || !t.tt) return { loi: 'Ngày chốt và ngày thanh toán phải từ 1 đến 31.' };
   return { t };
@@ -958,11 +969,11 @@ function moThm(id) {
   $('thm-nguon').innerHTML = nguonDs.map(n => `<option>${esc(n)}</option>`).join('');
   $('thm-nguon').value = t ? t.nguon : (nguonDs.find(n => !theTd.some(x => x.nguon === n)) || nguonDs[0] || '');
   $('thm-so').value = t ? t.soThe : ''; $('thm-nh').value = t ? t.nganHang : '';
-  $('thm-chot').value = t ? t.chot : ''; $('thm-tt').value = t ? t.tt : '';
+  $('thm-chot').value = t ? t.chot : ''; $('thm-tt').value = t ? t.tt : ''; $('thm-tre').value = t ? (t.tre || 0) : '2';
   $('thm-xoa-hang').style.display = t ? '' : 'none'; $('thm-loi').textContent = '';
   $('thm').classList.add('mo'); xemThm();
 }
-['thm-nguon', 'thm-chot', 'thm-tt'].forEach(id => { $(id).oninput = xemThm; });
+['thm-nguon', 'thm-chot', 'thm-tt', 'thm-tre'].forEach(id => { $(id).oninput = xemThm; });
 $('sk-them').onclick = () => moThm(null);
 $('thm-huy').onclick = () => $('thm').classList.remove('mo');
 $('thm-luu').onclick = () => {
