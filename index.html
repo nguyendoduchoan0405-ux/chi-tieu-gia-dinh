@@ -121,9 +121,6 @@
   #vg-bang th:first-child, #vg-bang td:first-child { text-align: left; }
   #vg-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
   #thm select, #thm .chon-the { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
-  #sk-chon { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ddd; border-radius: 10px; background: #fff; margin-top: 10px; }
-  #sk-info { margin: 8px 0; padding: 10px; background: #fff; border: 1px solid #e3e3e3; border-radius: 10px; font-size: 14px; line-height: 1.6; }
-  #sk-info b { font-size: 16px; }
   #tq-lai { position: absolute; left: 4px; top: 4px; width: 40px; height: 32px; }
   .thang-nav { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; font-size: 16px; }
   .thang-nav button { width: 44px; height: 36px; font-size: 22px; border: 1px solid #ddd; border-radius: 10px; background: #fff; color: #174ea6; }
@@ -151,10 +148,8 @@
   </div>
   <div id="tq-sk" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Sao kê tín dụng</span><button class="them" id="sk-them">+ Thẻ</button></div>
-    <select id="sk-chon" aria-label="Chọn thẻ"></select>
     <div class="thang-nav"><button id="sk-truoc" aria-label="Kỳ trước">‹</button><b id="sk-ten"></b><button id="sk-sau" aria-label="Kỳ sau">›</button></div>
-    <div id="sk-info"></div>
-    <table id="sk-bang"><thead><tr><th>Ngày chi</th><th>Số khoản</th><th>Số tiền</th></tr></thead><tbody id="sk-ds"></tbody></table>
+    <table id="sk-bang"><thead><tr><th>Thẻ</th><th>Kỳ</th><th>Hạn thanh toán</th><th>Số tiền</th></tr></thead><tbody id="sk-ds"></tbody></table>
   </div>
   <div id="tq-vang" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Vàng vật chất</span><button class="them" id="vg-them">+ Thêm</button></div>
@@ -917,7 +912,7 @@ function renderMenuTq() {
 // ----- Sao kê tín dụng: mỗi thẻ gắn với một nguồn tiền; kỳ sao kê = (ngày chốt tháng trước + 1) đến ngày chốt tháng này -----
 let theTd = docLS('the_td', []);                            // { id, nguon, soThe, nganHang, chot (ngày), tt (ngày) }
 const luuThe = () => { ghiLS('the_td', theTd); window.dongBo?.hen(); };
-let kySk = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 }, theSk = null;
+let kySk = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 };
 const ngayTrongThang = (y, m, d) => new Date(y, m - 1, Math.min(d, new Date(y, m, 0).getDate()));   // kẹp ngày 31 vào tháng ngắn
 const ddmm = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`;
 function kyCua(the, y, m) {
@@ -928,31 +923,20 @@ function kyCua(the, y, m) {
 }
 const tenThe = t => `${t.nguon}${t.soThe ? ' ' + t.soThe : ''}`;
 function renderSk() {
-  const sel = $('sk-chon');
-  if (!theTd.some(t => t.id === theSk)) theSk = theTd[0]?.id || null;
-  sel.innerHTML = theTd.map(t => `<option value="${t.id}">${esc(tenThe(t))}${t.nganHang ? ' - ' + esc(t.nganHang) : ''}</option>`).join('') || '<option>Chưa có thẻ - bấm + Thẻ</option>';
-  sel.value = theSk || ''; sel.style.display = theTd.length ? '' : 'none';
   $('sk-ten').textContent = `Kỳ sao kê tháng ${pad(kySk.m)}/${kySk.y}`;
-  const the = theTd.find(t => t.id === theSk);
-  if (!the) { $('sk-info').textContent = 'Bấm "+ Thẻ" để khai báo thẻ (số thẻ, ngân hàng, ngày chốt sao kê, ngày thanh toán).'; $('sk-ds').innerHTML = ''; return; }
-  const k = kyCua(the, kySk.y, kySk.m), tu = k.dau.getTime(), den = k.cuoi.getTime() + 86400000, ngay = new Map();
-  for (const it of items) {
-    const t = new Date(it.thoiGian).getTime();
-    if (laThu(it) || it.nguon !== the.nguon || t < tu || t >= den) continue;
-    const key = ddmm(new Date(it.thoiGian)), g = ngay.get(key) || { t, sl: 0, tong: 0 };
-    g.sl++; g.tong += it.soTien; ngay.set(key, g);
-  }
-  const ds = [...ngay].sort((a, b) => a[1].t - b[1].t), tong = ds.reduce((s, [, g]) => s + g.tong, 0);
-  $('sk-info').innerHTML = `Kỳ: ${ngayDayDu(k.dau)} - ${ngayDayDu(k.cuoi)}<br>Ngày thanh toán: <b>${ngayDayDu(k.tt)}</b><br>Số tiền cần thanh toán: <b style="color:#d93025">${fmt(tong)}</b>`
-    + `<br><a href="#" id="sk-sua" style="font-size:13px;color:#1a73e8">Sửa thẻ ${esc(tenThe(the))}</a>`;
-  $('sk-sua').onclick = e => { e.preventDefault(); moThm(the.id); };
-  $('sk-ds').innerHTML = ds.map(([n, g]) => `<tr><td>${n}</td><td>${g.sl}</td><td class="money chi">${fmt(g.tong)}</td></tr>`).join('')
-    + (ds.length ? `<tr class="tong"><td colspan="2">Cần thanh toán</td><td class="money chi">${fmt(tong)}</td></tr>` : '<tr><td colspan="3" style="text-align:center;color:#888">Chưa có khoản chi trong kỳ này</td></tr>');
+  let tong = 0;
+  const hang = theTd.map(the => {
+    const k = kyCua(the, kySk.y, kySk.m), tu = k.dau.getTime(), den = k.cuoi.getTime() + 86400000;
+    const tien = items.reduce((s, it) => { const t = new Date(it.thoiGian).getTime(); return s + (!laThu(it) && it.nguon === the.nguon && t >= tu && t < den ? it.soTien : 0); }, 0);
+    tong += tien;
+    return `<tr data-id="${the.id}"><td>${esc(tenThe(the))}${the.nganHang ? '<br><small style="color:#777">' + esc(the.nganHang) + '</small>' : ''}</td><td>${ddmm(k.dau)} - ${ddmm(k.cuoi)}</td><td>${ngayDayDu(k.tt)}</td><td class="money chi">${fmt(tien)}</td></tr>`;
+  });
+  $('sk-ds').innerHTML = hang.join('') + (theTd.length ? `<tr class="tong"><td colspan="3">Cần thanh toán kỳ này</td><td class="money chi">${fmt(tong)}</td></tr>` : '<tr><td colspan="4" style="text-align:center;color:#888">Bấm "+ Thẻ" để khai báo thẻ</td></tr>');
+  $('sk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moThm(tr.dataset.id); });
 }
 const doiKySk = d => { const x = new Date(kySk.y, kySk.m - 1 + d, 1); kySk = { y: x.getFullYear(), m: x.getMonth() + 1 }; renderSk(); };
 $('sk-truoc').onclick = () => doiKySk(-1);
 $('sk-sau').onclick = () => doiKySk(1);
-$('sk-chon').onchange = e => { theSk = e.target.value; renderSk(); };
 
 let thSua = null;                                           // id thẻ đang sửa, null = thêm mới
 const ngayThu = t => { const n = soDuong(t); return n >= 1 && n <= 31 ? n : 0; };
@@ -986,7 +970,7 @@ $('thm-luu').onclick = () => {
   if (loi) { $('thm-loi').textContent = loi; return; }
   const i = theTd.findIndex(x => x.id === t.id);
   if (i >= 0) theTd[i] = t; else theTd.push(t);
-  theSk = t.id; luuThe(); $('thm').classList.remove('mo'); renderSk();
+  luuThe(); $('thm').classList.remove('mo'); renderSk();
 };
 $('thm-xoa').onclick = () => {
   if (!confirm('Xóa thẻ này? Các khoản chi vẫn giữ nguyên.')) return;
