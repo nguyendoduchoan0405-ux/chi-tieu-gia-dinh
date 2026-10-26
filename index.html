@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
 <style>
-  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 280px; background: #f6f7f9; color: #222; }
+  body { font-family: system-ui, sans-serif; margin: 0; padding: 0 16px 340px; background: #f6f7f9; color: #222; }
   #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
   /* Thanh dưới cùng, cố định để bấm bằng ngón cái */
   #bottom { position: fixed; left: 0; right: 0; bottom: calc(56px + env(safe-area-inset-bottom)); padding: 10px 16px 12px;
@@ -127,11 +127,7 @@
 </div>
 
 <div id="p-ct">
-<div class="row" style="margin-top:10px">
-  <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
-  <button id="add">Thêm</button>
-</div>
-<table>
+<table style="margin-top:10px">
   <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
   <thead>
     <tr class="r-title"><th colspan="6">Chi tiêu gia đình</th></tr>
@@ -152,6 +148,10 @@
     <label for="nguon-md">Nguồn tiền</label>
     <select id="nguon-md"></select>
     <button id="ng-sua">Sửa</button>
+  </div>
+  <div class="row" style="margin-bottom:8px">
+    <input id="manual" placeholder="Gõ nội dung và số tiền" enterkeyhint="done">
+    <button id="add">Thêm</button>
   </div>
   <button id="delsel">Xóa</button>
   <div id="actions">
