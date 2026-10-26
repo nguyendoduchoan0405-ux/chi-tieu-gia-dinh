@@ -36,7 +36,7 @@
   #list tr:not(.sep):not(.tong) td:nth-child(5) { padding-left: 8px; }
   td.money, th.money { text-align: right; white-space: nowrap; }
   td[contenteditable] { outline: none; }
-  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 52px; } col.c-tien { width: 98px; } col.c-nguon { width: 44px; }
+  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 52px; } col.c-tien { width: 98px; } col.c-nguon { width: 50px; }
   td.nguon { position: relative; }
   .ng-hien { display: block; font: inherit; color: inherit; white-space: nowrap; overflow: hidden; text-align: center; padding-right: 7px; }
   .ng-hien.trong { color: #aaa; }
@@ -84,6 +84,10 @@
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
   td.thu { color: #188038; }
+  th.th-nguon { font-size: 12px; }
+  th small { font-size: 9px; margin-left: 1px; color: #555; }
+  #loc-bar { display: none; margin-bottom: 8px; padding: 6px 10px; font-size: 14px; background: #e8f0fe; color: #174ea6; border-radius: 8px; }
+  #loc-bar button { margin-left: 8px; padding: 4px 10px; font-size: 14px; border: 1px solid #aac; border-radius: 8px; background: #fff; color: #174ea6; }
   td.chi, td.am { color: #d93025; }
   #tq-thu b { color: #188038; }
   #tq-chi b { color: #d93025; }
@@ -132,6 +136,7 @@
   <input id="manual" placeholder="Gõ hoặc bấm micro trên bàn phím" enterkeyhint="done">
   <button id="add">Thêm</button>
 </div>
+<div id="loc-bar">Đang xem nguồn: <b></b> <button id="loc-bo">Bỏ lọc</button></div>
 <table>
   <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
   <thead>
@@ -139,7 +144,7 @@
     <tr class="r-month"><th colspan="6" id="thang"></th></tr>
     <tr class="r-cols">
       <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
-      <th>No</th><th>Ngày</th><th>Nguồn</th><th>Nội dung</th><th class="money">Số tiền</th>
+      <th>No</th><th>Ngày</th><th class="th-nguon">Nguồn<small>▾</small><select id="loc-nguon" class="ng-chon" aria-label="Xem theo nguồn"></select></th><th>Nội dung</th><th class="money">Số tiền</th>
     </tr>
   </thead>
   <tbody id="list"></tbody>
@@ -189,6 +194,7 @@
   <div class="hop">
     <b>Xuất Excel</b>
     <select id="xk-thang" aria-label="Chọn tháng"></select>
+    <select id="xk-nguon" aria-label="Chọn nguồn tiền"></select>
     <div id="xk-tt"></div>
     <div class="nut"><button id="xk-tai">Tải về máy</button><button id="xk-chia">Gửi / Lưu vào Drive</button></div>
     <div class="nut"><button class="huy" id="xk-dong">Đóng</button></div>
@@ -226,6 +232,11 @@ try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 const fmt = n => n.toLocaleString('vi-VN');
 // Khoản thu: nội dung có lương / thưởng / thu nhập / thu khác; còn lại là chi
 const laThu = it => /lương|thưởng|thu nhập|thu khác|(^|\s)luong(\s|$)/i.test((it.noiDung || '').normalize('NFC'));
+// Lọc theo nguồn tiền ở tab Chi tiết: '' = tất cả, '__trong__' = chưa chọn nguồn
+let locNguon = '';
+const khopLoc = (it, n = locNguon) => !n || (n === '__trong__' ? !it.nguon : it.nguon === n);
+const hien = () => items.filter(it => khopLoc(it));
+const tenLoc = n => n === '__trong__' ? '(trống)' : n;
 const co = (n, dau) => (n && dau ? dau : '') + fmt(Math.abs(n));    // dấu +/- trước số (số 0 không dấu)
 const pad = n => String(n).padStart(2, '0');
 const ngay = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
@@ -279,7 +290,19 @@ function ganNguon(sel, hienTai, khiDoi) {
   };
 }
 // Vẽ lại mọi nơi có danh sách nguồn: ô mặc định, bảng, các thẻ quét ảnh đang mở
+function tuyChonLoc(sel, hienTai, tatCa) {                   // danh sách chọn nguồn để xem / xuất riêng
+  const ds = hienTai && hienTai !== '__trong__' && !nguonDs.includes(hienTai) ? [...nguonDs, hienTai] : nguonDs;
+  sel.innerHTML = `<option value="">${tatCa}</option><option value="__trong__">(trống)</option>` + ds.map(n => `<option>${esc(n)}</option>`).join('');
+  sel.value = hienTai;
+}
+function veLoc() {
+  tuyChonLoc($('loc-nguon'), locNguon, 'Tất cả nguồn');
+  $('loc-bar').style.display = locNguon ? 'block' : 'none';
+  $('loc-bar').querySelector('b').textContent = tenLoc(locNguon);
+  document.querySelector('th.th-nguon').style.background = locNguon ? '#e8f0fe' : '';
+}
 function lamMoiNguon() {
+  veLoc();
   ganNguon($('nguon-md'), nguonMd, v => { nguonMd = v; luuNguon(); });
   document.querySelectorAll('#x-ds .the').forEach(the => {
     ganNguon(the.querySelector('.the-nguon'), the.dataset.nguon || '', v => { the.dataset.nguon = v; });
@@ -320,14 +343,14 @@ function capNhatChon() {
   btn.style.display = n ? 'block' : 'none';
   btn.textContent = `Xóa (${n})`;
   const all = $('chkall');
-  all.checked = n > 0 && n === items.length;
-  all.indeterminate = n > 0 && n < items.length;
+  all.checked = n > 0 && n === hien().length;
+  all.indeterminate = n > 0 && n < hien().length;
 }
 
 // Gom theo tháng (items đã xếp theo ngày): [{ key, ds: [item...], thu, chi }]
-function nhomThang() {
+function nhomThang(nguon = locNguon) {
   const nhom = [];
-  for (const it of items) {
+  for (const it of items.filter(x => khopLoc(x, nguon))) {
     const key = thangCua(it.thoiGian);
     let g = nhom[nhom.length - 1];
     if (!g || g.key !== key) nhom.push(g = { key, ds: [], thu: 0, chi: 0 });
@@ -395,16 +418,18 @@ function render() {
   });
   // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
   document.querySelector('tfoot').style.display = nhom.length > 1 ? '' : 'none';
-  const net = items.reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
+  const net = hien().reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
   $('total').textContent = co(net, net >= 0 ? '+' : '-'); $('total').className = 'money ' + (net >= 0 ? 'thu' : 'am');
   capNhatChon();
   capNhatThang();
 }
 
+$('loc-nguon').onchange = e => { locNguon = e.target.value; chon.clear(); lamMoiNguon(); capNhatChon(); };
+$('loc-bo').onclick = () => { locNguon = ''; chon.clear(); lamMoiNguon(); capNhatChon(); };
 $('chkall').parentElement.onclick = e => { if (e.target.tagName !== 'INPUT') $('chkall').click(); };
 $('chkall').onchange = e => {
   chon.clear();
-  if (e.target.checked) items.forEach(it => chon.add(it.id));
+  if (e.target.checked) hien().forEach(it => chon.add(it.id));
   render();
 };
 $('delsel').onclick = () => {
@@ -723,12 +748,12 @@ async function taoExcel(nhom) {
 // Hộp "Xuất Excel": chọn tháng (hoặc tất cả); file tạo sẵn để nút Chia sẻ bấm là mở bảng chia sẻ ngay (iOS bắt buộc)
 let xkFile = null, xkLan = 0;
 async function lamXk() {
-  const lan = ++xkLan, thang = $('xk-thang').value;
+  const lan = ++xkLan, thang = $('xk-thang').value, nguon = $('xk-nguon').value;
   xkFile = null; $('xk-tai').disabled = $('xk-chia').disabled = true; $('xk-tt').textContent = 'Đang tạo file...';
   try {
-    const blob = await taoExcel(nhomThang().filter(g => !thang || g.key === thang));
+    const blob = await taoExcel(nhomThang(nguon).filter(g => !thang || g.key === thang));
     if (lan !== xkLan) return;                              // đã đổi tháng trong lúc tạo
-    const ten = `chi-tieu-${thang ? thang.split('/').reverse().join('-') : new Date().toISOString().slice(0, 10)}.xlsx`;
+    const ten = `chi-tieu-${thang ? thang.split('/').reverse().join('-') : new Date().toISOString().slice(0, 10)}${nguon ? '-' + boDau(tenLoc(nguon)).replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '') : ''}.xlsx`;
     xkFile = new File([blob], ten, { type: blob.type });
     $('xk-tt').textContent = `${ten} · ${blob.size > 1048576 ? (blob.size / 1048576).toFixed(1) + ' MB' : Math.round(blob.size / 1024) + ' KB'}`;
     $('xk-tai').disabled = false; $('xk-chia').disabled = !navigator.canShare?.({ files: [xkFile] });
@@ -736,9 +761,10 @@ async function lamXk() {
 }
 $('export').onclick = () => {
   $('xk-thang').innerHTML = '<option value="">Tất cả các tháng</option>' + nhomThang().map(g => g.key).reverse().map(k => `<option>${k}</option>`).join('');
+  tuyChonLoc($('xk-nguon'), locNguon, 'Tất cả nguồn tiền');   // mặc định theo nguồn đang xem
   $('xk').classList.add('mo'); lamXk();
 };
-$('xk-thang').onchange = lamXk;
+$('xk-thang').onchange = $('xk-nguon').onchange = lamXk;
 $('xk-dong').onclick = () => { $('xk').classList.remove('mo'); xkLan++; };
 $('xk-tai').onclick = () => {
   const a = document.createElement('a');
