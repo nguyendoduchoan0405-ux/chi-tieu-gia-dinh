@@ -97,23 +97,19 @@ window.dongBo = (() => {
         else da[h.id] = chup(h);
       }
     }
-    // 3. Cài đặt dùng chung (danh sách nguồn tiền, thu nhập từng tháng): máy chưa sửa gì thì theo mạng, máy vừa sửa thì đẩy lên
-    const tren = new Map((await api('/cai_dat?select=khoa,gia_tri')).map(r => [r.khoa, r.gia_tri]));
-    const khoa = new Set(['nguon_ds', ...[...tren.keys()].filter(k => k.startsWith('thu:')), ...Object.keys(thu).map(m => 'thu:' + m)]);
-    const len2 = [];
-    for (const k of khoa) {
-      const lay = k === 'nguon_ds' ? nguonDs : thu[k.slice(4)], nen = k === 'nguon_ds' ? '__nguon' : '__cd:' + k;
-      const cu = lay === undefined ? undefined : JSON.stringify(lay), t = tren.get(k), tt = t === undefined ? undefined : JSON.stringify(t);
-      if (tt !== undefined && (cu === undefined || da[nen] === undefined || da[nen] === cu)) {
-        if (tt !== cu) { if (k === 'nguon_ds') nguonDs = t; else thu[k.slice(4)] = t; thayDoi = true; }
-        da[nen] = tt;
-      } else if (cu !== undefined && (tt === undefined || da[nen] !== cu)) { len2.push({ khoa: k, gia_tri: lay }); da[nen] = cu; }
+    // 3. Danh sách nguồn tiền: máy chưa sửa gì thì theo mạng, máy vừa sửa thì đẩy lên
+    const cs = await api('/cai_dat?khoa=eq.nguon_ds&select=gia_tri'), tren = cs[0]?.gia_tri, local = JSON.stringify(nguonDs);
+    if (tren && (da.__nguon === undefined || da.__nguon === local)) {
+      if (JSON.stringify(tren) !== local) { nguonDs = tren; thayDoi = true; }
+      da.__nguon = JSON.stringify(nguonDs);
+    } else if (!tren || da.__nguon !== local) {
+      await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ khoa: 'nguon_ds', gia_tri: nguonDs }]) });
+      da.__nguon = local;
     }
-    if (len2.length) await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify(len2) });
     ghi('sync_da', da); ghi('sync_moc', moc);
     if (thayDoi) {
       xepNgay(); try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {}
-      luuNguon(); ghi('thu', thu); lamMoiNguon();
+      luuNguon(); lamMoiNguon();
       if (!$('p-tq').contains(document.activeElement)) renderTq();
     }
   }

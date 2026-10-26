@@ -36,7 +36,7 @@
   #list tr:not(.sep):not(.tong) td:nth-child(5) { padding-left: 8px; }
   td.money, th.money { text-align: right; white-space: nowrap; }
   td[contenteditable] { outline: none; }
-  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 52px; } col.c-tien { width: 88px; } col.c-nguon { width: 44px; }
+  col.c-chk { width: 26px; } col.c-stt { width: 24px; } col.c-ngay { width: 52px; } col.c-tien { width: 98px; } col.c-nguon { width: 44px; }
   td.nguon { position: relative; }
   .ng-hien { display: block; font: inherit; color: inherit; white-space: nowrap; overflow: hidden; text-align: center; padding-right: 7px; }
   .ng-hien.trong { color: #aaa; }
@@ -83,6 +83,8 @@
   #xem .loi { color: #d93025; font-size: 13px; margin-top: 6px; }
   #xem pre { white-space: pre-wrap; font-size: 12px; color: #555; }
   tr.tong td { font-weight: bold; background: #fafafa; }
+  td.thu { color: #188038; }
+  td.am { color: #d93025; }
   tfoot td { font-weight: bold; }
   #export { width: 100%; margin: 12px 0; }
   #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -139,7 +141,7 @@
     </tr>
   </thead>
   <tbody id="list"></tbody>
-  <tfoot><tr><td colspan="5">Tổng cộng</td><td class="money" id="total"></td></tr></tfoot>
+  <tfoot><tr><td colspan="5">Còn lại (thu − chi)</td><td class="money" id="total"></td></tr></tfoot>
 </table>
 <button id="export">Xuất Excel</button>
 
@@ -220,6 +222,9 @@ const KEY = 'chitieu';
 let items = [];
 try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 const fmt = n => n.toLocaleString('vi-VN');
+// Khoản thu: nội dung có lương / thưởng / thu nhập / thu khác; còn lại là chi
+const laThu = it => /lương|thưởng|thu nhập|thu khác|(^|\s)luong(\s|$)/i.test((it.noiDung || '').normalize('NFC'));
+const co = (n, dau) => (n && dau ? dau : '') + fmt(Math.abs(n));    // dấu +/- trước số (số 0 không dấu)
 const pad = n => String(n).padStart(2, '0');
 const ngay = iso => { const d = new Date(iso); return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}`; };
 const esc = t => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -317,14 +322,14 @@ function capNhatChon() {
   all.indeterminate = n > 0 && n < items.length;
 }
 
-// Gom theo tháng (items đã xếp theo ngày): [{ key, ds: [item...], tong }]
+// Gom theo tháng (items đã xếp theo ngày): [{ key, ds: [item...], thu, chi }]
 function nhomThang() {
   const nhom = [];
   for (const it of items) {
     const key = thangCua(it.thoiGian);
     let g = nhom[nhom.length - 1];
-    if (!g || g.key !== key) nhom.push(g = { key, ds: [], tong: 0 });
-    g.ds.push(it); g.tong += it.soTien;
+    if (!g || g.key !== key) nhom.push(g = { key, ds: [], thu: 0, chi: 0 });
+    g.ds.push(it); g[laThu(it) ? 'thu' : 'chi'] += it.soTien;
   }
   return nhom;
 }
@@ -347,7 +352,7 @@ function render() {
         <td class="c" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
         <td class="nguon c"><span class="ng-hien"></span><select class="ng-chon"></select></td>
         <td contenteditable>${esc(it.noiDung)}</td>
-        <td class="money" contenteditable inputmode="numeric">${fmt(it.soTien)}</td>`;
+        <td class="money ${laThu(it) ? 'thu' : ''}" contenteditable inputmode="numeric">${co(it.soTien, laThu(it) ? '+' : '-')}</td>`;
       const [ck, , dt, ng, nd, st] = tr.children;
       const hien = ng.querySelector('.ng-hien');
       // chỉ hiện 3 ký tự đầu cho gọn
@@ -371,19 +376,25 @@ function render() {
       nd.onblur = () => {
         const moi = nd.textContent.trim();
         if (moi !== it.noiDung) learnFix(it.noiDung, moi);   // nhớ cách sửa cho lần sau
+        const truoc = laThu(it);
         it.noiDung = moi; save();
+        if (laThu(it) !== truoc) render();                   // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
       };
       st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
       list.appendChild(tr);
     });
-    const tong = document.createElement('tr');                // tổng riêng của tháng
-    tong.className = 'tong'; tong.dataset.thang = g.key;
-    tong.innerHTML = `<td colspan="5">Tổng tháng ${g.key}</td><td class="money">${fmt(g.tong)}</td>`;
-    list.appendChild(tong);
+    [[`Tổng thu tháng ${g.key}`, fmt(g.thu), 'thu'], [`Tổng chi tháng ${g.key}`, fmt(g.chi), ''],
+     [`Còn lại tháng ${g.key}`, co(g.thu - g.chi, g.thu >= g.chi ? '+' : '-'), g.thu >= g.chi ? 'thu' : 'am']].forEach(([ten, so, cl]) => {
+      const tong = document.createElement('tr');              // tổng riêng của tháng
+      tong.className = 'tong'; tong.dataset.thang = g.key;
+      tong.innerHTML = `<td colspan="5">${ten}</td><td class="money ${cl}">${so}</td>`;
+      list.appendChild(tong);
+    });
   });
   // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
   document.querySelector('tfoot').style.display = nhom.length > 1 ? '' : 'none';
-  $('total').textContent = fmt(items.reduce((s, it) => s + it.soTien, 0));
+  const net = items.reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
+  $('total').textContent = co(net, net >= 0 ? '+' : '-'); $('total').className = 'money ' + (net >= 0 ? 'thu' : 'am');
   capNhatChon();
   capNhatThang();
 }
@@ -672,6 +683,7 @@ async function anhChoExcel(id) {                            // thu nhỏ còn <=
   const c = thuCanvas(bm, 480);
   return { buf: await (await canvasRaBlob(c, 0.75)).arrayBuffer(), w: c.width, h: c.height };
 }
+const SO_DAU = '+#,##0;-#,##0;0';                             // số có dấu: thu +, chi −
 async function taoExcel(nhom) {
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');
   ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 38 }, { width: 15 }, { width: 24 }];
@@ -682,8 +694,8 @@ async function taoExcel(nhom) {
     dam(ws.addRow([`Tháng ${g.key}`]));
     for (const [i, it] of g.ds.entries()) {
       const d = new Date(it.thoiGian);
-      const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, it.soTien]);
-      r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = '#,##0';
+      const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, laThu(it) ? it.soTien : -it.soTien]);
+      r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = SO_DAU; r.getCell(5).font = { color: { argb: laThu(it) ? 'FF188038' : 'FF000000' } };
       r.alignment = { vertical: 'middle' }; r.getCell(1).alignment = r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
       r.getCell(4).alignment = { vertical: 'middle', wrapText: true };
       const a = it.anh ? await anhChoExcel(it.id) : null;
@@ -694,11 +706,13 @@ async function taoExcel(nhom) {
         ws.addImage(wb.addImage({ buffer: a.buf, extension: 'jpeg' }), { tl: { col: 5.05, row: r.number - 1 + 0.05 }, ext: { width: w, height: h } });
       }
     }
-    const t = ws.addRow(['', '', '', `Tổng tháng ${g.key}`, g.tong]); t.getCell(5).numFmt = '#,##0'; dam(t);
+    for (const [ten, v, fm] of [[`Tổng thu tháng ${g.key}`, g.thu, '#,##0'], [`Tổng chi tháng ${g.key}`, g.chi, '#,##0'], [`Còn lại tháng ${g.key}`, g.thu - g.chi, SO_DAU]]) {
+      const t = ws.addRow(['', '', '', ten, v]); t.getCell(5).numFmt = fm; dam(t);
+    }
   }
   if (nhom.length > 1) {
     ws.addRow([]);
-    const t = ws.addRow(['', '', '', 'Tổng cộng', nhom.reduce((s, g) => s + g.tong, 0)]); t.getCell(5).numFmt = '#,##0'; dam(t);
+    const t = ws.addRow(['', '', '', 'Còn lại (thu − chi)', nhom.reduce((s, g) => s + g.thu - g.chi, 0)]); t.getCell(5).numFmt = SO_DAU; dam(t);
   }
   return new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
@@ -734,38 +748,26 @@ $('xk-chia').onclick = async () => {
   catch (e) { if (e.name !== 'AbortError') alert('Máy này không mở được bảng chia sẻ, dùng nút Tải về.'); }
 };
 
-// ----- Tab Tổng quan: thu / chi theo tháng (từ ngày 1 đến cuối tháng) -----
-let thu = docLS('thu', {});                                  // { '2026-10': { vo, chong, khac } }, nhập tay, đồng bộ qua Supabase
+// ----- Tab Tổng quan: thu / chi theo tháng (từ ngày 1 đến cuối tháng), lấy từ tab Chi tiết -----
 let thangTq = { y: new Date().getFullYear(), m: new Date().getMonth() + 1 };
-const THU_MUC = [['vo', 'Lương vợ'], ['chong', 'Lương chồng'], ['khac', 'Các khoản thu khác']];
-const khoaThu = () => `${thangTq.y}-${pad(thangTq.m)}`;
-const tongThu = () => THU_MUC.reduce((s, [k]) => s + (thu[khoaThu()]?.[k] || 0), 0);
+const theoNguon = n => { n = (n || '').normalize('NFC').trim().toLowerCase(); return n === 'vợ' ? 'vo' : n === 'chồng' ? 'chong' : 'khac'; };
+const dongTq = ds => ds.map(([ten, v]) => `<div class="dong"><span>${ten}</span><span class="so">${fmt(v)}</span></div>`).join('');
 
 function renderTq() {
   $('tq-ten').textContent = `Tháng ${pad(thangTq.m)}/${thangTq.y}`;
-  // Thu: ô nhập cho từng khoản; gõ tới đâu tổng cập nhật tới đó
-  const the = $('tq-thu'), ct = the.querySelector('.ct');
-  ct.innerHTML = THU_MUC.map(([k, ten]) => `<div class="dong"><span>${ten}</span><input data-k="${k}" inputmode="numeric" placeholder="0" value="${thu[khoaThu()]?.[k] ? fmt(thu[khoaThu()][k]) : ''}"></div>`).join('');
-  const veTongThu = () => { the.querySelector('b').textContent = fmt(tongThu()); };
-  ct.querySelectorAll('input').forEach(inp => {
-    inp.oninput = () => {
-      (thu[khoaThu()] ||= {})[inp.dataset.k] = Number(inp.value.replace(/\D/g, '')) || 0;
-      ghiLS('thu', thu); window.dongBo?.hen(); veTongThu();
-    };
-    inp.onblur = () => { const v = thu[khoaThu()]?.[inp.dataset.k]; inp.value = v ? fmt(v) : ''; };
-  });
-  veTongThu();
-  // Chi: cộng các khoản trong tháng theo nguồn tiền Vợ / Chồng; còn lại (thẻ, chưa chọn) gom riêng để tổng khớp
-  const key = `${pad(thangTq.m)}/${thangTq.y}`, tong = { vo: 0, chong: 0, khac: 0 };
+  const key = `${pad(thangTq.m)}/${thangTq.y}`, thu = { vo: 0, chong: 0, khac: 0 }, chi = { vo: 0, chong: 0, khac: 0 };
   for (const it of items) {
     if (thangCua(it.thoiGian) !== key) continue;
-    const n = (it.nguon || '').normalize('NFC').trim().toLowerCase();
-    tong[n === 'vợ' ? 'vo' : n === 'chồng' ? 'chong' : 'khac'] += it.soTien;
+    if (!laThu(it)) { chi[theoNguon(it.nguon)] += it.soTien; continue; }
+    // thu: lương của vợ / chồng tách riêng (theo nguồn), thưởng và thu khác gom vào "khác"
+    thu[/lương|luong/i.test(it.noiDung) ? theoNguon(it.nguon) : 'khac'] += it.soTien;
   }
-  const chi = $('tq-chi');
-  chi.querySelector('b').textContent = fmt(tong.vo + tong.chong + tong.khac);
-  chi.querySelector('.ct').innerHTML = [['Chồng chi', tong.chong], ['Vợ chi', tong.vo]].concat(tong.khac ? [['Nguồn khác (thẻ, chưa chọn)', tong.khac]] : [])
-    .map(([ten, v]) => `<div class="dong"><span>${ten}</span><span class="so">${fmt(v)}</span></div>`).join('')
+  const tong = o => o.vo + o.chong + o.khac;
+  $('tq-thu').querySelector('b').textContent = fmt(tong(thu));
+  $('tq-thu').querySelector('.ct').innerHTML = dongTq([['Lương vợ', thu.vo], ['Lương chồng', thu.chong], ['Các khoản thu khác', thu.khac]])
+    + '<div class="ghi-chu">Tự cộng từ các dòng có nội dung lương, thưởng... ở tab Chi tiết. Lương tính vào vợ/chồng theo cột Nguồn.</div>';
+  $('tq-chi').querySelector('b').textContent = fmt(tong(chi));
+  $('tq-chi').querySelector('.ct').innerHTML = dongTq([['Chồng chi', chi.chong], ['Vợ chi', chi.vo]].concat(chi.khac ? [['Nguồn khác (thẻ, chưa chọn)', chi.khac]] : []))
     + '<div class="ghi-chu">Tính theo cột Nguồn của tab Chi tiết.</div>';
 }
 ['tq-thu', 'tq-chi'].forEach(id => { $(id).querySelector('.dau').onclick = () => $(id).classList.toggle('mo'); });
