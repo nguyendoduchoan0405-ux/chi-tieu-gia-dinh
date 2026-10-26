@@ -13,7 +13,7 @@ App ghi chi tiêu gia đình cho Hoan và vợ. Chạy trên iPhone (Safari, PWA
 - `ocr.js`: đoán nội dung, số tiền, ngày từ chữ OCR của ảnh hóa đơn/chuyển khoản (Tesseract.js chạy trên máy, tải từ CDN).
 - `sync.js`: đồng bộ Supabase qua REST (đăng nhập email+mật khẩu, xóa mềm, ảnh trong Storage bucket `hoa-don`).
 - `supabase/schema.sql`, `supabase/anh.sql`: SQL chạy tay trong Supabase SQL Editor.
-- Test: `node parse.test.js` (27 ca), `node ocr.test.js` (12 ca). Sau khi sửa script trong `index.html` hãy chạy `node --check` trên script inline.
+- Test: `node parse.test.js` (36 ca), `node ocr.test.js` (12 ca). Sau khi sửa script trong `index.html` hãy chạy `node --check` trên script inline.
 
 ## Quy ước dữ liệu
 - Mỗi dòng: `{id, noiDung, soTien (luôn dương), thoiGian (ISO), nguon, cauGoc, anh}`.

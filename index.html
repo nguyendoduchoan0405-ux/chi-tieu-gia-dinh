@@ -432,8 +432,10 @@ $('delsel').onclick = () => {
 
 function addText(text) {
   if (!text.trim()) return;
-  const r = parseExpense(fixBrands(text));
-  items.push({ ...r, id: newId(), thoiGian: new Date().toISOString(), cauGoc: text, nguon: nguonMd });
+  const { ngay, text: nd } = tachNgay(text);                 // "01/02/2027 lương 40tr" -> ngày 01/02/2027
+  const r = parseExpense(fixBrands(nd)), bay = new Date();
+  const thoiGian = ngay ? new Date(ngay.y, ngay.m - 1, ngay.d, bay.getHours(), bay.getMinutes()) : bay;
+  items.push({ ...r, id: newId(), thoiGian: thoiGian.toISOString(), cauGoc: text, nguon: nguonMd });
   xepNgay(); save(); render();
 }
 

@@ -40,5 +40,25 @@ for (const [input, nd, st] of cases) {
   if (!ok) fail++;
   console.log(`${ok ? 'OK  ' : 'SAI '} "${input}" -> ${r.noiDung} | ${r.soTien}${ok ? '' : `  (cần: ${nd} | ${st})`}`);
 }
-console.log(`\n${cases.length - fail}/${cases.length} đúng`);
+// Ngày ở đầu câu
+const { tachNgay } = require('./parse.js');
+const hn = new Date(2026, 9, 26);
+const ngayCases = [
+  ['01/02/2027 Lương 40tr', [1, 2, 2027], 'Lương 40tr'],
+  ['ngày 5/10 ăn trưa 50k', [5, 10, 2026], 'ăn trưa 50k'],
+  ['3-2-27 chợ 100k', [3, 2, 2027], 'chợ 100k'],
+  ['1.2.2027 xăng 50k', [1, 2, 2027], 'xăng 50k'],
+  ['1.5 triệu tiền nhà', null, '1.5 triệu tiền nhà'],
+  ['30/40 chợ 10k', null, '30/40 chợ 10k'],
+  ['31/02/2027 chợ 10k', null, '31/02/2027 chợ 10k'],
+  ['ăn trưa 50k', null, 'ăn trưa 50k'],
+  ['05/10', null, '05/10'],
+];
+for (const [input, ngay, rest] of ngayCases) {
+  const r = tachNgay(input, hn), got = r.ngay ? [r.ngay.d, r.ngay.m, r.ngay.y] : null;
+  const ok = JSON.stringify(got) === JSON.stringify(ngay) && r.text === rest;
+  if (!ok) fail++;
+  console.log(`${ok ? 'OK  ' : 'SAI '} ngày "${input}" -> ${JSON.stringify(got)} | ${r.text}`);
+}
+console.log(`\n${cases.length + ngayCases.length - fail}/${cases.length + ngayCases.length} đúng`);
 process.exit(fail ? 1 : 0);
