@@ -107,7 +107,9 @@
   #tq-bang th, #tq-bang td { height: 40px; padding: 4px 4px; white-space: nowrap; }
   #tq-bang td { font-size: 13px; }
   #tq-bang thead th { font-size: 14px; }
-  #tq-bang .tq-tieude th { font-size: 20px; padding: 12px 0 6px; }
+  #tq-bang tr.tq-tieude th { top: 0; font-size: 20px; padding: 0 4px; background: #f6f7f9; border-bottom: 0; }
+  #tq-bang tr.tq-namr th { top: 40px; background: #e8f0fe; color: #174ea6; }
+  #tq-bang tr.tq-cot th { top: 80px; }
   #tq-bang td:first-child { text-align: left; }
   #tq-bang tr.nam td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   #tq-bang tr.tong-nam td { background: #fafafa; font-weight: bold; }
@@ -120,7 +122,8 @@
     <colgroup><col style="width:76px"><col><col><col></colgroup>
     <thead>
       <tr class="tq-tieude"><th colspan="4">Tiny Family</th></tr>
-      <tr><th>Tháng</th><th class="money">Tổng thu</th><th class="money">Tổng chi</th><th class="money">Số dư</th></tr>
+      <tr class="tq-namr"><th colspan="4" id="tq-nam"></th></tr>
+      <tr class="tq-cot"><th>Tháng</th><th class="money">Tổng thu</th><th class="money">Tổng chi</th><th class="money">Số dư</th></tr>
     </thead>
     <tbody id="tq-ds"></tbody>
   </table>
@@ -778,20 +781,32 @@ function renderTq() {
     if (!theoNam.has(y)) theoNam.set(y, []);
     theoNam.get(y).push({ key: g.key, thu: g.thu, chi: g.chi });
   }
-  const o = (ten, thu, chi, cl = '') => `<tr class="${cl}"><td>${ten}</td><td class="money thu">${co(thu, '+')}</td><td class="money chi">${co(chi, '-')}</td>`
+  const o = (ten, thu, chi, cl = '', nam = '') => `<tr class="${cl}" data-nam="${nam}"><td>${ten}</td><td class="money thu">${co(thu, '+')}</td><td class="money chi">${co(chi, '-')}</td>`
     + `<td class="money ${thu >= chi ? 'thu' : 'chi'}">${co(thu - chi, thu >= chi ? '+' : '-')}</td></tr>`;
   let html = '';
-  for (const [nam, ds] of theoNam) {
-    html += `<tr class="nam"><td colspan="4">Năm ${nam}</td></tr>` + ds.map(d => o(d.key, d.thu, d.chi)).join('');
-    html += o(`Tổng ${nam}`, ds.reduce((s, d) => s + d.thu, 0), ds.reduce((s, d) => s + d.chi, 0), 'tong-nam');
+  let dau = true;
+  for (const [nam, ds] of theoNam) {                           // dải năm chỉ chèn từ năm thứ 2 (năm đầu đã có ở hàng cố định phía trên)
+    if (!dau) html += `<tr class="nam" data-nam="${nam}"><td colspan="4">Năm ${nam}</td></tr>`;
+    dau = false;
+    html += ds.map(d => o(d.key, d.thu, d.chi, '', nam)).join('');
+    html += o(`Tổng ${nam}`, ds.reduce((s, d) => s + d.thu, 0), ds.reduce((s, d) => s + d.chi, 0), 'tong-nam', nam);
   }
   $('tq-ds').innerHTML = html || '<tr><td colspan="4" style="text-align:center;color:#888">Chưa có dữ liệu</td></tr>';
 }
 
+// Hàng "Năm ..." cố định phía trên luôn hiện năm của dòng đang nằm ngay dưới nó
+function capNhatNam() {
+  const duoi = document.querySelector('tr.tq-cot th').getBoundingClientRect().bottom;
+  const dong = [...$('tq-ds').querySelectorAll('tr[data-nam]')].find(tr => tr.getBoundingClientRect().bottom > duoi + 1);
+  const nam = dong?.dataset.nam || $('tq-ds').querySelector('tr[data-nam]')?.dataset.nam || '';
+  $('tq-nam').textContent = nam ? 'Năm ' + nam : '';
+}
+window.addEventListener('scroll', capNhatNam, { passive: true });
+
 function chonTab(tq) {
   $('p-tq').style.display = tq ? '' : 'none'; $('p-ct').style.display = tq ? 'none' : '';
   $('tab-tq').classList.toggle('on', tq); $('tab-ct').classList.toggle('on', !tq);
-  if (tq) renderTq(); else capNhatThang();
+  if (tq) { renderTq(); capNhatNam(); } else capNhatThang();
 }
 $('tab-tq').onclick = () => chonTab(true);
 $('tab-ct').onclick = () => chonTab(false);
