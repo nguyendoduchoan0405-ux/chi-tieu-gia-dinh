@@ -115,7 +115,7 @@
   #tk-bang th:first-child, #tk-bang td:first-child { text-align: left; }
   #tk-bang tr.het td { color: #999; }
   #tk-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
-  #sk-bang th, #sk-bang td, #vg-bang th, #vg-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
+  #sk-bang th, #sk-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
   #sk-bang td:last-child, #sk-bang th:last-child { text-align: right; }
   #nhac { margin: 10px 0 0; padding: 10px 12px; background: #fef7e0; border: 1px solid #f9ab00; border-radius: 10px; font-size: 14px; line-height: 1.5; position: relative; }
   #nhac .x { position: absolute; right: 4px; top: 2px; width: 32px; height: 32px; border: 0; background: none; font-size: 20px; color: #555; }
@@ -126,16 +126,27 @@
   .ct-dong span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ct-dau { font-weight: bold; color: #555; border-bottom: 1px solid #e3e3e3; margin-bottom: 2px; }
   #sk-ds tr.ct-the td { background: #fafafa; }
-  #vg-bang { table-layout: fixed; width: 100%; }
-  #vg-bang th, #vg-bang td { height: 40px; padding: 4px 2px; font-size: 12px; white-space: nowrap; text-align: right; }
-  #vg-bang th { white-space: normal; line-height: 1.2; }
-  #vg-bang td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; text-align: center; }
-  #vg-bang th:nth-child(2) { text-align: center; }
-  #vg-bang th, #vg-bang td, #vg-bang th:nth-child(2), #vg-bang td:nth-child(2) { text-align: center; }
-  #vg-bang td.hd a { color: #1a73e8; font-weight: 600; text-decoration: underline; }
-  #vg-bang td.sl { color: #1a73e8; font-weight: 600; }
-  #vg-bang td.sl.co-anh { text-decoration: underline; }
-  #vg-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
+  #tq-vang.vg-nen { margin: 10px -8px 0; padding: 0 12px 24px; border-radius: 22px; min-height: calc(100vh - 140px); background: linear-gradient(135deg, #fffbea 0%, #f8e7ac 38%, #fff6d2 55%, #ecd283 100%); }
+  .ls-the { display: flex; align-items: center; gap: 8px; justify-content: space-between; padding: 14px 16px; margin-top: 10px; border-radius: 18px; background: rgba(255,255,255,.92); border: 1px solid rgba(201,162,39,.25); box-shadow: 0 4px 14px rgba(150,110,10,.14); }
+  .ls-trai { min-width: 0; }
+  .ls-tt { font-size: 14px; font-weight: 700; color: #0f172a; }
+  .ls-phu { font-size: 11.5px; margin-top: 4px; color: #64748b; }
+  .ls-sl { color: #0f172a; }
+  .ls-sl.co-anh { color: #1a73e8; text-decoration: underline; }
+  .ls-ic { display: inline-flex; vertical-align: -2px; margin-left: 4px; }
+  .ls-ic svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ls-hd { margin-top: 6px; font-size: 12px; font-weight: 600; color: #b45309; }
+  .ls-hd a { color: #b45309; text-decoration: underline; }
+  .ls-tien { flex: none; font-size: 14px; font-weight: 700; color: #d97706; }
+  .ls-cuoi { margin: 16px 4px 0; padding-top: 14px; border-top: 1px solid rgba(150,110,10,.3); font-size: 13px; color: #6b5a2a; }
+  .ls-cd { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; }
+  .ls-cd b { font-size: 15px; color: #0f172a; }
+  .ls-cd b.gm-thu { color: #188038; } .ls-cd b.gm-chi { color: #d93025; }
+  .ls-tien.ban { color: #188038; }
+  #vgm-loai { display: flex; gap: 8px; margin-top: 10px; }
+  #vgm-loai button { flex: 1; padding: 10px; font-size: 15px; border: 1px solid #ccc; border-radius: 10px; background: #fff; color: #555; }
+  #vgm-loai button.on { background: #1a73e8; border-color: #1a73e8; color: #fff; } #vgm-loai button.on[data-l=ban] { background: #188038; border-color: #188038; }
+  .ls-rong { text-align: center; color: #8a7a4a; padding: 24px 0; }
   #thm select, #thm .chon-the { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
   #tq-lai { position: absolute; left: 4px; top: 4px; width: 40px; height: 32px; }
   .thang-nav { display: flex; align-items: center; justify-content: space-between; margin: 10px 0; font-size: 16px; }
@@ -262,12 +273,10 @@
     <div class="thang-nav"><button id="sk-truoc" aria-label="Kỳ trước">‹</button><b id="sk-ten"></b><button id="sk-sau" aria-label="Kỳ sau">›</button></div>
     <table id="sk-bang"><thead><tr><th>Thẻ</th><th>Kỳ</th><th>Thanh toán</th><th>Số tiền</th></tr></thead><tbody id="sk-ds"></tbody></table>
   </div>
-  <div id="tq-vang" style="display:none">
-    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Vàng vật chất</span><button class="them" id="vg-them">+ Thêm</button></div>
-    <div class="cuon-ngang"><table id="vg-bang"><colgroup><col style="width:21%"><col style="width:13%"><col style="width:10%"><col style="width:20%"><col style="width:24%"><col style="width:12%"></colgroup>
-      <thead><tr><th>Ngày mua</th><th>Nơi mua</th><th>SL (chỉ)</th><th>Giá mua<br>(VNĐ/chỉ)</th><th>Thành tiền</th><th>Hóa đơn</th></tr></thead>
-      <tbody id="vg-ds"></tbody>
-    </table></div>
+  <div id="tq-vang" class="vg-nen" style="display:none">
+    <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Lịch sử tích lũy vàng</span><button class="them" id="vg-them">+ Thêm</button></div>
+    <div id="vg-ds"></div>
+    <div class="ls-cuoi" id="vg-cuoi"></div>
   </div>
   <div id="tq-tk" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Tiền tiết kiệm</span><button class="them" id="tk-them">+ Thêm</button></div>
@@ -386,10 +395,11 @@
 <div id="vgm">
   <div class="hop">
     <b id="vgm-ten">Khoản vàng</b>
-    <label>Ngày mua (dd/mm/yyyy)</label><input id="vgm-ngay" inputmode="numeric">
-    <label>Nơi mua</label><input id="vgm-noi" placeholder="vd SJC, PNJ, Bảo Tín Minh Châu">
+    <div id="vgm-loai"><button type="button" data-l="mua">Mua</button><button type="button" data-l="ban">Bán</button></div>
+    <label id="vgm-l-ngay">Ngày mua (dd/mm/yyyy)</label><input id="vgm-ngay" inputmode="numeric">
+    <label id="vgm-l-noi">Nơi mua</label><input id="vgm-noi" placeholder="vd SJC, PNJ, Bảo Tín Minh Châu">
     <label>Số lượng (chỉ)</label><input id="vgm-sl" inputmode="decimal" placeholder="vd 2 hoặc 0,5">
-    <label>Giá mua (đồng/chỉ)</label><input id="vgm-gia" inputmode="numeric">
+    <label id="vgm-l-gia">Giá mua (đồng/chỉ)</label><input id="vgm-gia" inputmode="numeric">
     <label>Link hóa đơn điện tử (dán vào đây)</label><input id="vgm-hd" type="url" inputmode="url" autocapitalize="off" autocorrect="off" placeholder="https://...">
     <div id="vgm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
     <div id="vgm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
@@ -439,7 +449,7 @@ let items = [];
 try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 const fmt = n => n.toLocaleString('vi-VN');
 // Khoản thu: nội dung có lương / thưởng / thu nhập / thu khác; còn lại là chi
-const laThu = it => /lương|thưởng|thu nhập|thu khác|(^|\s)luong(\s|$)/i.test((it.noiDung || '').normalize('NFC'));
+const laThu = it => /lương|thưởng|thu nhập|thu khác|bán vàng|(^|\s)luong(\s|$)/i.test((it.noiDung || '').normalize('NFC'));
 // Lọc theo nguồn tiền ở tab Chi tiết: '' = tất cả, '__trong__' = chưa chọn nguồn
 let locNguon = '';
 const khopLoc = (it, n = locNguon) => !n || (n === '__trong__' ? !it.nguon : it.nguon === n);
@@ -604,17 +614,17 @@ function dongGd(it) {
   ck.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
   dt.onblur = () => {
     const d = parseNgay(dt.textContent, it.thoiGian);
-    if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); xemThangCua(it.thoiGian); }
+    if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); gdSangVang(it); xemThangCua(it.thoiGian); }
     render();                                               // sai định dạng thì hiện lại ngày cũ
   };
   nd.onblur = () => {
     const moi = nd.textContent.trim();
     if (moi !== it.noiDung) learnFix(it.noiDung, moi);      // nhớ cách sửa cho lần sau
     const truoc = laThu(it);
-    it.noiDung = moi; save();
+    it.noiDung = moi; save(); gdSangVang(it);
     if (laThu(it) !== truoc) render();                      // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
   };
-  st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
+  st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); gdSangVang(it); render(); };
   return r;
 }
 
@@ -685,6 +695,7 @@ $('chkall').onchange = e => {
 $('delsel').onclick = () => {
   if (!chon.size || !confirm(`Xóa ${chon.size} dòng đã chọn?`)) return;
   items.filter(it => chon.has(it.id) && it.anh).forEach(it => kho.xoa(it.id).catch(() => {}));
+  xoaVangCungId(chon);
   items = items.filter(it => !chon.has(it.id));
   chon.clear(); save(); render();
 };
@@ -694,7 +705,12 @@ function addText(text) {
   const { ngay, text: nd } = tachNgay(text);                 // "01/02/2027 lương 40tr" -> ngày 01/02/2027
   const r = parseExpense(fixBrands(nd)), bay = new Date();
   const thoiGian = ngay ? new Date(ngay.y, ngay.m - 1, ngay.d, bay.getHours(), bay.getMinutes()) : bay;
-  items.push({ ...r, id: newId(), thoiGian: thoiGian.toISOString(), cauGoc: text, nguon: nguonMd });
+  const id = newId(), mv = VANG_ND.exec(r.noiDung || '');
+  items.push({ ...r, id, thoiGian: thoiGian.toISOString(), cauGoc: text, nguon: nguonMd });
+  if (mv && r.soTien > 0) {                                   // "mua/bán vàng N chỉ <nơi> <số tiền>": tạo luôn lệnh vàng cùng id
+    const chi = Number(mv[2].replace(',', '.')), d = thoiGian;
+    if (chi > 0) { vang.push({ id, ngay: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, noi: mv[3].trim(), chi, gia: Math.round(r.soTien / chi), loai: /^m/i.test(mv[1]) ? 'mua' : 'ban', hd: '' }); luuVang(); renderMenuTq(); }
+  }
   xemThangCua(thoiGian.toISOString());
   xepNgay(); save(); render();
 }
@@ -1082,7 +1098,7 @@ function renderMenuTq() {
   const mat = $('o-mat'); mat.className = 'o-tq ' + (con >= 0 ? 'thu' : 'chi');
   mat.querySelector('b').textContent = co(con, con >= 0 ? '+' : '-');
   $('o-tk').querySelector('b').textContent = fmt(tkDangGui());
-  const tongChi = vang.reduce((s, v) => s + v.chi, 0), von = vang.reduce((s, v) => s + Math.round(v.chi * v.gia), 0);
+  const { sl: tongChi, von } = vangTinh(vang);
   const nay = vangGia ? Math.round(tongChi * vangGia) : null, ts = con + tkDangGui() + (nay ?? von);   // vàng tính theo giá hiện tại nếu đã nhập, không thì theo giá mua
   $('vt-sl').textContent = `${chiStr(tongChi)} chỉ`; $('vt-von').textContent = fmt(von);
   if (document.activeElement !== $('vt-gia')) $('vt-gia').value = vangGia ? fmt(vangGia) : '';
@@ -1196,33 +1212,82 @@ $('vt-gia').oninput = e => {
   vangGia = soDuong(e.target.value); e.target.value = vangGia ? fmt(vangGia) : '';
   ghiLS('vang_gia', vangGia); window.dongBo?.hen(); renderMenuTq();
 };
+const laBan = v => v.loai === 'ban';
+function vangTinh(ds) {   // giá vốn bình quân gia quyền: bán lấy theo giá vốn bình quân tại thời điểm bán
+  let sl = 0, von = 0, mua = 0, ban = 0, laiChot = 0;
+  [...ds].sort((a, b) => a.ngay < b.ngay ? -1 : a.ngay > b.ngay ? 1 : laBan(a) - laBan(b)).forEach(v => {
+    const t = Math.round(v.chi * v.gia);
+    if (laBan(v)) { const tb = sl ? von / sl : 0; von -= v.chi * tb; laiChot += t - Math.round(v.chi * tb); sl -= v.chi; ban += t; }
+    else { sl += v.chi; von += t; mua += t; }
+  });
+  if (Math.abs(sl) < 0.005) { sl = 0; von = 0; }
+  return { sl, von: Math.round(von), mua, ban, laiChot };
+}
+// Nối Sổ giao dịch và Lịch sử vàng: lệnh vàng và dòng giao dịch dùng chung một id; sửa/xóa một bên thì bên kia đổi theo
+const VANG_ND = /^(mua|bán|ban)\s+vàng\s+(\d+(?:[.,]\d+)?)\s*chỉ(?=\s|$)\s*(.*)$/i;
+const ndVang = v => `${laBan(v) ? 'Bán' : 'Mua'} vàng ${chiStr(v.chi)} chỉ${v.noi ? ' ' + v.noi : ''}`;
+const ngayIso = ngay => new Date(ngay + 'T12:00:00').toISOString();
+function vangSangGd(v) {
+  let it = items.find(x => x.id === v.id);
+  if (!it) { it = { id: v.id, cauGoc: 'vàng', nguon: nguonMd }; items.push(it); }
+  it.noiDung = ndVang(v); it.soTien = Math.round(v.chi * v.gia); it.thoiGian = ngayIso(v.ngay);
+  xepNgay(); save(); render();
+}
+function gdSangVang(it) {                                   // dòng giao dịch vừa sửa: cập nhật lệnh vàng cùng id
+  const v = vang.find(x => x.id === it.id); if (!v) return;
+  const m = VANG_ND.exec((it.noiDung || '').trim());
+  if (m) { v.loai = /^m/i.test(m[1]) ? 'mua' : 'ban'; v.chi = Number(m[2].replace(',', '.')); v.noi = m[3].trim(); }
+  if (v.chi > 0 && it.soTien > 0) v.gia = Math.round(it.soTien / v.chi);
+  const d = new Date(it.thoiGian); v.ngay = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  luuVang(); renderMenuTq();
+}
+function xoaVangCungId(ids) {                               // xóa dòng giao dịch: xóa luôn lệnh vàng và ảnh của nó
+  const co = vang.filter(v => ids.has(v.id)); if (!co.length) return;
+  co.forEach(v => { if (v.anh) kho.xoa('vang_' + v.id).catch(() => {}); });
+  vang = vang.filter(v => !ids.has(v.id)); luuVang(); renderMenuTq();
+}
 const luuVang = () => { ghiLS('vang', vang); window.dongBo?.hen(); };
 const chiStr = n => String(Math.round(n * 100) / 100).replace('.', ',');
-const linkHd = u => /^https?:\/\/\S+$/i.test(u || '') ? `<a href="${esc(u).replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">Mở</a>` : esc(u || '');
+const linkHd = u => /^https?:\/\/\S+$/i.test(u || '') ? `<a href="${esc(u).replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">Xem hóa đơn điện tử</a>` : esc(u || '');
+const IC_KEP = '<i class="ls-ic"><svg viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7-7l8.6-8.6a3.3 3.3 0 0 1 4.7 4.7l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l7.9-7.9"/></svg></i>';
+const IC_LINK = '<i class="ls-ic" style="margin:0 4px 0 0"><svg viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></i>';
 function renderVang() {
   const ds = [...vang].sort((a, b) => a.ngay < b.ngay ? -1 : 1);
   const tien = v => Math.round(v.chi * v.gia);
-  $('vg-ds').innerHTML = (ds.map(v => `<tr data-id="${v.id}"><td>${ngayDayDu(new Date(v.ngay + 'T12:00:00'))}</td><td>${esc(v.noi || '')}</td><td class="sl${v.anh ? ' co-anh' : ''}">${chiStr(v.chi)}</td><td>${fmt(v.gia)}</td><td>${fmt(tien(v))}</td><td class="hd">${linkHd(v.hd)}</td></tr>`).join('') || '<tr><td colspan="6" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
-    + (ds.length ? `<tr class="tong-tk"><td>Tổng</td><td></td><td>${chiStr(ds.reduce((s, v) => s + v.chi, 0))}</td><td>${fmt(Math.round(ds.reduce((s, v) => s + tien(v), 0) / ds.reduce((s, v) => s + v.chi, 0)))}</td><td>${fmt(ds.reduce((s, v) => s + tien(v), 0))}</td><td></td></tr>` : '');
-  $('vg-ds').querySelectorAll('tr[data-id]').forEach(tr => {
-    tr.onclick = () => moVgm(tr.dataset.id);
-    tr.querySelector('td.hd a')?.addEventListener('click', e => e.stopPropagation());
-    tr.querySelector('td.sl').onclick = e => { e.stopPropagation(); moVga(tr.dataset.id); };   // chạm số lượng: ảnh hóa đơn
+  $('vg-ds').innerHTML = ds.map(v => `<div class="ls-the" data-id="${v.id}"><div class="ls-trai"><div class="ls-tt">${laBan(v) ? 'Bán' : 'Mua'} <span class="ls-sl${v.anh ? ' co-anh' : ''}">${chiStr(v.chi)} chỉ</span> ${esc(v.noi || '')}${v.anh ? IC_KEP : ''}</div><div class="ls-phu">${ngayDayDu(new Date(v.ngay + 'T12:00:00'))} • Giá: ${fmt(v.gia)}đ/chỉ</div>${v.hd ? `<div class="ls-hd">${/^https?:\/\//i.test(v.hd) ? IC_LINK : ''}${linkHd(v.hd)}</div>` : ''}</div><div class="ls-tien${laBan(v) ? ' ban' : ''}">${laBan(v) ? '+' : ''}${fmt(tien(v))} đ</div></div>`).join('') || '<div class="ls-rong">Chưa có khoản nào. Bấm + Thêm.</div>';
+  $('vg-cuoi').style.display = ds.length ? '' : 'none';
+  const t = vangTinh(ds), dong = (n, g, c = '') => `<div class="ls-cd"><span>${n}</span><b class="${c}">${g}</b></div>`;
+  $('vg-cuoi').innerHTML = dong('Tổng giá trị mua gốc:', fmt(t.mua) + ' đ')
+    + (t.ban ? dong('Tổng tiền đã bán:', fmt(t.ban) + ' đ') + dong('Lãi/lỗ đã chốt:', co(t.laiChot, t.laiChot >= 0 ? '+' : '-') + ' đ', t.laiChot >= 0 ? 'gm-thu' : 'gm-chi') : '');
+  $('vg-ds').querySelectorAll('.ls-the').forEach(el => {
+    el.onclick = () => moVgm(el.dataset.id);
+    el.querySelector('.ls-hd a')?.addEventListener('click', e => e.stopPropagation());
+    el.querySelector('.ls-sl').onclick = e => { e.stopPropagation(); moVga(el.dataset.id); };   // chạm số chỉ: ảnh hóa đơn
   });
 }
-let vgSua = null;
+let vgSua = null, vgLoai = 'mua';
+function datLoaiVgm(l) {
+  vgLoai = l; const b = l === 'ban';
+  document.querySelectorAll('#vgm-loai button').forEach(x => x.classList.toggle('on', x.dataset.l === l));
+  $('vgm-l-ngay').textContent = `Ngày ${b ? 'bán' : 'mua'} (dd/mm/yyyy)`; $('vgm-l-noi').textContent = b ? 'Nơi bán' : 'Nơi mua'; $('vgm-l-gia').textContent = `Giá ${b ? 'bán' : 'mua'} (đồng/chỉ)`;
+  $('vgm-xem').dataset.t = b ? 'Tiền thu về' : 'Thành tiền';
+}
+document.querySelectorAll('#vgm-loai button').forEach(x => { x.onclick = () => { datLoaiVgm(x.dataset.l); xemVgm(); }; });
 function docVgm() {
   const d = parseNgay($('vgm-ngay').value, new Date().toISOString());
-  const v = { id: vgSua || newId(), chi: Number($('vgm-sl').value.replace(',', '.')) || 0, gia: soDuong($('vgm-gia').value), noi: $('vgm-noi').value.trim(), hd: $('vgm-hd').value.trim() };
+  const v = { id: vgSua || newId(), chi: Number($('vgm-sl').value.replace(',', '.')) || 0, gia: soDuong($('vgm-gia').value), noi: $('vgm-noi').value.trim(), hd: $('vgm-hd').value.trim(), loai: vgLoai };
   if (!d) return { loi: 'Ngày mua chưa đúng (vd 26/10/2026).' };
   v.ngay = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   if (v.chi <= 0 || !v.gia) return { loi: 'Cần nhập số lượng (chỉ) và giá mua.' };
+  const ds = [...vang.filter(x => x.id !== v.id), v];
+  if (ds.some(x => laBan(x) && vangTinh(ds.filter(y => y.ngay <= x.ngay)).sl < -0.005)) return { loi: 'Số chỉ bán lớn hơn số chỉ đang có tại ngày bán.' };
   return { v };
 }
-function xemVgm() { const { v } = docVgm(); $('vgm-xem').textContent = v ? `Thành tiền: ${fmt(Math.round(v.chi * v.gia))}` : ''; }
+function xemVgm() { const { v } = docVgm(); $('vgm-xem').textContent = v ? `${$('vgm-xem').dataset.t || 'Thành tiền'}: ${fmt(Math.round(v.chi * v.gia))}` : ''; }
 function moVgm(id) {
   vgSua = id || null;
   const v = vang.find(x => x.id === id);
+  datLoaiVgm(v && laBan(v) ? 'ban' : 'mua');
   $('vgm-ten').textContent = v ? 'Sửa khoản vàng' : 'Thêm khoản vàng';
   $('vgm-ngay').value = v ? ngayDayDu(new Date(v.ngay + 'T12:00:00')) : ngayDayDu(new Date());
   $('vgm-noi').value = v ? (v.noi || '') : ''; $('vgm-hd').value = v ? (v.hd || '') : ''; $('vgm-sl').value = v ? chiStr(v.chi) : ''; $('vgm-gia').value = v ? fmt(v.gia) : '';
@@ -1237,7 +1302,7 @@ $('vgm-luu').onclick = () => {
   if (loi) { $('vgm-loi').textContent = loi; return; }
   const i = vang.findIndex(x => x.id === v.id);
   if (i >= 0) vang[i] = { ...vang[i], ...v }; else vang.push(v);
-  luuVang(); $('vgm').classList.remove('mo'); renderVang();
+  luuVang(); vangSangGd(v); $('vgm').classList.remove('mo'); renderVang(); renderMenuTq();
 };
 // Ảnh hóa đơn mua vàng: lưu trong kho ảnh với khóa 'vang_<id>', đồng bộ qua Storage như ảnh hóa đơn chi tiêu
 let vgAnh = null, vgAnhUrl = null;
@@ -1270,7 +1335,8 @@ $('vgm-xoa').onclick = () => {
   if (!confirm('Xóa khoản vàng này?')) return;
   kho.xoa('vang_' + vgSua).catch(() => {});
   vang = vang.filter(x => x.id !== vgSua);
-  luuVang(); $('vgm').classList.remove('mo'); renderVang();
+  items = items.filter(x => x.id !== vgSua); save(); render();
+  luuVang(); $('vgm').classList.remove('mo'); renderVang(); renderMenuTq();
 };
 
 // ----- Tiền tiết kiệm: sổ gửi có kỳ hạn, lãi đơn (số tiền x lãi%/năm x số tháng / 12) -----
