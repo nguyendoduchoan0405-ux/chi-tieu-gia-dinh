@@ -19,6 +19,8 @@ App ghi chi tiêu gia đình cho Hoan và vợ. Chạy trên iPhone (Safari, PWA
 
 - Xóa khoản vàng / sổ tiết kiệm: nút "Xóa" nhỏ ở góc phải hàng Lưu/Hủy, bấm thì hiện hộp xác nhận trong app (`hoiXoa()`, không dùng `confirm()`), đồng ý mới xóa.
 
+- Sao lưu Excel: nút Xuất Excel thêm sheet ẩn `SaoLuu` (mỗi dòng `[loại, JSON]`: chitieu, tietkiem, vang, the, nguon_ds, vang_gia; luôn đủ dữ liệu, không theo bộ lọc); nút Nhập Excel (`docSaoLuu`, `tronTheoId`) đọc lại, trộn theo id (cùng id lấy bản trong file), hỏi xác nhận bằng `hoiXn()`. Ảnh hóa đơn (chi tiêu và vàng) lưu trong sheet ẩn dưới dạng base64 cắt khúc 30.000 ký tự (dòng loại `anh`), nhập lại thì ghép và ghi vào kho ảnh; file nặng thêm theo số ảnh.
+
 ## Quy ước dữ liệu
 - Mỗi dòng: `{id, noiDung, soTien (luôn dương), thoiGian (ISO), nguon, cauGoc, anh}`.
 - Thu hay chi KHÔNG lưu, suy ra từ nội dung (`laThu`): có lương/thưởng/thu nhập/thu khác là thu, còn lại là chi.

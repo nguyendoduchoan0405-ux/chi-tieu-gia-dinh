@@ -217,8 +217,11 @@
   .st-dong b { font-size: 16px; }
   .st-net { border-top: 1px solid #eee; margin-top: 6px; padding-top: 8px; }
   .gm-thu { color: #188038; } .gm-chi { color: #d93025; }
-  #st-tools { display: flex; align-items: center; gap: 8px; margin: 12px 0 2px; }
-  .st-btn { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; box-sizing: border-box; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 16px; }
+  #st-tools { display: flex; align-items: center; gap: 6px; margin: 12px 0 2px; }
+  #st-tools .st-btn { padding: 0 10px; }
+  #st-tools #st-loc { flex: 1 1 0; min-width: 0; overflow: hidden; }
+  #loc-hien { overflow: hidden; text-overflow: ellipsis; }
+  .st-btn { white-space: nowrap; flex: none; position: relative; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; box-sizing: border-box; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 16px; }
   #st-loc.co { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
   #export { margin-left: auto; color: #6366f1; border-color: #6366f1; }
   .ngay-the { background: #fff; border-radius: 18px; box-shadow: 0 4px 14px rgba(30,41,99,.08); margin-top: 12px; padding: 4px 14px 2px; }
@@ -358,6 +361,8 @@
   <label class="st-btn"><input type="checkbox" id="chkall" aria-label="Chọn tất cả"> Tất cả</label>
   <span class="st-btn" id="st-loc"><span id="loc-hien">Tất cả nguồn</span> ▾<select id="loc-nguon" class="ng-chon" aria-label="Xem theo nguồn"></select></span>
   <button id="export" class="st-btn">Xuất Excel</button>
+  <button id="import" class="st-btn">Nhập Excel</button>
+  <input type="file" id="nhap-file" accept=".xlsx" hidden>
 </div>
 <div id="st-ds"></div>
 
@@ -1047,6 +1052,8 @@ async function anhChoExcel(id) {                            // thu nhỏ còn <=
   return { buf: await (await canvasRaBlob(c, 0.75)).arrayBuffer(), w: c.width, h: c.height };
 }
 const SO_DAU = '+#,##0;-#,##0;0';                             // số có dấu: thu +, chi −
+const b64Tu = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192)); return btoa(s); };
+const b64Ra = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 async function taoExcel(nhom) {
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');
   ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 38 }, { width: 15 }, { width: 24 }];
@@ -1073,6 +1080,21 @@ async function taoExcel(nhom) {
       const t = ws.addRow(['', '', '', ten, v]); t.getCell(5).numFmt = fm; dam(t);
       t.getCell(5).font = { bold: true, color: { argb: v < 0 ? 'FFD93025' : 'FF188038' } };
     }
+  }
+  // Sheet ẩn "SaoLuu": toàn bộ dữ liệu gốc (không theo bộ lọc tháng/nguồn), mỗi dòng [loại, JSON]; nút Nhập Excel đọc lại sheet này
+  const sl = wb.addWorksheet('SaoLuu', { state: 'hidden' });
+  sl.addRow(['phienban', '1']); sl.addRow(['ngay_xuat', new Date().toISOString()]);
+  items.forEach(it => sl.addRow(['chitieu', JSON.stringify(it)]));
+  tietKiem.forEach(k => sl.addRow(['tietkiem', JSON.stringify(k)]));
+  vang.forEach(v => sl.addRow(['vang', JSON.stringify(v)]));
+  theTd.forEach(t => sl.addRow(['the', JSON.stringify(t)]));
+  sl.addRow(['nguon_ds', JSON.stringify(nguonDs)]); sl.addRow(['vang_gia', JSON.stringify(vangGia)]);
+  // Ảnh hóa đơn (chi tiêu và vàng): ảnh gốc trong kho, mã hóa base64, cắt khúc 30.000 ký tự cho vừa một ô Excel
+  const khoaAnh = [...items.filter(i => i.anh).map(i => i.id), ...vang.filter(v => v.anh).map(v => 'vang_' + v.id)];
+  for (const k of khoaAnh) {
+    const bl = await kho.doc(k).catch(() => null); if (!bl) continue;
+    const b64 = b64Tu(new Uint8Array(await bl.arrayBuffer())), n = Math.ceil(b64.length / 30000);
+    for (let i = 0; i < n; i++) sl.addRow(['anh', JSON.stringify({ k, i, n, d: b64.slice(i * 30000, (i + 1) * 30000) })]);
   }
   return new Blob([await wb.xlsx.writeBuffer()], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 }
@@ -1107,6 +1129,46 @@ $('xk-tai').onclick = () => {
 $('xk-chia').onclick = async () => {
   try { await navigator.share({ files: [xkFile], title: xkFile.name }); }
   catch (e) { if (e.name !== 'AbortError') alert('Máy này không mở được bảng chia sẻ, dùng nút Tải về.'); }
+};
+
+// Nhập Excel: đọc sheet ẩn "SaoLuu" của file đã xuất, khôi phục theo id (cùng id thì lấy bản trong file, id chỉ có trên app thì giữ nguyên)
+async function docSaoLuu(file) {
+  const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
+  const ws = wb.getWorksheet('SaoLuu'); if (!ws) return null;
+  const kq = { chitieu: [], tietkiem: [], vang: [], the: [], nguon_ds: null, vang_gia: null, anh: new Map() };
+  ws.eachRow(r => {
+    const loai = String(r.getCell(1).value || ''), txt = r.getCell(2).value;
+    if (!(loai in kq) || typeof txt !== 'string') return;
+    if (loai === 'anh') { try { const a = JSON.parse(txt); const m = kq.anh.get(a.k) || { n: a.n, p: [] }; m.p[a.i] = a.d; kq.anh.set(a.k, m); } catch {} return; }
+    try { const v = JSON.parse(txt); if (Array.isArray(kq[loai])) { if (v && v.id) kq[loai].push(v); } else kq[loai] = v; } catch {}
+  });
+  return kq;
+}
+function tronTheoId(hien, moi) {
+  const m = new Map(hien.map(x => [x.id, x]));
+  moi.forEach(x => m.set(x.id, x));
+  return [...m.values()];
+}
+$('import').onclick = () => { $('nhap-file').value = ''; $('nhap-file').click(); };
+$('nhap-file').onchange = async e => {
+  const f = e.target.files[0]; if (!f) return;
+  let kq; try { kq = await docSaoLuu(f); } catch { kq = undefined; }
+  if (kq === undefined) { hoiXn('Không đọc được file', 'File này không phải file Excel hợp lệ.', 'Đóng', null, '#555', true); return; }
+  if (!kq || !(kq.chitieu.length || kq.tietkiem.length || kq.vang.length || kq.the.length)) { hoiXn('Không có dữ liệu sao lưu', 'File này không chứa dữ liệu sao lưu. Hãy dùng file do nút Xuất Excel của app tạo ra (từ bản có nút Nhập Excel).', 'Đóng', null, '#555', true); return; }
+  hoiXn('Nhập dữ liệu từ Excel', `File có ${kq.chitieu.length} giao dịch, ${kq.tietkiem.length} sổ tiết kiệm, ${kq.vang.length} lệnh vàng, ${kq.the.length} thẻ tín dụng. Mục cùng mã sẽ lấy theo file, mục chỉ có trên app được giữ nguyên. ${kq.anh.size ? `Có ${kq.anh.size} ảnh hóa đơn, sẽ khôi phục luôn.` : 'File này không có ảnh hóa đơn.'}`, 'Nhập', async () => {
+    items = tronTheoId(items, kq.chitieu); xepNgay(); save();
+    tietKiem = tronTheoId(tietKiem, kq.tietkiem); luuTk();
+    vang = tronTheoId(vang, kq.vang); if (kq.vang_gia > 0) { vangGia = kq.vang_gia; ghiLS('vang_gia', vangGia); } luuVang();
+    theTd = tronTheoId(theTd, kq.the); luuThe();
+    if (Array.isArray(kq.nguon_ds)) { kq.nguon_ds.forEach(n => { if (!nguonDs.includes(n)) nguonDs.push(n); }); luuNguon(); lamMoiNguon?.(); }
+    let anhOk = 0;
+    for (const [k, m] of kq.anh) {                           // ghép các khúc base64 lại thành ảnh, ghi vào kho ảnh của máy
+      if (m.p.length !== m.n || m.p.some(x => typeof x !== 'string')) continue;
+      try { await kho.ghi(k, new Blob([b64Ra(m.p.join(''))], { type: 'image/jpeg' })); anhOk++; } catch {}
+    }
+    render(); renderMenuTq(); renderTk(); renderVang(); renderSk();
+    hoiXn('Đã nhập xong', `Đã khôi phục ${kq.chitieu.length} giao dịch, ${kq.tietkiem.length} sổ tiết kiệm, ${kq.vang.length} lệnh vàng, ${kq.the.length} thẻ tín dụng${kq.anh.size ? `, ${anhOk}/${kq.anh.size} ảnh hóa đơn` : ''}.`, 'Đóng', null, '#188038', true);
+  }, '#1a73e8');
 };
 
 // ----- Tab Tổng quan: bảng Tiny Family, mỗi tháng một dòng, nhóm theo năm, cuối năm có dòng tổng -----
@@ -1406,7 +1468,11 @@ $('vga-xoa').onclick = async () => {
 };
 $('vga-dong').onclick = () => { $('vga').classList.remove('mo'); if (vgAnhUrl) { URL.revokeObjectURL(vgAnhUrl); vgAnhUrl = null; } };
 let xnTiep = null;                                           // hộp xác nhận xóa trong app: đồng ý mới chạy việc xóa
-function hoiXoa(noiDung, lamXoa) { $('xn-nd').textContent = noiDung; xnTiep = lamXoa; $('xn').classList.add('mo'); }
+function hoiXn(tieuDe, noiDung, nhanOk, lam, mau = '#d93025', anHuy = false) {   // hộp xác nhận chung: Đồng ý (bên trái) / Hủy
+  $('xn-t').textContent = tieuDe; $('xn-t').style.color = mau; $('xn-nd').textContent = noiDung; $('xn-ok').textContent = nhanOk; $('xn-ok').style.background = mau;
+  $('xn-huy').style.display = anHuy ? 'none' : ''; xnTiep = lam; $('xn').classList.add('mo');
+}
+const hoiXoa = (noiDung, lamXoa) => hoiXn('Xác nhận xóa', noiDung, 'Xóa', lamXoa);
 $('xn-huy').onclick = () => { xnTiep = null; $('xn').classList.remove('mo'); };
 $('xn-ok').onclick = () => { const f = xnTiep; xnTiep = null; $('xn').classList.remove('mo'); if (f) f(); };
 $('vgm-xoa').onclick = () => {
