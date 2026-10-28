@@ -240,9 +240,9 @@
   #add { padding: 10px 11px; }
   .nhan-nguon { flex: none; align-self: center; font-size: 12px; line-height: 1.2; text-align: center; color: #555; margin-right: 4px; }
   /* Ô Vàng tích lũy */
-  #o-tk { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; cursor: pointer; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #f5e6c4; background: linear-gradient(160deg, #16233f 0%, #0c1730 55%, #0a1226 100%); box-shadow: 0 14px 30px rgba(10,18,38,.35); }
+  #o-tk { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #f5e6c4; background: linear-gradient(160deg, #16233f 0%, #0c1730 55%, #0a1226 100%); box-shadow: 0 14px 30px rgba(10,18,38,.35); }
   #o-tk::after { content: ''; position: absolute; right: -50px; bottom: -60px; width: 190px; height: 190px; border-radius: 50%; background: radial-gradient(circle, rgba(226,185,100,.28), transparent 70%); pointer-events: none; }
-  #o-tk > *:not(.o-phu) { position: relative; z-index: 1; }
+  #o-tk > * { position: relative; z-index: 1; }
   .tkt-h { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
   .tkt-logo { width: 46px; height: 46px; flex: none; border-radius: 16px; background: linear-gradient(135deg, #f6dc9a, #c8952f); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(200,149,47,.3); }
   .tkt-logo svg { width: 24px; height: 24px; fill: none; stroke: #3b2a07; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -257,16 +257,12 @@
   .tkt-p1 { display: flex; justify-content: space-between; font-size: 12px; font-weight: 400; color: #93a0bd; margin-bottom: 8px; } .tkt-p1 b { font-size: 13px; color: #f5e6c4; font-weight: 600; }
   .tkt-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; } .tkt-bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #c8952f, #f6dc9a); transition: width .3s; }
   .o-tq .tkt-hop small { display: block; margin: 8px 0 0; font-size: 12px; color: #93a0bd; }
-  .o-phu { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: inherit; background: transparent; z-index: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-  #o-tk > *:not(.o-phu), #o-vang > *:not(.o-phu) { pointer-events: none; }      /* chạm xuyên qua chữ xuống nút phủ kín: Safari nhận chắc */
-  #o-tk .o-nut, #o-vang .o-nut, #o-vang .vt-gia { pointer-events: auto; }
-  #o-vang > *:not(.o-phu) { position: relative; z-index: 1; }
   .o-nut { display: flex; gap: 8px; margin-top: 12px; }
   .o-nut button { flex: 1; padding: 11px 6px; font-size: 14px; font-weight: 700; font-family: inherit; border-radius: 12px; border: 1px solid rgba(100,116,139,.35); background: rgba(255,255,255,.7); color: #334155; }
   .o-nut button.chinh { border: 0; color: #fff; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 6px 12px rgba(245,158,11,.3); }
   #o-tk .o-nut button { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: #f5e6c4; }
   #o-tk .o-nut button.chinh { border: 0; color: #3b2a07; background: linear-gradient(135deg, #f6dc9a, #c8952f); box-shadow: 0 6px 12px rgba(200,149,47,.3); }
-  #o-vang { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; cursor: pointer; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #0f172a;
+  #o-vang { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #0f172a;
             background: linear-gradient(135deg, #fffbeb 0, #fff 55%, rgba(254,243,199,.6) 100%); border: 1px solid rgba(253,230,138,.9); box-shadow: 0 12px 28px rgba(245,158,11,.12); }
   #o-vang::after { content: ''; position: absolute; right: -40px; bottom: -40px; width: 150px; height: 150px; border-radius: 50%; background: rgba(245,158,11,.12); filter: blur(30px); pointer-events: none; }
   .vt-h { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
@@ -302,15 +298,13 @@
     <div class="o-tq" id="o-ts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><small>Tổng tài sản</small><b></b><em>Tiền mặt + tiết kiệm đang gửi + vàng</em></div>
     <div class="o-tq" id="o-mat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span><small>Tiền mặt (thu − chi)</small><b></b></div>
     <div class="o-tq" id="o-tk">
-      <button type="button" class="o-phu" id="tkt-mo" aria-label="Mở lịch sử Tiền tiết kiệm"></button>
       <div class="tkt-h"><span class="tkt-logo"><svg viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></svg></span><div class="tkt-tt"><b>Tiền tiết kiệm</b><small id="tkt-so">0 sổ đang gửi</small></div><span class="tkt-bd" id="tkt-bd"></span></div>
       <small class="tkt-nhan">Số dư đang gửi</small><div class="tkt-lon" id="tkt-gui"></div>
       <div class="tkt-luoi"><div><b id="tkt-n"></b><span>Số sổ</span></div><div><b id="tkt-ls"></b><span>Lãi suất TB</span></div><div><b id="tkt-lai"></b><span>Lãi dự kiến</span></div></div>
       <div class="tkt-hop"><div class="tkt-p1"><span>Tổng tiền đến hạn</span><b id="tkt-dh"></b></div><div class="tkt-bar"><i id="tkt-bar"></i></div><small id="tkt-gan"></small></div>
-      <div class="o-nut"><button type="button" id="tkt-gui-nut" class="chinh">Gửi</button><button type="button" id="tkt-rut-nut">Rút</button><button type="button" id="tkt-ls">Lịch sử</button></div>
+      <div class="o-nut"><button type="button" id="tkt-gui-nut" class="chinh">Gửi</button><button type="button" id="tkt-rut-nut">Rút</button><button type="button" id="tkt-lsu">Lịch sử</button></div>
     </div>
     <div class="o-tq" id="o-vang">
-      <button type="button" class="o-phu" id="vt-mo" aria-label="Mở lịch sử Vàng tích lũy"></button>
       <div class="vt-h"><span class="vt-logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.2 17 22l-5-3-5 3 1.5-8.8"/></svg></span><div class="vt-tt"><b>Vàng tích lũy</b><small>Tài sản vàng vật chất</small></div><span class="vt-badge" id="vt-pct"></span></div>
       <div class="vt-dong"><span>Số lượng</span><b id="vt-sl"></b></div>
       <div class="vt-dong"><span>Giá trị khi mua</span><b id="vt-von"></b></div>
@@ -1149,7 +1143,6 @@ function moMan(ten) {
 }
 $('o-sk').onclick = () => moMan('sk');
 $('o-nam').onclick = () => moMan('nam');
-$('tkt-mo').onclick = () => moMan('tk'); $('vt-mo').onclick = () => moMan('vang');   // nút trong suốt phủ kín mỗi ô: bấm bất kỳ đâu (trừ nút Gửi/Rút/Mua/Bán và ô nhập giá) đều mở lịch sử
 $('vt-mua').onclick = () => moVgm(null, 'mua'); $('vt-ban').onclick = () => moVgm(null, 'ban'); $('vt-ls').onclick = () => moMan('vang');   // bấm ô nhập giá thì không mở bảng
 document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => moMan('menu'); });
 
@@ -1529,7 +1522,7 @@ function moTkm(id) {
 }
 ['tkm-ngay', 'tkm-tien', 'tkm-ky', 'tkm-lai', 'tkm-som'].forEach(id => { $(id).oninput = xemTkm; });
 $('tk-them').onclick = () => moTkm(null);
-$('tkt-gui-nut').onclick = () => moTkm(null); $('tkt-ls').onclick = () => moMan('tk'); $('tkt-rut-nut').onclick = () => moRut();
+$('tkt-gui-nut').onclick = () => moTkm(null); $('tkt-lsu').onclick = () => moMan('tk'); $('tkt-rut-nut').onclick = () => moRut();
 $('tkm-huy').onclick = () => $('tkm').classList.remove('mo');
 $('tkm-luu').onclick = () => {
   const { k, loi } = docTkm();
