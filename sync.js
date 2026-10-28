@@ -110,6 +110,20 @@ window.dongBo = (() => {
         da[dau] = local;
       }
     }
+    // 4. Ảnh hóa đơn vàng (khóa 'vang_<id>'): tải ảnh máy khác đưa lên, đưa ảnh mới của máy này lên, xóa ảnh đã gỡ
+    for (const v of vang) {
+      const k = 'vang_' + v.id;
+      if (v.anh && !await kho.doc(k).catch(() => null)) {
+        const b = await taiAnh(k);
+        if (b) { await kho.ghi(k, b).catch(() => {}); anhLen.add(k); ghi('sync_anh', [...anhLen]); thayDoi = true; }
+      } else if (v.anh && !anhLen.has(k)) {
+        const b = await kho.doc(k).catch(() => null);
+        if (b && await dayAnh(k, b)) { anhLen.add(k); ghi('sync_anh', [...anhLen]); }
+      }
+    }
+    for (const k of [...anhLen]) {
+      if (k.startsWith('vang_') && !vang.some(v => v.anh && 'vang_' + v.id === k)) { await xoaAnh(k); anhLen.delete(k); ghi('sync_anh', [...anhLen]); }
+    }
     ghi('sync_da', da); ghi('sync_moc', moc);
     if (thayDoi) {
       xepNgay(); try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {}

@@ -50,14 +50,14 @@
   tr.r-cols  th { top: 40px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
-  #xem, #ql, #xk, #tkm, #thm, #vgm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
-  #xem.mo, #ql.mo, #xk.mo, #tkm.mo, #thm.mo, #vgm.mo { display: flex; }
-  #xem .hop, #ql .hop, #xk .hop, #tkm .hop, #thm .hop, #vgm .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #xem, #ql, #xk, #tkm, #thm, #vgm, #vga { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
+  #xem.mo, #ql.mo, #xk.mo, #tkm.mo, #thm.mo, #vgm.mo, #vga.mo { display: flex; }
+  #xem .hop, #ql .hop, #xk .hop, #tkm .hop, #thm .hop, #vgm .hop, #vga .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
   #xem label, #tkm label, #thm label, #vgm label { display: block; font-size: 13px; color: #666; margin-top: 10px; }
   #xem input, #ql input, #tkm input, #thm input, #vgm input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
-  #xem .nut, #ql .nut, #xk .nut, #tkm .nut, #thm .nut, #vgm .nut { display: flex; gap: 8px; margin-top: 16px; }
-  #xem .nut button, #ql .nut button, #xk .nut button, #tkm .nut button, #thm .nut button, #vgm .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
-  #xem .nut button.huy, #xk .nut button.huy, #tkm .nut button.huy, #thm .nut button.huy, #vgm .nut button.huy { background: #888; }
+  #xem .nut, #ql .nut, #xk .nut, #tkm .nut, #thm .nut, #vgm .nut, #vga .nut { display: flex; gap: 8px; margin-top: 16px; }
+  #xem .nut button, #ql .nut button, #xk .nut button, #tkm .nut button, #thm .nut button, #vgm .nut button, #vga .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; }
+  #xem .nut button.huy, #xk .nut button.huy, #tkm .nut button.huy, #thm .nut button.huy, #vgm .nut button.huy, #vga .nut button.huy { background: #888; }
   #xk .nut button:disabled { background: #bbb; }
   #xk select { box-sizing: border-box; width: 100%; height: 44px; margin: 8px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 10px; background: #fff; padding: 0 8px; }
   #xk-tt { min-height: 20px; font-size: 13px; color: #555; }
@@ -128,6 +128,8 @@
   #vg-bang { min-width: 620px; table-layout: auto; }
   #vg-bang th, #vg-bang td { white-space: nowrap; text-align: right; }
   #vg-bang th:first-child, #vg-bang td:first-child { text-align: left; }
+  #vg-bang td.sl { color: #1a73e8; font-weight: 600; }
+  #vg-bang td.sl.co-anh { text-decoration: underline; }
   #vg-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
   #thm select, #thm .chon-the { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
   #tq-lai { position: absolute; left: 4px; top: 4px; width: 40px; height: 32px; }
@@ -318,6 +320,17 @@
     <div class="nut" id="vgm-xoa-hang"><button id="vgm-xoa" style="background:#d93025">Xóa khoản này</button></div>
   </div>
 </div>
+
+<div id="vga">
+  <div class="hop">
+    <b>Ảnh hóa đơn mua vàng</b>
+    <div id="vga-tt" style="margin:8px 0;font-size:14px;color:#555"></div>
+    <img id="vga-anh" alt="" style="display:none;max-width:100%;max-height:40vh;border-radius:10px;border:1px solid #ddd">
+    <div class="nut"><button id="vga-chon">Chọn / chụp ảnh</button><button class="huy" id="vga-dong">Đóng</button></div>
+    <div class="nut" id="vga-xoa-hang"><button id="vga-xem" style="background:#e8f0fe;color:#1a73e8">Xem lớn</button><button id="vga-xoa" style="background:#d93025">Xóa ảnh</button></div>
+  </div>
+</div>
+<input type="file" id="vga-file" accept="image/*" hidden>
 
 <div id="ql">
   <div class="hop">
@@ -1048,9 +1061,12 @@ const chiStr = n => String(Math.round(n * 100) / 100).replace('.', ',');
 function renderVang() {
   const ds = [...vang].sort((a, b) => a.ngay < b.ngay ? -1 : 1);
   const tien = v => Math.round(v.chi * v.gia);
-  $('vg-ds').innerHTML = (ds.map(v => `<tr data-id="${v.id}"><td>${ngayDayDu(new Date(v.ngay + 'T12:00:00'))}</td><td>${esc(v.noi || '')}</td><td>${chiStr(v.chi)}</td><td>${fmt(v.gia)}</td><td>${fmt(tien(v))}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
+  $('vg-ds').innerHTML = (ds.map(v => `<tr data-id="${v.id}"><td>${ngayDayDu(new Date(v.ngay + 'T12:00:00'))}</td><td>${esc(v.noi || '')}</td><td class="sl${v.anh ? ' co-anh' : ''}">${chiStr(v.chi)}</td><td>${fmt(v.gia)}</td><td>${fmt(tien(v))}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
     + (ds.length ? `<tr class="tong-tk"><td>Tổng</td><td></td><td>${chiStr(ds.reduce((s, v) => s + v.chi, 0))}</td><td>${fmt(Math.round(ds.reduce((s, v) => s + tien(v), 0) / ds.reduce((s, v) => s + v.chi, 0)))}</td><td>${fmt(ds.reduce((s, v) => s + tien(v), 0))}</td></tr>` : '');
-  $('vg-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moVgm(tr.dataset.id); });
+  $('vg-ds').querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.onclick = () => moVgm(tr.dataset.id);
+    tr.querySelector('td.sl').onclick = e => { e.stopPropagation(); moVga(tr.dataset.id); };   // chạm số lượng: ảnh hóa đơn
+  });
 }
 let vgSua = null;
 function docVgm() {
@@ -1078,11 +1094,39 @@ $('vgm-luu').onclick = () => {
   const { v, loi } = docVgm();
   if (loi) { $('vgm-loi').textContent = loi; return; }
   const i = vang.findIndex(x => x.id === v.id);
-  if (i >= 0) vang[i] = v; else vang.push(v);
+  if (i >= 0) vang[i] = { ...vang[i], ...v }; else vang.push(v);
   luuVang(); $('vgm').classList.remove('mo'); renderVang();
 };
+// Ảnh hóa đơn mua vàng: lưu trong kho ảnh với khóa 'vang_<id>', đồng bộ qua Storage như ảnh hóa đơn chi tiêu
+let vgAnh = null, vgAnhUrl = null;
+async function veVga() {
+  const v = vang.find(x => x.id === vgAnh), b = v?.anh ? await kho.doc('vang_' + vgAnh).catch(() => null) : null;
+  if (vgAnhUrl) { URL.revokeObjectURL(vgAnhUrl); vgAnhUrl = null; }
+  if (b) vgAnhUrl = URL.createObjectURL(b);
+  $('vga-anh').src = vgAnhUrl || ''; $('vga-anh').style.display = b ? '' : 'none';
+  $('vga-tt').textContent = b ? 'Đã đính kèm ảnh hóa đơn.' : v?.anh ? 'Ảnh chưa tải về máy này, thử lại sau ít giây.' : 'Chưa có ảnh. Bấm "Chọn / chụp ảnh" để đính kèm.';
+  $('vga-xoa-hang').style.display = b ? '' : 'none';
+}
+function moVga(id) { vgAnh = id; $('vga').classList.add('mo'); veVga(); }
+$('vga-chon').onclick = () => $('vga-file').click();
+$('vga-file').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  const v = vang.find(x => x.id === vgAnh); if (!f || !v) return;
+  try {
+    await kho.ghi('vang_' + v.id, await canvasRaBlob(await thuNho(f, 1200), 0.72));
+    v.anh = true; luuVang(); renderVang(); veVga();
+  } catch { $('vga-tt').textContent = 'Không đọc được ảnh này, thử ảnh khác.'; }
+};
+$('vga-xem').onclick = () => { if (vgAnhUrl) moPhong(vgAnhUrl, false); };
+$('vga-xoa').onclick = async () => {
+  const v = vang.find(x => x.id === vgAnh); if (!v || !confirm('Xóa ảnh hóa đơn này?')) return;
+  await kho.xoa('vang_' + v.id).catch(() => {});
+  delete v.anh; luuVang(); renderVang(); veVga();
+};
+$('vga-dong').onclick = () => { $('vga').classList.remove('mo'); if (vgAnhUrl) { URL.revokeObjectURL(vgAnhUrl); vgAnhUrl = null; } };
 $('vgm-xoa').onclick = () => {
   if (!confirm('Xóa khoản vàng này?')) return;
+  kho.xoa('vang_' + vgSua).catch(() => {});
   vang = vang.filter(x => x.id !== vgSua);
   luuVang(); $('vgm').classList.remove('mo'); renderVang();
 };
