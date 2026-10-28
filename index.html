@@ -204,6 +204,13 @@
   .gd .ng::after { content: '\25BE'; position: absolute; right: 0; top: 0; font-size: 10px; pointer-events: none; }
   .gd-anh.co { color: #1a73e8; font-weight: 600; text-decoration: underline; }
   .gd .tien { margin-left: auto; padding-left: 8px; font-size: 15px; font-weight: 600; text-align: right; white-space: nowrap; outline: none; }
+  .nhan-nguon { flex: none; align-self: center; font-size: 13px; color: #555; margin-right: 6px; }
+  #o-vang { grid-column: 1 / -1; align-items: stretch; font-weight: 400; cursor: pointer; }
+  #o-vang small { margin-bottom: 6px; }
+  .vt-dong { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px; color: #555; }
+  .vt-dong b { font-size: 15px; color: #222; }
+  .vt-dong b.gm-thu { color: #188038; } .vt-dong b.gm-chi { color: #d93025; }
+  #vt-gia { width: 130px; box-sizing: border-box; padding: 6px 8px; font-size: 16px; text-align: right; border: 1px solid #d6d9f5; border-radius: 8px; background: #f7f8ff; color: #222; }
   .st-trong { margin-top: 60px; text-align: center; color: #9ca3af; font-size: 15px; }
 </style>
 </head>
@@ -214,10 +221,15 @@
   <div id="tq-menu" class="o-tq-ds">
     <button class="o-tq" id="o-sk"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></span>Sao kê tín dụng</button>
     <button class="o-tq" id="o-nam"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>Thu - chi năm</button>
-    <div class="o-tq" id="o-ts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><small>Tổng tài sản</small><b></b><em>Tiền mặt + tiết kiệm đang gửi + vàng (giá mua)</em></div>
+    <div class="o-tq" id="o-ts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><small>Tổng tài sản</small><b></b><em>Tiền mặt + tiết kiệm đang gửi + vàng</em></div>
     <div class="o-tq" id="o-mat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span><small>Tiền mặt (thu − chi)</small><b></b></div>
     <button class="o-tq" id="o-tk"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 11a7 6 0 0 1 14 0v4h-2l-1 3h-3v-2h-2v2H8l-1-3a4 4 0 0 1-2-4z"/><circle cx="15" cy="10" r="1"/></svg></span><small>Tiền tiết kiệm</small><b></b></button>
-    <button class="o-tq" id="o-vang"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 18l3-6h12l3 6zM7 12l2-5h6l2 5"/></svg></span><small>Vàng vật chất</small><b></b></button>
+    <div class="o-tq" id="o-vang" role="button" tabindex="0"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 18l3-6h12l3 6zM7 12l2-5h6l2 5"/></svg></span><small>Vàng tích lũy</small>
+      <div class="vt-dong"><span>Số lượng</span><b id="vt-sl"></b></div>
+      <div class="vt-dong"><span>Giá trị khi mua</span><b id="vt-von"></b></div>
+      <div class="vt-dong"><span>Giá vàng hiện tại (đ/chỉ)</span><input id="vt-gia" inputmode="numeric" placeholder="nhập tay" aria-label="Giá vàng hiện tại, đồng mỗi chỉ"></div>
+      <div class="vt-dong"><span>Lãi / lỗ</span><b id="vt-lai"></b></div>
+    </div>
   </div>
   <div id="tq-sk" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Sao kê tín dụng</span><button class="them" id="sk-them">+ Thẻ</button></div>
@@ -268,8 +280,8 @@
 <div id="bottom">
   <div id="live"></div>
   <div class="row" style="margin-bottom:8px">
-    <select id="nguon-md" aria-label="Nguồn tiền"></select>
-    <input id="manual" placeholder="Nội dung và số tiền" enterkeyhint="done">
+    <label for="nguon-md" class="nhan-nguon">Nguồn tiền</label><select id="nguon-md" aria-label="Nguồn tiền"></select>
+    <input id="manual" placeholder="ddmmyy nội dung và số tiền" enterkeyhint="done">
     <button id="add">Thêm</button>
   </div>
   <button id="delsel">Xóa</button>
@@ -620,7 +632,7 @@ function render() {
   capNhatChon();
 }
 
-// Quẹt ngang: trái = tháng trước, phải = tháng sau (theo yêu cầu của Hoan)
+// Quẹt ngang như thường lệ: quẹt trái = tháng sau, quẹt phải = tháng trước
 function doiThang(d) {
   const [lo, hi] = khoangThang(), k = khoaT(thangXem) + d;
   if (k < lo || k > hi) return;
@@ -635,7 +647,7 @@ $('p-ct').addEventListener('touchend', e => {
   if (!vuot) return;
   const t = e.changedTouches[0], dx = t.clientX - vuot.x, dy = t.clientY - vuot.y;
   vuot = null;
-  if (Math.abs(dx) >= 60 && Math.abs(dx) >= Math.abs(dy) * 1.5) doiThang(dx < 0 ? -1 : 1);
+  if (Math.abs(dx) >= 60 && Math.abs(dx) >= Math.abs(dy) * 1.5) doiThang(dx < 0 ? 1 : -1);
 }, { passive: true });
 
 $('loc-nguon').onchange = e => { locNguon = e.target.value; chon.clear(); lamMoiNguon(); capNhatChon(); };
@@ -1034,7 +1046,7 @@ function moMan(ten) {
 $('o-sk').onclick = () => moMan('sk');
 $('o-nam').onclick = () => moMan('nam');
 $('o-tk').onclick = () => moMan('tk');
-$('o-vang').onclick = () => moMan('vang');
+$('o-vang').onclick = e => { if (!e.target.closest('input')) moMan('vang'); };   // bấm ô nhập giá thì không mở bảng
 document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => moMan('menu'); });
 
 // Tiền mặt = tổng thu − tổng chi của toàn bộ dữ liệu
@@ -1044,9 +1056,13 @@ function renderMenuTq() {
   const mat = $('o-mat'); mat.className = 'o-tq ' + (con >= 0 ? 'thu' : 'chi');
   mat.querySelector('b').textContent = co(con, con >= 0 ? '+' : '-');
   $('o-tk').querySelector('b').textContent = fmt(tkDangGui());
-  const vonVang = vang.reduce((s, v) => s + Math.round(v.chi * v.gia), 0), ts = con + tkDangGui() + vonVang;
+  const tongChi = vang.reduce((s, v) => s + v.chi, 0), von = vang.reduce((s, v) => s + Math.round(v.chi * v.gia), 0);
+  const nay = vangGia ? Math.round(tongChi * vangGia) : null, ts = con + tkDangGui() + (nay ?? von);   // vàng tính theo giá hiện tại nếu đã nhập, không thì theo giá mua
+  $('vt-sl').textContent = `${chiStr(tongChi)} chỉ`; $('vt-von').textContent = fmt(von);
+  if (document.activeElement !== $('vt-gia')) $('vt-gia').value = vangGia ? fmt(vangGia) : '';
+  const lai = $('vt-lai'), ll = nay === null ? null : nay - von;
+  lai.textContent = ll === null ? '–' : co(ll, ll >= 0 ? '+' : '-'); lai.className = ll === null ? '' : ll >= 0 ? 'gm-thu' : 'gm-chi';
   $('o-ts').querySelector('b').textContent = co(ts, ts >= 0 ? '' : '-');
-  $('o-vang').querySelector('b').textContent = `${chiStr(vang.reduce((s, v) => s + v.chi, 0))} chỉ`;
 }
 
 // ----- Sao kê tín dụng: mỗi thẻ gắn với một nguồn tiền; kỳ sao kê = (ngày chốt tháng trước + 1) đến ngày chốt tháng này -----
@@ -1143,7 +1159,12 @@ $('thm-xoa').onclick = () => {
 };
 
 // ----- Vàng vật chất: ngày mua, số lượng (chỉ), giá mua mỗi chỉ -----
+let vangGia = docLS('vang_gia', 0);                          // giá vàng hiện tại (đồng/chỉ), nhập tay
 let vang = docLS('vang', []);                               // { id, ngay (yyyy-mm-dd), chi, gia (đồng/chỉ) }
+$('vt-gia').oninput = e => {
+  vangGia = soDuong(e.target.value); e.target.value = vangGia ? fmt(vangGia) : '';
+  ghiLS('vang_gia', vangGia); window.dongBo?.hen(); renderMenuTq();
+};
 const luuVang = () => { ghiLS('vang', vang); window.dongBo?.hen(); };
 const chiStr = n => String(Math.round(n * 100) / 100).replace('.', ',');
 const linkHd = u => /^https?:\/\/\S+$/i.test(u || '') ? `<a href="${esc(u).replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">Mở</a>` : esc(u || '');
