@@ -52,6 +52,11 @@
   tr.r-cols  th { top: 40px; }
   tr.sep td { background: #e8f0fe; color: #174ea6; font-weight: bold; text-align: center; }
   /* Khung xem lại kết quả quét ảnh */
+  #rtm select { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
+  #rtm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; } #rtm.mo { display: flex; }
+  #rtm .hop { box-sizing: border-box; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #rtm label { display: block; font-size: 13px; color: #666; margin-top: 10px; } #rtm input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #rtm .nut { display: flex; gap: 8px; margin-top: 16px; } #rtm .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; } #rtm .nut button.huy { background: #888; }
   #xem, #ql, #xk, #tkm, #thm, #vgm, #vga { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; }
   #xem.mo, #ql.mo, #xk.mo, #tkm.mo, #thm.mo, #vgm.mo, #vga.mo { display: flex; }
   #xem .hop, #ql .hop, #xk .hop, #tkm .hop, #thm .hop, #vgm .hop, #vga .hop { box-sizing: border-box; max-width: 100%; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
@@ -252,6 +257,11 @@
   .tkt-p1 { display: flex; justify-content: space-between; font-size: 12px; font-weight: 400; color: #93a0bd; margin-bottom: 8px; } .tkt-p1 b { font-size: 13px; color: #f5e6c4; font-weight: 600; }
   .tkt-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; } .tkt-bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #c8952f, #f6dc9a); transition: width .3s; }
   .o-tq .tkt-hop small { display: block; margin: 8px 0 0; font-size: 12px; color: #93a0bd; }
+  .o-nut { display: flex; gap: 8px; margin-top: 12px; }
+  .o-nut button { flex: 1; padding: 11px 6px; font-size: 14px; font-weight: 700; font-family: inherit; border-radius: 12px; border: 1px solid rgba(100,116,139,.35); background: rgba(255,255,255,.7); color: #334155; }
+  .o-nut button.chinh { border: 0; color: #fff; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 6px 12px rgba(245,158,11,.3); }
+  #o-tk .o-nut button { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.2); color: #f5e6c4; }
+  #o-tk .o-nut button.chinh { border: 0; color: #3b2a07; background: linear-gradient(135deg, #f6dc9a, #c8952f); box-shadow: 0 6px 12px rgba(200,149,47,.3); }
   #o-vang { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; cursor: pointer; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #0f172a;
             background: linear-gradient(135deg, #fffbeb 0, #fff 55%, rgba(254,243,199,.6) 100%); border: 1px solid rgba(253,230,138,.9); box-shadow: 0 12px 28px rgba(245,158,11,.12); }
   #o-vang::after { content: ''; position: absolute; right: -40px; bottom: -40px; width: 150px; height: 150px; border-radius: 50%; background: rgba(245,158,11,.12); filter: blur(30px); pointer-events: none; }
@@ -292,6 +302,7 @@
       <small class="tkt-nhan">Số dư đang gửi</small><div class="tkt-lon" id="tkt-gui"></div>
       <div class="tkt-luoi"><div><b id="tkt-n"></b><span>Số sổ</span></div><div><b id="tkt-ls"></b><span>Lãi suất TB</span></div><div><b id="tkt-lai"></b><span>Lãi dự kiến</span></div></div>
       <div class="tkt-hop"><div class="tkt-p1"><span>Tổng tiền đến hạn</span><b id="tkt-dh"></b></div><div class="tkt-bar"><i id="tkt-bar"></i></div><small id="tkt-gan"></small></div>
+      <div class="o-nut"><button type="button" id="tkt-gui-nut" class="chinh">Gửi</button><button type="button" id="tkt-rut-nut">Rút</button><button type="button" id="tkt-ls">Lịch sử</button></div>
     </div>
     <div class="o-tq" id="o-vang" role="button" tabindex="0">
       <div class="vt-h"><span class="vt-logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.2 17 22l-5-3-5 3 1.5-8.8"/></svg></span><div class="vt-tt"><b>Vàng tích lũy</b><small>Tài sản vàng vật chất</small></div><span class="vt-badge" id="vt-pct"></span></div>
@@ -300,6 +311,7 @@
       <div class="vt-dong"><span>Giá vàng hiện tại</span><span class="vt-gia"><span class="vt-nhap"><input id="vt-gia" inputmode="numeric" placeholder="nhập tay" aria-label="Giá vàng hiện tại, đồng mỗi chỉ"></span><b class="vt-dv">/chỉ</b></span></div>
       <div class="vt-dong vt-cuoi"><span>Lãi / lỗ</span><b id="vt-lai" class="vt-big"></b></div>
       <div class="vt-phu"><div class="vt-phu1"><span>Giá trị hiện tại</span><b id="vt-hn"></b></div><div class="vt-bar"><i id="vt-bar"></i></div><small id="vt-tb"></small></div>
+      <div class="o-nut"><button type="button" id="vt-mua" class="chinh">Mua vàng</button><button type="button" id="vt-ban">Bán vàng</button><button type="button" id="vt-ls">Lịch sử</button></div>
     </div>
   </div>
   <div id="tq-sk" style="display:none">
@@ -393,6 +405,17 @@
   </div>
 </div>
 
+<div id="rtm">
+  <div class="hop">
+    <b>Rút tiền tiết kiệm</b>
+    <label>Chọn sổ</label><select id="rtm-so"></select>
+    <label>Ngày rút (dd/mm/yyyy)</label><input id="rtm-ngay" inputmode="numeric">
+    <label>Số tiền nhận về (gốc + lãi)</label><input id="rtm-tien" inputmode="numeric">
+    <div id="rtm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
+    <div id="rtm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
+    <div class="nut"><button id="rtm-luu">Rút</button><button class="huy" id="rtm-huy">Hủy</button></div>
+  </div>
+</div>
 <div id="tkm">
   <div class="hop">
     <b id="tkm-ten">Khoản tiết kiệm</b>
@@ -482,7 +505,7 @@ let items = [];
 try { items = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
 const fmt = n => n.toLocaleString('vi-VN');
 // Khoản thu: nội dung có lương / thưởng / thu nhập / thu khác; còn lại là chi
-const laThu = it => /lương|thưởng|thu nhập|thu khác|bán vàng|(^|\s)luong(\s|$)/i.test((it.noiDung || '').normalize('NFC'));
+const laThu = it => /lương|thưởng|thu nhập|thu khác|bán vàng|rút tiết kiệm|(^|\s)luong(\s|$)/i.test((it.noiDung || '').normalize('NFC'));
 // Lọc theo nguồn tiền ở tab Chi tiết: '' = tất cả, '__trong__' = chưa chọn nguồn
 let locNguon = '';
 const khopLoc = (it, n = locNguon) => !n || (n === '__trong__' ? !it.nguon : it.nguon === n);
@@ -647,17 +670,17 @@ function dongGd(it) {
   ck.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
   dt.onblur = () => {
     const d = parseNgay(dt.textContent, it.thoiGian);
-    if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); gdSangVang(it); xemThangCua(it.thoiGian); }
+    if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); gdSangVang(it); gdSangTk(it); xemThangCua(it.thoiGian); }
     render();                                               // sai định dạng thì hiện lại ngày cũ
   };
   nd.onblur = () => {
     const moi = nd.textContent.trim();
     if (moi !== it.noiDung) learnFix(it.noiDung, moi);      // nhớ cách sửa cho lần sau
     const truoc = laThu(it);
-    it.noiDung = moi; save(); gdSangVang(it);
+    it.noiDung = moi; save(); gdSangVang(it); gdSangTk(it);
     if (laThu(it) !== truoc) render();                      // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
   };
-  st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); gdSangVang(it); render(); };
+  st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); gdSangVang(it); gdSangTk(it); render(); };
   return r;
 }
 
@@ -728,7 +751,7 @@ $('chkall').onchange = e => {
 $('delsel').onclick = () => {
   if (!chon.size || !confirm(`Xóa ${chon.size} dòng đã chọn?`)) return;
   items.filter(it => chon.has(it.id) && it.anh).forEach(it => kho.xoa(it.id).catch(() => {}));
-  xoaVangCungId(chon);
+  xoaVangCungId(chon); xoaTkCungId(chon);
   items = items.filter(it => !chon.has(it.id));
   chon.clear(); save(); render();
 };
@@ -1120,9 +1143,10 @@ function moMan(ten) {
 }
 $('o-sk').onclick = () => moMan('sk');
 $('o-nam').onclick = () => moMan('nam');
-$('o-tk').onclick = () => moMan('tk');
+$('o-tk').onclick = e => { if (!e.target.closest('button')) moMan('tk'); };
 $('o-tk').onkeydown = e => { if (e.key === 'Enter') moMan('tk'); };
-$('o-vang').onclick = e => { if (!e.target.closest('input')) moMan('vang'); };   // bấm ô nhập giá thì không mở bảng
+$('o-vang').onclick = e => { if (!e.target.closest('input, button')) moMan('vang'); };
+$('vt-mua').onclick = () => moVgm(null, 'mua'); $('vt-ban').onclick = () => moVgm(null, 'ban'); $('vt-ls').onclick = () => moMan('vang');   // bấm ô nhập giá thì không mở bảng
 document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => moMan('menu'); });
 
 // Tiền mặt = tổng thu − tổng chi của toàn bộ dữ liệu
@@ -1327,10 +1351,10 @@ function docVgm() {
   return { v };
 }
 function xemVgm() { const { v } = docVgm(); $('vgm-xem').textContent = v ? `${$('vgm-xem').dataset.t || 'Thành tiền'}: ${fmt(Math.round(v.chi * v.gia))}` : ''; }
-function moVgm(id) {
+function moVgm(id, loai) {
   vgSua = id || null;
   const v = vang.find(x => x.id === id);
-  datLoaiVgm(v && laBan(v) ? 'ban' : 'mua');
+  datLoaiVgm(v ? (laBan(v) ? 'ban' : 'mua') : (loai || 'mua'));
   $('vgm-ten').textContent = v ? 'Sửa khoản vàng' : 'Thêm khoản vàng';
   $('vgm-ngay').value = v ? ngayDayDu(new Date(v.ngay + 'T12:00:00')) : ngayDayDu(new Date());
   $('vgm-noi').value = v ? (v.noi || '') : ''; $('vgm-hd').value = v ? (v.hd || '') : ''; $('vgm-sl').value = v ? chiStr(v.chi) : ''; $('vgm-gia').value = v ? fmt(v.gia) : '';
@@ -1391,9 +1415,11 @@ const soNgayKy = k => Math.round((denHan(k) - ngayGui(k)) / NGAY_MS);           
 const ngayDaQua = k => Math.max(0, Math.min(soNgayKy(k), Math.round((new Date(new Date().toDateString() + ' 12:00') - ngayGui(k)) / NGAY_MS)));
 const tienDenHan = k => Math.round(k.soTien * (1 + k.lai / 100 * soNgayKy(k) / 365));
 const laiSomSuat = k => k.laiSom ?? 1;
+const laiRutNgay = (k, d) => Math.round(k.soTien * laiSomSuat(k) / 100 * Math.max(0, Math.min(soNgayKy(k), Math.round((d - ngayGui(k)) / NGAY_MS))) / 365);
+const tienNhanKhiRut = (k, d) => d >= denHan(k) ? tienDenHan(k) : k.soTien + laiRutNgay(k, d);   // đủ kỳ hạn: lãi đủ kỳ; trước hạn: lãi rút trước hạn theo số ngày gửi
 const laiRutSom = k => Math.round(k.soTien * laiSomSuat(k) / 100 * ngayDaQua(k) / 365);
 const ngayDayDu = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
-const dangGui = k => denHan(k) >= new Date(new Date().toDateString());
+const dangGui = k => !k.rut && denHan(k) >= new Date(new Date().toDateString());
 const tkDangGui = () => tietKiem.filter(dangGui).reduce((s, k) => s + k.soTien, 0);
 
 // Logo ngân hàng: ảnh trong thư mục logo/ nếu có (phần tử thứ 4), không thì ô chữ viết tắt theo màu thương hiệu
@@ -1409,17 +1435,70 @@ function logoNh(ten) {
 }
 const pctStr = n => String(n).replace('.', ',');
 function renderTk() {
-  const ds = [...tietKiem].sort((a, b) => dangGui(b) - dangGui(a) || denHan(a) - denHan(b)), hom = new Date(new Date().toDateString() + ' 12:00');
+  const ds = [...tietKiem].sort((a, b) => dangGui(b) - dangGui(a) || !!a.rut - !!b.rut || denHan(a) - denHan(b)), hom = new Date(new Date().toDateString() + ' 12:00');
   $('tk-ds').innerHTML = ds.map(k => {
-    const gui = dangGui(k), pct = Math.round(ngayDaQua(k) / soNgayKy(k) * 1000) / 10, con = Math.max(0, Math.round((denHan(k) - hom) / NGAY_MS));
-    return `<div class="tk-the${gui ? '' : ' het'}" data-id="${k.id}"><div class="tk-hd"><div class="tk-kh"><b>${k.ky}</b><small>Tháng</small></div><div class="tk-tn"><b>${logoNh(k.nganHang)}${esc(k.nganHang || 'Chưa ghi ngân hàng')}</b><small>Lãi ${pctStr(k.lai)}%/năm</small></div><span class="tk-st">${gui ? `Còn ${con} ngày` : 'Đã đáo hạn'}</span></div>
+    const gui = dangGui(k), pct = k.rut ? 100 : Math.round(ngayDaQua(k) / soNgayKy(k) * 1000) / 10, con = Math.max(0, Math.round((denHan(k) - hom) / NGAY_MS));
+    return `<div class="tk-the${gui ? '' : ' het'}" data-id="${k.id}"><div class="tk-hd"><div class="tk-kh"><b>${k.ky}</b><small>Tháng</small></div><div class="tk-tn"><b>${logoNh(k.nganHang)}${esc(k.nganHang || 'Chưa ghi ngân hàng')}</b><small>Lãi ${pctStr(k.lai)}%/năm</small></div><span class="tk-st">${k.rut ? 'Đã rút ' + ddmm(new Date(k.rut.ngay + 'T12:00:00')) : gui ? `Còn ${con} ngày` : 'Đã đáo hạn'}</span></div>
       <div class="tk-goc"><span>Gốc đã nạp:</span><b>${fmt(k.soTien)}đ</b></div><div class="tk-bar"><i style="width:${pct}%"></i></div><div class="tk-nb"><span>${ngayDayDu(ngayGui(k))}</span><span>${ngayDayDu(denHan(k))}</span></div>
-      <div class="tk-ln">${gui ? `<div class="tk-r"><span>Lợi nhuận rút trước hạn<br><em>(${pctStr(laiSomSuat(k))}%/năm)</em></span><b>+${fmt(laiRutSom(k))}đ</b></div>` : ''}<div class="tk-r"><span>Lợi nhuận sau ${k.ky} tháng<br><em>(${pctStr(k.lai)}%/năm)</em></span><b>+${fmt(tienDenHan(k) - k.soTien)}đ</b></div></div></div>`;
+      <div class="tk-ln">${k.rut ? `<div class="tk-r"><span>Đã nhận về<br><em>(gốc + lãi ${ngayDayDu(new Date(k.rut.ngay + 'T12:00:00'))})</em></span><b>${fmt(k.rut.nhan)}đ</b></div><div class="tk-r"><span>Lãi thực nhận</span><b>${k.rut.nhan >= k.soTien ? '+' : '-'}${fmt(Math.abs(k.rut.nhan - k.soTien))}đ</b></div>` : gui ? `<div class="tk-r"><span>Lợi nhuận rút trước hạn<br><em>(${pctStr(laiSomSuat(k))}%/năm)</em></span><b>+${fmt(laiRutSom(k))}đ</b></div>` : ''}${k.rut ? '' : `<div class="tk-r"><span>Lợi nhuận sau ${k.ky} tháng<br><em>(${pctStr(k.lai)}%/năm)</em></span><b>+${fmt(tienDenHan(k) - k.soTien)}đ</b></div>`}</div></div>`;
   }).join('') || '<div class="tk-trong">Chưa có khoản nào. Bấm + Thêm.</div>';
   const gui = ds.filter(dangGui);
   $('tk-tong').innerHTML = gui.length ? `<div><span>Tổng gốc đang gửi:</span><b>${fmt(gui.reduce((s, k) => s + k.soTien, 0))}đ</b></div><div><span>Tổng tiền đáo hạn:</span><b>${fmt(gui.reduce((s, k) => s + tienDenHan(k), 0))}đ</b></div>` : '';
   $('tk-ds').querySelectorAll('.tk-the').forEach(el => { el.onclick = () => moTkm(el.dataset.id); });
 }
+// Nối Sổ giao dịch và Tiền tiết kiệm: dòng "Gửi tiết kiệm" (chi) dùng id của sổ, dòng "Rút tiết kiệm" (thu) dùng id sổ + '_rut'
+const ndGui = k => `Gửi tiết kiệm ${k.nganHang || ''} ${k.ky} tháng`.replace(/\s+/g, ' ').trim();
+const ndRut = k => `Rút tiết kiệm ${k.nganHang || ''}`.trim();
+const isoNgay = ngay => new Date(ngay + 'T12:00:00').toISOString();
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+function tkSangGd(k, moi) {                                  // moi = true: sổ mới tạo, cần tạo dòng giao dịch; sổ cũ chỉ cập nhật nếu đã có dòng
+  let it = items.find(x => x.id === k.id);
+  if (!it && moi) { it = { id: k.id, cauGoc: 'tiết kiệm', nguon: nguonMd }; items.push(it); }
+  if (it) { it.noiDung = ndGui(k); it.soTien = k.soTien; it.thoiGian = isoNgay(k.ngay); }
+  let rt = items.find(x => x.id === k.id + '_rut');
+  if (k.rut) { if (!rt) { rt = { id: k.id + '_rut', cauGoc: 'tiết kiệm', nguon: nguonMd }; items.push(rt); } rt.noiDung = ndRut(k); rt.soTien = k.rut.nhan; rt.thoiGian = isoNgay(k.rut.ngay); }
+  else if (rt) items = items.filter(x => x !== rt);
+  xepNgay(); save(); render();
+}
+function gdSangTk(it) {                                      // sửa dòng giao dịch: cập nhật sổ tiết kiệm cùng id
+  const rut = it.id.endsWith('_rut'), k = tietKiem.find(x => x.id === (rut ? it.id.slice(0, -4) : it.id)); if (!k) return;
+  if (rut) { if (!k.rut) return; k.rut.nhan = it.soTien; k.rut.ngay = ymd(new Date(it.thoiGian)); }
+  else { k.soTien = it.soTien; k.ngay = ymd(new Date(it.thoiGian)); }
+  luuTk(); renderMenuTq();
+}
+function xoaTkCungId(ids) {                                  // xóa dòng giao dịch: xóa sổ (dòng Gửi) hoặc hủy việc rút (dòng Rút)
+  let doi = false;
+  ids.forEach(id => {
+    if (id.endsWith('_rut')) { const k = tietKiem.find(x => x.id === id.slice(0, -4)); if (k?.rut) { delete k.rut; doi = true; } }
+    else if (tietKiem.some(x => x.id === id)) { tietKiem = tietKiem.filter(x => x.id !== id); items = items.filter(x => x.id !== id + '_rut'); doi = true; }
+  });
+  if (doi) { luuTk(); renderMenuTq(); }
+}
+let rtTay = false;
+function tinhRut() {                                         // gợi ý số tiền nhận theo ngày rút; sửa tay thì giữ số đã sửa
+  const k = tietKiem.find(x => x.id === $('rtm-so').value), d = parseNgay($('rtm-ngay').value, new Date().toISOString());
+  if (!k || !d) { $('rtm-xem').textContent = ''; return; }
+  d.setHours(12, 0, 0, 0);
+  const goiY = tienNhanKhiRut(k, d);
+  if (!rtTay) $('rtm-tien').value = fmt(goiY);
+  $('rtm-xem').textContent = d >= denHan(k) ? `Đủ kỳ hạn, lãi ${pctStr(k.lai)}%/năm` : `Rút trước hạn, lãi ${pctStr(laiSomSuat(k))}%/năm tính theo ${Math.max(0, Math.round((d - ngayGui(k)) / NGAY_MS))} ngày gửi`;
+}
+function moRut() {
+  const ds = tietKiem.filter(k => !k.rut).sort((a, b) => denHan(a) - denHan(b));
+  if (!ds.length) { alert('Chưa có sổ tiết kiệm nào để rút.'); return; }
+  $('rtm-so').innerHTML = ds.map(k => `<option value="${k.id}">${esc(k.nganHang || 'Sổ')} · ${fmt(k.soTien)} · đáo hạn ${ngayDayDu(denHan(k))}</option>`).join('');
+  $('rtm-ngay').value = ngayDayDu(new Date()); $('rtm-loi').textContent = ''; rtTay = false; tinhRut(); $('rtm').classList.add('mo');
+}
+$('rtm-so').onchange = () => { rtTay = false; tinhRut(); }; $('rtm-ngay').oninput = () => { rtTay = false; tinhRut(); };
+$('rtm-tien').oninput = e => { rtTay = true; e.target.value = fmt(soDuong(e.target.value)) === '0' ? '' : fmt(soDuong(e.target.value)); };
+$('rtm-huy').onclick = () => $('rtm').classList.remove('mo');
+$('rtm-luu').onclick = () => {
+  const k = tietKiem.find(x => x.id === $('rtm-so').value), d = parseNgay($('rtm-ngay').value, new Date().toISOString()), nhan = soDuong($('rtm-tien').value);
+  if (!k) return;
+  if (!d) { $('rtm-loi').textContent = 'Ngày rút chưa đúng (vd 26/10/2026).'; return; }
+  if (!nhan) { $('rtm-loi').textContent = 'Cần nhập số tiền nhận về.'; return; }
+  k.rut = { ngay: ymd(d), nhan }; luuTk(); tkSangGd(k, false); $('rtm').classList.remove('mo'); renderTk(); renderMenuTq();
+};
 let tkSua = null;                                           // id khoản đang sửa, null = thêm mới
 const soDuong = t => Number(String(t).replace(/\D/g, '')) || 0;
 function docTkm() {                                          // đọc form; trả về khoản hoặc lỗi
@@ -1446,18 +1525,20 @@ function moTkm(id) {
 }
 ['tkm-ngay', 'tkm-tien', 'tkm-ky', 'tkm-lai', 'tkm-som'].forEach(id => { $(id).oninput = xemTkm; });
 $('tk-them').onclick = () => moTkm(null);
+$('tkt-gui-nut').onclick = () => moTkm(null); $('tkt-ls').onclick = () => moMan('tk'); $('tkt-rut-nut').onclick = () => moRut();
 $('tkm-huy').onclick = () => $('tkm').classList.remove('mo');
 $('tkm-luu').onclick = () => {
   const { k, loi } = docTkm();
   if (loi) { $('tkm-loi').textContent = loi; return; }
   const i = tietKiem.findIndex(x => x.id === k.id);
-  if (i >= 0) tietKiem[i] = k; else tietKiem.push(k);
-  luuTk(); $('tkm').classList.remove('mo'); renderTk();
+  if (i >= 0) tietKiem[i] = { ...tietKiem[i], ...k }; else tietKiem.push(k);
+  luuTk(); tkSangGd(tietKiem.find(x => x.id === k.id), i < 0); $('tkm').classList.remove('mo'); renderTk(); renderMenuTq();
 };
 $('tkm-xoa').onclick = () => {
   if (!confirm('Xóa khoản tiết kiệm này?')) return;
   tietKiem = tietKiem.filter(x => x.id !== tkSua);
-  luuTk(); $('tkm').classList.remove('mo'); renderTk();
+  items = items.filter(x => x.id !== tkSua && x.id !== tkSua + '_rut'); save(); render();
+  luuTk(); $('tkm').classList.remove('mo'); renderTk(); renderMenuTq();
 };
 
 function chonTab(tq) {
