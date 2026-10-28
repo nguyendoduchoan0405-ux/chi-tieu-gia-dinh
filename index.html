@@ -84,7 +84,6 @@
   th.th-nguon { font-size: 12px; }
   th small { font-size: 9px; margin-left: 1px; color: #555; }
   td.chi, td.am { color: #d93025; }
-  #export { position: absolute; right: 6px; top: 6px; height: 28px; padding: 0 10px; font-size: 13px; border: 1px solid #1a73e8; border-radius: 8px; background: #fff; color: #1a73e8; }
   #dongbo { margin-top: 10px; padding: 6px 10px; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 8px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   #dongbo.loi { color: #d93025; border-color: #f3c3bf; }
   #dn { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 20; align-items: center; justify-content: center; padding: 16px; }
@@ -172,6 +171,40 @@
   #bottom { background: #f7f8fc; }
   .man-dau button.lai, .man-dau button.them, .thang-nav button { color: #6366f1; }
   .man-dau button.them { border-color: #6366f1; }
+  /* ----- Sổ giao dịch ----- */
+  #p-ct { position: relative; }
+  #st-tabs { position: relative; display: flex; gap: 6px; overflow-x: auto; padding: 4px 0 10px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  #st-tabs::-webkit-scrollbar { display: none; }
+  .st-tab { flex: none; padding: 9px 16px; border: 1px solid transparent; border-radius: 20px; background: none; color: #6b7280; font-size: 13px; font-weight: 600; letter-spacing: .3px; }
+  .st-tab.on { background: #fff; border-color: #c7d2fe; color: #4f46e5; box-shadow: 0 2px 8px rgba(99,102,241,.18); }
+  #st-tong { background: #fff; border-radius: 18px; padding: 12px 16px; box-shadow: 0 4px 14px rgba(30,41,99,.08); }
+  .st-dong { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; font-size: 15px; color: #555; }
+  .st-dong b { font-size: 16px; }
+  .st-net { border-top: 1px solid #eee; margin-top: 6px; padding-top: 8px; }
+  .gm-thu { color: #188038; } .gm-chi { color: #d93025; }
+  #st-tools { display: flex; align-items: center; gap: 8px; margin: 12px 0 2px; }
+  .st-btn { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; box-sizing: border-box; font-size: 13px; color: #555; background: #fff; border: 1px solid #e3e3e3; border-radius: 16px; }
+  #st-loc.co { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+  #export { margin-left: auto; color: #6366f1; border-color: #6366f1; }
+  .ngay-the { background: #fff; border-radius: 18px; box-shadow: 0 4px 14px rgba(30,41,99,.08); margin-top: 12px; padding: 4px 14px 2px; }
+  .ngay-dau { display: flex; align-items: center; gap: 12px; padding: 8px 0 10px; border-bottom: 1px solid #f0f0f5; }
+  .ngay-so { font-size: 34px; font-weight: 500; line-height: 1; min-width: 44px; }
+  .ngay-ten { flex: 1; display: flex; flex-direction: column; font-size: 14px; }
+  .ngay-ten small { color: #888; font-size: 12px; }
+  .ngay-tong { font-size: 16px; }
+  .gd { display: flex; align-items: flex-start; gap: 8px; padding: 12px 0; border-bottom: 1px solid #f3f3f7; }
+  .gd:last-child { border-bottom: 0; }
+  .gd-ck { padding: 4px 4px 4px 0; }
+  .gd-giua { flex: 1; min-width: 0; }
+  .gd .nd { font-size: 15px; font-weight: 600; outline: none; word-break: break-word; }
+  .gd .phu { font-size: 12px; color: #888; margin-top: 3px; }
+  .gd .ng-ngay { outline: none; }
+  .gd .ng { position: relative; display: inline-block; padding-right: 12px; color: #6366f1; }
+  .gd .ng .ng-hien { display: inline; padding: 0; }
+  .gd .ng::after { content: '\25BE'; position: absolute; right: 0; top: 0; font-size: 10px; pointer-events: none; }
+  .gd-anh.co { color: #1a73e8; font-weight: 600; text-decoration: underline; }
+  .gd .tien { margin-left: auto; padding-left: 8px; font-size: 15px; font-weight: 600; text-align: right; white-space: nowrap; outline: none; }
+  .st-trong { margin-top: 60px; text-align: center; color: #9ca3af; font-size: 15px; }
 </style>
 </head>
 <body>
@@ -219,17 +252,18 @@
 </div>
 
 <div id="p-ct">
-<table style="margin-top:10px">
-  <colgroup><col class="c-chk"><col class="c-stt"><col class="c-ngay"><col class="c-nguon"><col><col class="c-tien"></colgroup>
-  <thead>
-    <tr class="r-month"><th colspan="6"><span id="thang"></span><button id="export">Xuất Excel</button></th></tr>
-    <tr class="r-cols">
-      <th><input type="checkbox" id="chkall" aria-label="Chọn tất cả"></th>
-      <th>No</th><th>Ngày</th><th class="th-nguon">Nguồn<small>▾</small><select id="loc-nguon" class="ng-chon" aria-label="Xem theo nguồn"></select></th><th>Nội dung</th><th class="money">Số tiền</th>
-    </tr>
-  </thead>
-  <tbody id="list"></tbody>
-</table>
+<div id="st-tabs"></div>
+<div id="st-tong">
+  <div class="st-dong"><span>Tiền vào</span><b id="st-vao" class="gm-thu"></b></div>
+  <div class="st-dong"><span>Tiền ra</span><b id="st-ra" class="gm-chi"></b></div>
+  <div class="st-dong st-net"><span>Còn lại</span><b id="st-con"></b></div>
+</div>
+<div id="st-tools">
+  <label class="st-btn"><input type="checkbox" id="chkall" aria-label="Chọn tất cả"> Tất cả</label>
+  <span class="st-btn" id="st-loc"><span id="loc-hien">Tất cả nguồn</span> ▾<select id="loc-nguon" class="ng-chon" aria-label="Xem theo nguồn"></select></span>
+  <button id="export" class="st-btn">Xuất Excel</button>
+</div>
+<div id="st-ds"></div>
 
 <div id="bottom">
   <div id="live"></div>
@@ -267,7 +301,7 @@
     <button id="dn-dong" class="phu">Đóng</button>
   </div>
 </div>
-<div id="tabs"><button id="tab-tq">Tổng quan</button><button id="tab-ct" class="on">Chi tiết</button></div>
+<div id="tabs"><button id="tab-tq">Tổng quan</button><button id="tab-ct" class="on">Sổ giao dịch</button></div>
 
 <div id="xk">
   <div class="hop">
@@ -434,7 +468,8 @@ function tuyChonLoc(sel, hienTai, tatCa) {                   // danh sách chọ
 }
 function veLoc() {
   tuyChonLoc($('loc-nguon'), locNguon, 'Tất cả nguồn');
-  document.querySelector('th.th-nguon').style.background = locNguon ? '#e8f0fe' : '';
+  $('loc-hien').textContent = locNguon === '__trong__' ? '(trống)' : locNguon || 'Tất cả nguồn';
+  $('st-loc').classList.toggle('co', !!locNguon);
 }
 function lamMoiNguon() {
   veLoc();
@@ -463,23 +498,13 @@ const thangCua = iso => { const d = new Date(iso); return `${pad(d.getMonth() + 
 const xepNgay = () => items.sort((a, b) => new Date(a.thoiGian) - new Date(b.thoiGian));
 xepNgay();
 
-// Dòng tháng cố định trên đầu bảng luôn hiện tháng của khoản đang nằm ngay dưới nó
-function capNhatThang() {
-  const th = $('thang');
-  const duoi = document.querySelector('tr.r-cols th').getBoundingClientRect().bottom;
-  const dong = [...document.querySelectorAll('#list tr')].find(tr => tr.getBoundingClientRect().bottom > duoi + 1);
-  const key = dong ? dong.dataset.thang : (items.length ? thangCua(items[items.length - 1].thoiGian) : thangCua(new Date().toISOString()));
-  th.textContent = 'Tháng ' + key;
-}
-window.addEventListener('scroll', capNhatThang, { passive: true });
-
 function capNhatChon() {
   const n = chon.size, btn = $('delsel');
   btn.style.display = n ? 'block' : 'none';
   btn.textContent = `Xóa (${n})`;
   const all = $('chkall');
-  all.checked = n > 0 && n === hien().length;
-  all.indeterminate = n > 0 && n < hien().length;
+  all.checked = n > 0 && n === dsThang().length;
+  all.indeterminate = n > 0 && n < dsThang().length;
 }
 
 // Gom theo tháng (items đã xếp theo ngày): [{ key, ds: [item...], thu, chi }]
@@ -494,73 +519,129 @@ function nhomThang(nguon = locNguon) {
   return nhom;
 }
 
-function render() {
-  const list = $('list');
-  list.innerHTML = '';
-  const nhom = nhomThang();
-  nhom.forEach((g, gi) => {
-    if (gi > 0) {                                              // sang tháng mới: dòng ngăn
-      const sep = document.createElement('tr');
-      sep.className = 'sep'; sep.dataset.thang = g.key;
-      sep.innerHTML = `<td colspan="6">Tháng ${g.key}</td>`;
-      list.appendChild(sep);
-    }
-    g.ds.forEach((it, i) => {
-      const tr = document.createElement('tr');
-      tr.dataset.thang = g.key;
-      tr.innerHTML = `<td class="c"><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></td><td class="c">${i + 1}</td>
-        <td class="c" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</td>
-        <td class="nguon c"><span class="ng-hien"></span><select class="ng-chon"></select></td>
-        <td contenteditable>${esc(it.noiDung)}</td>
-        <td class="money ${laThu(it) ? 'thu' : 'chi'}" contenteditable inputmode="numeric">${co(it.soTien, laThu(it) ? '+' : '-')}</td>`;
-      const [ck, , dt, ng, nd, st] = tr.children;
-      const hien = ng.querySelector('.ng-hien');
-      // chỉ hiện 3 ký tự đầu cho gọn
-      const veHien = () => { hien.textContent = Array.from((it.nguon || '').normalize('NFC')).slice(0, 3).join('') || '–'; hien.classList.toggle('trong', !it.nguon); };
-      veHien();
-      ganNguon(ng.querySelector('select'), it.nguon, v => { it.nguon = v; save(); veHien(); });
-      if (it.anh) {                                         // dòng có ảnh: số thứ tự màu xanh, chạm để xem
-        const so = tr.children[1]; so.classList.add('co-anh');
-        so.onclick = async () => {
-          const b = await kho.doc(it.id).catch(() => null);
-          if (b) moPhong(URL.createObjectURL(b), true); else alert('Ảnh chưa tải về máy này, thử lại sau ít giây.');
-        };
-      }
-      ck.onclick = e => { if (e.target !== ck.firstChild) ck.firstChild.click(); };
-      ck.firstChild.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
-      dt.onblur = () => {
-        const d = parseNgay(dt.textContent, it.thoiGian);
-        if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); }
-        render();                                           // sai định dạng thì hiện lại ngày cũ
-      };
-      nd.onblur = () => {
-        const moi = nd.textContent.trim();
-        if (moi !== it.noiDung) learnFix(it.noiDung, moi);   // nhớ cách sửa cho lần sau
-        const truoc = laThu(it);
-        it.noiDung = moi; save();
-        if (laThu(it) !== truoc) render();                   // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
-      };
-      st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
-      list.appendChild(tr);
-    });
-    [[`Tổng thu tháng ${g.key}`, co(g.thu, '+'), 'thu'], [`Tổng chi tháng ${g.key}`, co(g.chi, '-'), 'chi'],
-     [`Còn lại tháng ${g.key}`, co(g.thu - g.chi, g.thu >= g.chi ? '+' : '-'), g.thu >= g.chi ? 'thu' : 'am']].forEach(([ten, so, cl]) => {
-      const tong = document.createElement('tr');              // tổng riêng của tháng
-      tong.className = 'tong'; tong.dataset.thang = g.key;
-      tong.innerHTML = `<td colspan="5">${ten}</td><td class="money ${cl}">${so}</td>`;
-      list.appendChild(tong);
-    });
-  });
-  // Tổng cộng chỉ cần khi có từ 2 tháng trở lên
-  capNhatChon();
-  capNhatThang();
+// ----- Sổ giao dịch: xem từng tháng một, các khoản gom theo ngày -----
+const thangDau = d => ({ y: d.getFullYear(), m: d.getMonth() + 1 });
+const khoaT = t => t.y * 12 + t.m - 1;                      // số thứ tự tháng để so sánh
+const tuKhoa = k => ({ y: Math.floor(k / 12), m: k % 12 + 1 });
+let thangXem = thangDau(new Date());
+const xemThangCua = iso => { thangXem = thangDau(new Date(iso)); };   // thêm/sửa khoản ở tháng khác thì chuyển sang tháng đó
+// Từ tháng sớm nhất có dữ liệu (hoặc tháng này) đến tháng sau
+function khoangThang() {
+  const hom = khoaT(thangDau(new Date()));
+  let lo = hom, hi = hom + 1;
+  for (const it of items) { const k = khoaT(thangDau(new Date(it.thoiGian))); if (k < lo) lo = k; if (k > hi) hi = k; }
+  return [lo, hi];
+}
+const dsThang = () => items.filter(it => khopLoc(it) && khoaT(thangDau(new Date(it.thoiGian))) === khoaT(thangXem));
+const nhanThang = k => {
+  const d = k - khoaT(thangDau(new Date())), t = tuKhoa(k);
+  return d === 0 ? 'THÁNG NÀY' : d === -1 ? 'THÁNG TRƯỚC' : d === 1 ? 'THÁNG SAU' : `${pad(t.m)}/${t.y}`;
+};
+const THU_TRONG_TUAN = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+const tenNgay = d => {
+  const hom = new Date(), n = Math.round((new Date(hom.getFullYear(), hom.getMonth(), hom.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 86400000);
+  return n === 0 ? 'Hôm nay' : n === 1 ? 'Hôm qua' : THU_TRONG_TUAN[d.getDay()];
+};
+
+// Một khoản trong thẻ ngày: nội dung + (ngày · nguồn · Ảnh) bên trái, số tiền bên phải; các ô đều sửa được tại chỗ
+function dongGd(it) {
+  const thu = laThu(it), r = document.createElement('div');
+  r.className = 'gd';
+  r.innerHTML = `<label class="gd-ck"><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></label>
+    <div class="gd-giua"><div class="nd" contenteditable>${esc(it.noiDung)}</div>
+      <div class="phu"><span class="ng-ngay" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</span> · <span class="ng"><span class="ng-hien"></span><select class="ng-chon"></select></span><span class="gd-anh"></span></div></div>
+    <div class="tien ${thu ? 'gm-thu' : 'gm-chi'}" contenteditable inputmode="numeric">${co(it.soTien, thu ? '+' : '-')}</div>`;
+  const ck = r.querySelector('input'), nd = r.querySelector('.nd'), dt = r.querySelector('.ng-ngay'), st = r.querySelector('.tien');
+  const hien = r.querySelector('.ng-hien');
+  const veHien = () => { hien.textContent = it.nguon || 'Chưa chọn nguồn'; hien.classList.toggle('trong', !it.nguon); };
+  veHien();
+  ganNguon(r.querySelector('select'), it.nguon, v => { it.nguon = v; save(); veHien(); });
+  if (it.anh) {                                             // khoản có ảnh hóa đơn: chữ "Ảnh" màu xanh, chạm để xem
+    const a = r.querySelector('.gd-anh'); a.textContent = ' · Ảnh'; a.classList.add('co');
+    a.onclick = async () => {
+      const b = await kho.doc(it.id).catch(() => null);
+      if (b) moPhong(URL.createObjectURL(b), true); else alert('Ảnh chưa tải về máy này, thử lại sau ít giây.');
+    };
+  }
+  ck.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
+  dt.onblur = () => {
+    const d = parseNgay(dt.textContent, it.thoiGian);
+    if (d) { it.thoiGian = d.toISOString(); xepNgay(); save(); xemThangCua(it.thoiGian); }
+    render();                                               // sai định dạng thì hiện lại ngày cũ
+  };
+  nd.onblur = () => {
+    const moi = nd.textContent.trim();
+    if (moi !== it.noiDung) learnFix(it.noiDung, moi);      // nhớ cách sửa cho lần sau
+    const truoc = laThu(it);
+    it.noiDung = moi; save();
+    if (laThu(it) !== truoc) render();                      // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
+  };
+  st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); render(); };
+  return r;
 }
 
+function render() {
+  const [lo, hi] = khoangThang();
+  if (khoaT(thangXem) < lo) thangXem = tuKhoa(lo);
+  if (khoaT(thangXem) > hi) thangXem = tuKhoa(hi);
+  const k = khoaT(thangXem), tabs = $('st-tabs');
+  tabs.innerHTML = '';
+  for (let i = lo; i <= hi; i++) {
+    const b = document.createElement('button');
+    b.className = 'st-tab' + (i === k ? ' on' : ''); b.textContent = nhanThang(i);
+    b.onclick = () => { thangXem = tuKhoa(i); chon.clear(); render(); };
+    tabs.appendChild(b);
+  }
+  const on = tabs.querySelector('.on');
+  if (on) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2;
+
+  const ds = dsThang();
+  let vao = 0, ra = 0;
+  ds.forEach(it => { if (laThu(it)) vao += it.soTien; else ra += it.soTien; });
+  $('st-vao').textContent = co(vao, '+'); $('st-ra').textContent = co(ra, '-');
+  $('st-con').textContent = co(vao - ra, vao >= ra ? '+' : '-'); $('st-con').className = vao >= ra ? 'gm-thu' : 'gm-chi';
+
+  const box = $('st-ds'), ngayNhom = new Map();
+  box.innerHTML = '';
+  for (const it of [...ds].reverse()) {                     // ngày mới nhất ở trên, trong ngày khoản mới nhất ở trên
+    const key = new Date(it.thoiGian).getDate();
+    if (!ngayNhom.has(key)) ngayNhom.set(key, []);
+    ngayNhom.get(key).push(it);
+  }
+  if (!ds.length) box.innerHTML = '<div class="st-trong">Không có giao dịch</div>';
+  for (const dsN of ngayNhom.values()) {
+    const d = new Date(dsN[0].thoiGian), rong = dsN.reduce((s, it) => s + (laThu(it) ? it.soTien : -it.soTien), 0);
+    const the = document.createElement('div');
+    the.className = 'ngay-the';
+    the.innerHTML = `<div class="ngay-dau"><span class="ngay-so">${d.getDate()}</span><span class="ngay-ten"><b>${tenNgay(d)}</b><small>tháng ${d.getMonth() + 1} ${d.getFullYear()}</small></span><b class="ngay-tong">${co(rong, rong >= 0 ? '+' : '-')}</b></div>`;
+    dsN.forEach(it => the.appendChild(dongGd(it)));
+    box.appendChild(the);
+  }
+  capNhatChon();
+}
+
+// Quẹt ngang: trái = tháng trước, phải = tháng sau (theo yêu cầu của Hoan)
+function doiThang(d) {
+  const [lo, hi] = khoangThang(), k = khoaT(thangXem) + d;
+  if (k < lo || k > hi) return;
+  thangXem = tuKhoa(k); chon.clear(); render(); window.scrollTo(0, 0);
+}
+let vuot = null;
+$('p-ct').addEventListener('touchstart', e => {
+  const t = e.touches[0];
+  vuot = e.target.closest('#bottom, #st-tabs, [contenteditable]') ? null : { x: t.clientX, y: t.clientY };
+}, { passive: true });
+$('p-ct').addEventListener('touchend', e => {
+  if (!vuot) return;
+  const t = e.changedTouches[0], dx = t.clientX - vuot.x, dy = t.clientY - vuot.y;
+  vuot = null;
+  if (Math.abs(dx) >= 60 && Math.abs(dx) >= Math.abs(dy) * 1.5) doiThang(dx < 0 ? -1 : 1);
+}, { passive: true });
+
 $('loc-nguon').onchange = e => { locNguon = e.target.value; chon.clear(); lamMoiNguon(); capNhatChon(); };
-$('chkall').parentElement.onclick = e => { if (e.target.tagName !== 'INPUT') $('chkall').click(); };
 $('chkall').onchange = e => {
   chon.clear();
-  if (e.target.checked) hien().forEach(it => chon.add(it.id));
+  if (e.target.checked) dsThang().forEach(it => chon.add(it.id));
   render();
 };
 $('delsel').onclick = () => {
@@ -576,6 +657,7 @@ function addText(text) {
   const r = parseExpense(fixBrands(nd)), bay = new Date();
   const thoiGian = ngay ? new Date(ngay.y, ngay.m - 1, ngay.d, bay.getHours(), bay.getMinutes()) : bay;
   items.push({ ...r, id: newId(), thoiGian: thoiGian.toISOString(), cauGoc: text, nguon: nguonMd });
+  xemThangCua(thoiGian.toISOString());
   xepNgay(); save(); render();
 }
 
@@ -793,6 +875,7 @@ $('x-them').onclick = () => {
     const id = newId(), luu = the._anh?.luu;
     if (luu) kho.ghi(id, luu).catch(() => {});
     items.push({ id, noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '', anh: !!luu });
+    xemThangCua(d.toISOString());
     boThe(the);                                            // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
   }
   xepNgay(); save(); render();
@@ -1199,7 +1282,7 @@ $('tkm-xoa').onclick = () => {
 function chonTab(tq) {
   $('p-tq').style.display = tq ? '' : 'none'; $('p-ct').style.display = tq ? 'none' : '';
   $('tab-tq').classList.toggle('on', tq); $('tab-ct').classList.toggle('on', !tq);
-  if (tq) moMan('menu'); else capNhatThang();                   // vào hoặc bấm lại tab Tổng quan thì về màn các ô
+  if (tq) moMan('menu'); else render();                   // vào hoặc bấm lại tab Tổng quan thì về màn các ô
 }
 $('tab-tq').onclick = () => chonTab(true);
 $('tab-ct').onclick = () => chonTab(false);
