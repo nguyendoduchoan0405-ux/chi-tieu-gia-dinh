@@ -125,7 +125,7 @@
   .ct-dong span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ct-dau { font-weight: bold; color: #555; border-bottom: 1px solid #e3e3e3; margin-bottom: 2px; }
   #sk-ds tr.ct-the td { background: #fafafa; }
-  #vg-bang { min-width: 520px; table-layout: auto; }
+  #vg-bang { min-width: 620px; table-layout: auto; }
   #vg-bang th, #vg-bang td { white-space: nowrap; text-align: right; }
   #vg-bang th:first-child, #vg-bang td:first-child { text-align: left; }
   #vg-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
@@ -188,7 +188,7 @@
   <div id="tq-vang" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Vàng vật chất</span><button class="them" id="vg-them">+ Thêm</button></div>
     <div class="cuon-ngang"><table id="vg-bang">
-      <thead><tr><th>Ngày mua</th><th>Số lượng (chỉ)</th><th>Giá mua (đ/chỉ)</th><th>Thành tiền</th></tr></thead>
+      <thead><tr><th>Ngày mua</th><th>Nơi mua</th><th>Số lượng (chỉ)</th><th>Giá mua (đ/chỉ)</th><th>Thành tiền</th></tr></thead>
       <tbody id="vg-ds"></tbody>
     </table></div>
   </div>
@@ -309,6 +309,7 @@
   <div class="hop">
     <b id="vgm-ten">Khoản vàng</b>
     <label>Ngày mua (dd/mm/yyyy)</label><input id="vgm-ngay" inputmode="numeric">
+    <label>Nơi mua</label><input id="vgm-noi" placeholder="vd SJC, PNJ, Bảo Tín Minh Châu">
     <label>Số lượng (chỉ)</label><input id="vgm-sl" inputmode="decimal" placeholder="vd 2 hoặc 0,5">
     <label>Giá mua (đồng/chỉ)</label><input id="vgm-gia" inputmode="numeric">
     <div id="vgm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
@@ -1047,14 +1048,14 @@ const chiStr = n => String(Math.round(n * 100) / 100).replace('.', ',');
 function renderVang() {
   const ds = [...vang].sort((a, b) => a.ngay < b.ngay ? -1 : 1);
   const tien = v => Math.round(v.chi * v.gia);
-  $('vg-ds').innerHTML = (ds.map(v => `<tr data-id="${v.id}"><td>${ngayDayDu(new Date(v.ngay + 'T12:00:00'))}</td><td>${chiStr(v.chi)}</td><td>${fmt(v.gia)}</td><td>${fmt(tien(v))}</td></tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
-    + (ds.length ? `<tr class="tong-tk"><td>Tổng</td><td>${chiStr(ds.reduce((s, v) => s + v.chi, 0))}</td><td>${fmt(Math.round(ds.reduce((s, v) => s + tien(v), 0) / ds.reduce((s, v) => s + v.chi, 0)))}</td><td>${fmt(ds.reduce((s, v) => s + tien(v), 0))}</td></tr>` : '');
+  $('vg-ds').innerHTML = (ds.map(v => `<tr data-id="${v.id}"><td>${ngayDayDu(new Date(v.ngay + 'T12:00:00'))}</td><td>${esc(v.noi || '')}</td><td>${chiStr(v.chi)}</td><td>${fmt(v.gia)}</td><td>${fmt(tien(v))}</td></tr>`).join('') || '<tr><td colspan="5" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
+    + (ds.length ? `<tr class="tong-tk"><td>Tổng</td><td></td><td>${chiStr(ds.reduce((s, v) => s + v.chi, 0))}</td><td>${fmt(Math.round(ds.reduce((s, v) => s + tien(v), 0) / ds.reduce((s, v) => s + v.chi, 0)))}</td><td>${fmt(ds.reduce((s, v) => s + tien(v), 0))}</td></tr>` : '');
   $('vg-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moVgm(tr.dataset.id); });
 }
 let vgSua = null;
 function docVgm() {
   const d = parseNgay($('vgm-ngay').value, new Date().toISOString());
-  const v = { id: vgSua || newId(), chi: Number($('vgm-sl').value.replace(',', '.')) || 0, gia: soDuong($('vgm-gia').value) };
+  const v = { id: vgSua || newId(), chi: Number($('vgm-sl').value.replace(',', '.')) || 0, gia: soDuong($('vgm-gia').value), noi: $('vgm-noi').value.trim() };
   if (!d) return { loi: 'Ngày mua chưa đúng (vd 26/10/2026).' };
   v.ngay = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   if (v.chi <= 0 || !v.gia) return { loi: 'Cần nhập số lượng (chỉ) và giá mua.' };
@@ -1066,7 +1067,7 @@ function moVgm(id) {
   const v = vang.find(x => x.id === id);
   $('vgm-ten').textContent = v ? 'Sửa khoản vàng' : 'Thêm khoản vàng';
   $('vgm-ngay').value = v ? ngayDayDu(new Date(v.ngay + 'T12:00:00')) : ngayDayDu(new Date());
-  $('vgm-sl').value = v ? chiStr(v.chi) : ''; $('vgm-gia').value = v ? fmt(v.gia) : '';
+  $('vgm-noi').value = v ? (v.noi || '') : ''; $('vgm-sl').value = v ? chiStr(v.chi) : ''; $('vgm-gia').value = v ? fmt(v.gia) : '';
   $('vgm-xoa-hang').style.display = v ? '' : 'none'; $('vgm-loi').textContent = '';
   $('vgm').classList.add('mo'); xemVgm();
 }
