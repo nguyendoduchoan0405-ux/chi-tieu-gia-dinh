@@ -117,6 +117,8 @@
   .tk-kh { width: 46px; height: 46px; flex: none; border-radius: 50%; background: linear-gradient(135deg, #f6dc9a, #c8952f); color: #3b2a07; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; box-shadow: 0 6px 14px rgba(200,149,47,.3); }
   .tk-kh b { font-size: 19px; font-weight: 800; color: #3b2a07; } .tk-kh small { font-size: 9px; font-weight: 700; margin-top: 1px; }
   .tk-tn { flex: 1; min-width: 0; } .tk-tn b { display: block; font-size: 15px; color: #fff; font-weight: 700; } .tk-tn small { font-size: 12px; color: #93a0bd; }
+  .tk-logo { display: inline-flex; align-items: center; justify-content: center; min-width: 30px; height: 20px; padding: 0 5px; margin-right: 7px; border-radius: 6px; vertical-align: 1px; font-size: 10px; font-weight: 800; letter-spacing: -.2px; color: #fff; box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+  .tk-logo-img { width: 22px; height: 22px; margin-right: 7px; border-radius: 6px; vertical-align: -5px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
   .tk-st { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(236,201,122,.14); color: #ecc97a; border: 1px solid rgba(236,201,122,.3); white-space: nowrap; }
   .tk-goc { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; font-size: 13px; color: #a9b4cc; } .tk-goc b { font-size: 20px; color: #ecc97a; font-weight: 700; }
   .tk-bar { height: 7px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; margin-top: 8px; } .tk-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #c8952f, #f6dc9a); }
@@ -1394,12 +1396,23 @@ const ngayDayDu = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFull
 const dangGui = k => denHan(k) >= new Date(new Date().toDateString());
 const tkDangGui = () => tietKiem.filter(dangGui).reduce((s, k) => s + k.soTien, 0);
 
+// Logo ngân hàng: ảnh trong thư mục logo/ nếu có (phần tử thứ 4), không thì ô chữ viết tắt theo màu thương hiệu
+const NH_LOGO = [['vietcombank|vcb', 'VCB', '#00693e'], ['techcombank|tcb', 'TCB', '#e31e24'], ['vietinbank|ctg|cong thuong', 'CTG', '#1f4e9e'], ['bidv', 'BIDV', '#0e6e9c'], ['agribank', 'AGR', '#a4123f'], ['mb|quan doi', 'MB', '#1b1fd1', 'logo/mb.png'],
+  ['acb', 'ACB', '#0b4ea2'], ['sacombank|stb', 'STB', '#0a4da2'], ['vpbank|vpb', 'VPB', '#00a651'], ['tpbank|tpb', 'TPB', '#6a1b9a', 'logo/tpbank.png'], ['hdbank|hdb', 'HDB', '#e31937'], ['shinhan', 'SHB', '#0046ff'], ['shb', 'SHB', '#f58220'],
+  ['hsbc', 'HSBC', '#db0011'], ['vib', 'VIB', '#0072bc'], ['ocb', 'OCB', '#00a14b'], ['msb|maritime', 'MSB', '#e30613'], ['seabank', 'SEA', '#d7282f'], ['lpbank|lienviet', 'LPB', '#0b8a3e'], ['eximbank', 'EIB', '#0066b3'], ['scb', 'SCB', '#003a8c'], ['momo|vi dien tu', 'MoMo', '#a50064']];
+const boDauNh = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
+function logoNh(ten) {
+  const t = boDauNh(ten), m = NH_LOGO.find(([k]) => k.split('|').some(x => x.length <= 3 ? new RegExp('(^|[^a-z])' + x + '([^a-z]|$)').test(t) : t.includes(x)));
+  if (m && m[3]) return `<img class="tk-logo-img" src="${m[3]}" alt="${m[1]}">`;
+  const ma = m ? m[1] : (String(ten || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase() || '?'), mau = m ? m[2] : '#64748b';
+  return `<span class="tk-logo" style="background:${mau}${ma.length > 3 ? ';font-size:8px' : ''}">${esc(ma)}</span>`;
+}
 const pctStr = n => String(n).replace('.', ',');
 function renderTk() {
-  const ds = [...tietKiem].sort((a, b) => a.ngay < b.ngay ? -1 : 1), hom = new Date(new Date().toDateString() + ' 12:00');
+  const ds = [...tietKiem].sort((a, b) => dangGui(b) - dangGui(a) || denHan(a) - denHan(b)), hom = new Date(new Date().toDateString() + ' 12:00');
   $('tk-ds').innerHTML = ds.map(k => {
     const gui = dangGui(k), pct = Math.round(ngayDaQua(k) / soNgayKy(k) * 1000) / 10, con = Math.max(0, Math.round((denHan(k) - hom) / NGAY_MS));
-    return `<div class="tk-the${gui ? '' : ' het'}" data-id="${k.id}"><div class="tk-hd"><div class="tk-kh"><b>${k.ky}</b><small>Tháng</small></div><div class="tk-tn"><b>${esc(k.nganHang || 'Chưa ghi ngân hàng')}</b><small>Lãi ${pctStr(k.lai)}%/năm</small></div><span class="tk-st">${gui ? `Còn ${con} ngày` : 'Đã đáo hạn'}</span></div>
+    return `<div class="tk-the${gui ? '' : ' het'}" data-id="${k.id}"><div class="tk-hd"><div class="tk-kh"><b>${k.ky}</b><small>Tháng</small></div><div class="tk-tn"><b>${logoNh(k.nganHang)}${esc(k.nganHang || 'Chưa ghi ngân hàng')}</b><small>Lãi ${pctStr(k.lai)}%/năm</small></div><span class="tk-st">${gui ? `Còn ${con} ngày` : 'Đã đáo hạn'}</span></div>
       <div class="tk-goc"><span>Gốc đã nạp:</span><b>${fmt(k.soTien)}đ</b></div><div class="tk-bar"><i style="width:${pct}%"></i></div><div class="tk-nb"><span>${ngayDayDu(ngayGui(k))}</span><span>${ngayDayDu(denHan(k))}</span></div>
       <div class="tk-ln">${gui ? `<div class="tk-r"><span>Lợi nhuận rút trước hạn<br><em>(${pctStr(laiSomSuat(k))}%/năm)</em></span><b>+${fmt(laiRutSom(k))}đ</b></div>` : ''}<div class="tk-r"><span>Lợi nhuận sau ${k.ky} tháng<br><em>(${pctStr(k.lai)}%/năm)</em></span><b>+${fmt(tienDenHan(k) - k.soTien)}đ</b></div></div></div>`;
   }).join('') || '<div class="tk-trong">Chưa có khoản nào. Bấm + Thêm.</div>';
