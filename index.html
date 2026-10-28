@@ -214,7 +214,9 @@
   .vt-dong { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px; color: #555; }
   .vt-dong b { font-size: 15px; color: #222; }
   .vt-dong b.gm-thu { color: #188038; } .vt-dong b.gm-chi { color: #d93025; }
-  #vt-gia { width: 130px; box-sizing: border-box; padding: 6px 8px; font-size: 16px; text-align: right; border: 1px solid #d6d9f5; border-radius: 8px; background: #f7f8ff; color: #222; }
+  .vt-nhap { display: flex; align-items: center; width: 150px; box-sizing: border-box; padding-right: 8px; border: 1px solid #d6d9f5; border-radius: 8px; background: #f7f8ff; }
+  .vt-nhap i { font-style: normal; font-size: 14px; color: #555; }
+  #vt-gia { flex: 1; min-width: 0; padding: 6px 4px 6px 8px; font-size: 16px; text-align: right; border: 0; outline: none; background: none; color: #222; }
   .st-trong { margin-top: 60px; text-align: center; color: #9ca3af; font-size: 15px; }
 </style>
 </head>
@@ -231,7 +233,7 @@
     <div class="o-tq" id="o-vang" role="button" tabindex="0"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 18l3-6h12l3 6zM7 12l2-5h6l2 5"/></svg></span><small>Vàng tích lũy</small>
       <div class="vt-dong"><span>Số lượng</span><b id="vt-sl"></b></div>
       <div class="vt-dong"><span>Giá trị khi mua</span><b id="vt-von"></b></div>
-      <div class="vt-dong"><span>Giá vàng hiện tại (đ/chỉ)</span><input id="vt-gia" inputmode="numeric" placeholder="nhập tay" aria-label="Giá vàng hiện tại, đồng mỗi chỉ"></div>
+      <div class="vt-dong"><span>Giá vàng hiện tại</span><span class="vt-nhap"><input id="vt-gia" inputmode="numeric" placeholder="nhập tay" aria-label="Giá vàng hiện tại, đồng mỗi chỉ"><i>/chỉ</i></span></div>
       <div class="vt-dong"><span>Lãi / lỗ</span><b id="vt-lai"></b></div>
     </div>
   </div>
