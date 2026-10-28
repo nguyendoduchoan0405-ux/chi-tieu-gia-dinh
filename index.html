@@ -125,8 +125,11 @@
   .ct-dong span:nth-child(2) { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ct-dau { font-weight: bold; color: #555; border-bottom: 1px solid #e3e3e3; margin-bottom: 2px; }
   #sk-ds tr.ct-the td { background: #fafafa; }
-  #vg-bang { min-width: 720px; table-layout: auto; }
-  #vg-bang th, #vg-bang td { white-space: nowrap; text-align: right; }
+  #vg-bang { table-layout: fixed; width: 100%; }
+  #vg-bang th, #vg-bang td { height: 40px; padding: 4px 2px; font-size: 12px; white-space: nowrap; text-align: right; }
+  #vg-bang th { white-space: normal; line-height: 1.2; }
+  #vg-bang td:nth-child(2) { overflow: hidden; text-overflow: ellipsis; text-align: center; }
+  #vg-bang th:nth-child(2) { text-align: center; }
   #vg-bang th:first-child, #vg-bang td:first-child { text-align: left; }
   #vg-bang td.hd a { color: #1a73e8; font-weight: 600; text-decoration: underline; }
   #vg-bang td.sl { color: #1a73e8; font-weight: 600; }
@@ -190,8 +193,8 @@
   </div>
   <div id="tq-vang" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Vàng vật chất</span><button class="them" id="vg-them">+ Thêm</button></div>
-    <div class="cuon-ngang"><table id="vg-bang">
-      <thead><tr><th>Ngày mua</th><th>Nơi mua</th><th>Số lượng (chỉ)</th><th>Giá mua (đ/chỉ)</th><th>Thành tiền</th><th>Hóa đơn</th></tr></thead>
+    <div class="cuon-ngang"><table id="vg-bang"><colgroup><col style="width:21%"><col style="width:13%"><col style="width:10%"><col style="width:20%"><col style="width:24%"><col style="width:12%"></colgroup>
+      <thead><tr><th>Ngày mua</th><th>Nơi mua</th><th>SL (chỉ)</th><th>Giá mua (đ/chỉ)</th><th>Thành tiền</th><th>Hóa đơn</th></tr></thead>
       <tbody id="vg-ds"></tbody>
     </table></div>
   </div>
