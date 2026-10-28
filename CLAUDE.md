@@ -17,6 +17,8 @@ App ghi chi tiêu gia đình cho Hoan và vợ. Chạy trên iPhone (Safari, PWA
 - `supabase/schema.sql`, `supabase/anh.sql`: SQL chạy tay trong Supabase SQL Editor.
 - Test: `node parse.test.js` (42 ca), `node ocr.test.js` (12 ca). Sau khi sửa script trong `index.html` hãy chạy `node --check` trên script inline.
 
+- Xóa khoản vàng / sổ tiết kiệm: nút "Xóa" nhỏ ở góc phải hàng Lưu/Hủy, bấm thì hiện hộp xác nhận trong app (`hoiXoa()`, không dùng `confirm()`), đồng ý mới xóa.
+
 ## Quy ước dữ liệu
 - Mỗi dòng: `{id, noiDung, soTien (luôn dương), thoiGian (ISO), nguon, cauGoc, anh}`.
 - Thu hay chi KHÔNG lưu, suy ra từ nội dung (`laThu`): có lương/thưởng/thu nhập/thu khác là thu, còn lại là chi.
