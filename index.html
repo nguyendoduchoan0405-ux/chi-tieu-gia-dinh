@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Chi tiêu gia đình</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap&subset=vietnamese" media="print" onload="this.media='all'">
 <style>
   body { font-family: system-ui, sans-serif; margin: 0; padding: 10px 16px 250px; background: #f6f7f9; color: #222; }
   #live { min-height: 20px; margin-bottom: 6px; color: #666; font-style: italic; font-size: 14px; }
@@ -209,14 +211,30 @@
   #manual::placeholder { font-size: 10.5px; }
   #add { padding: 10px 11px; }
   .nhan-nguon { flex: none; align-self: center; font-size: 12px; line-height: 1.2; text-align: center; color: #555; margin-right: 4px; }
-  #o-vang { grid-column: 1 / -1; align-items: stretch; font-weight: 400; cursor: pointer; }
-  #o-vang small { margin-bottom: 6px; }
-  .vt-dong { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 4px 0; font-size: 14px; color: #555; }
-  .vt-dong b { font-size: 15px; color: #222; }
-  .vt-dong b.gm-thu { color: #188038; } .vt-dong b.gm-chi { color: #d93025; }
-  .vt-nhap { display: flex; align-items: center; gap: 6px; }
-  .vt-nhap i { font-style: normal; font-size: 15px; font-weight: 700; color: #222; }
-  #vt-gia { width: 116px; box-sizing: border-box; padding: 6px 8px; font-size: 16px; text-align: right; border: 1px solid #d6d9f5; border-radius: 8px; background: #f7f8ff; color: #222; }
+  /* Ô Vàng tích lũy */
+  #o-vang { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; cursor: pointer; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #0f172a;
+            background: linear-gradient(135deg, #fffbeb 0, #fff 55%, rgba(254,243,199,.6) 100%); border: 1px solid rgba(253,230,138,.9); box-shadow: 0 12px 28px rgba(245,158,11,.12); }
+  #o-vang::after { content: ''; position: absolute; right: -40px; bottom: -40px; width: 150px; height: 150px; border-radius: 50%; background: rgba(245,158,11,.12); filter: blur(30px); pointer-events: none; }
+  .vt-h { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .vt-logo { width: 46px; height: 46px; flex: none; border-radius: 16px; background: linear-gradient(135deg, #fbbf24, #d97706); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(245,158,11,.30); }
+  .vt-logo svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .vt-tt { flex: 1; min-width: 0; } .vt-tt b { display: block; font-size: 18px; font-weight: 700; color: #0f172a; } .vt-tt small { font-size: 12px; color: #64748b; }
+  .vt-badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .vt-badge.lo { background: #ffe4e6; color: #be123c; border: 1px solid #fecdd3; } .vt-badge.lai { background: #d1fae5; color: #047857; border: 1px solid #a7f3d0; }
+  .vt-dong { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 11px 0; border-bottom: 1px solid rgba(226,232,240,.8); }
+  .vt-dong.vt-cuoi { border-bottom: 0; }
+  .vt-dong > span { font-size: 14px; font-weight: 500; color: #475569; }
+  .vt-dong b { font-size: 17px; font-weight: 700; color: #0f172a; }
+  .vt-dong b.gm-thu { color: #059669; } .vt-dong b.gm-chi { color: #e11d48; } .vt-dong b.vt-big { font-size: 19px; }
+  .vt-gia { display: flex; align-items: center; gap: 6px; }
+  .vt-nhap { display: flex; align-items: center; padding: 4px 6px; background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; box-shadow: 0 1px 2px rgba(15,23,42,.06); }
+  #vt-gia { width: 110px; box-sizing: border-box; padding: 4px 6px; font: 700 16px 'Inter', system-ui, sans-serif; text-align: right; border: 0; outline: none; background: none; color: #d97706; }
+  #vt-gia::placeholder { font-weight: 400; color: #cbd5e1; }
+  .vt-dong b.vt-dv { font-size: 17px; }
+  .vt-phu { margin-top: 8px; padding: 12px 14px; border-radius: 16px; background: rgba(255,255,255,.75); border: 1px solid rgba(226,232,240,.8); }
+  .vt-phu1 { display: flex; justify-content: space-between; font-size: 12px; color: #64748b; margin-bottom: 8px; } .vt-phu1 b { font-size: 13px; font-weight: 600; color: #1e293b; }
+  .vt-bar { height: 8px; border-radius: 999px; background: #f1f5f9; overflow: hidden; } .vt-bar i { display: block; height: 100%; border-radius: 999px; background: #f59e0b; transition: width .3s; }
+  .vt-phu small { display: block; margin-top: 8px; font-size: 12px; color: #64748b; }
   .st-trong { margin-top: 60px; text-align: center; color: #9ca3af; font-size: 15px; }
 </style>
 </head>
@@ -230,11 +248,13 @@
     <div class="o-tq" id="o-ts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><small>Tổng tài sản</small><b></b><em>Tiền mặt + tiết kiệm đang gửi + vàng</em></div>
     <div class="o-tq" id="o-mat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span><small>Tiền mặt (thu − chi)</small><b></b></div>
     <button class="o-tq" id="o-tk"><span class="ic"><svg viewBox="0 0 24 24"><path d="M5 11a7 6 0 0 1 14 0v4h-2l-1 3h-3v-2h-2v2H8l-1-3a4 4 0 0 1-2-4z"/><circle cx="15" cy="10" r="1"/></svg></span><small>Tiền tiết kiệm</small><b></b></button>
-    <div class="o-tq" id="o-vang" role="button" tabindex="0"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 18l3-6h12l3 6zM7 12l2-5h6l2 5"/></svg></span><small>Vàng tích lũy</small>
+    <div class="o-tq" id="o-vang" role="button" tabindex="0">
+      <div class="vt-h"><span class="vt-logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.2 17 22l-5-3-5 3 1.5-8.8"/></svg></span><div class="vt-tt"><b>Vàng tích lũy</b><small>Tài sản vàng vật chất</small></div><span class="vt-badge" id="vt-pct"></span></div>
       <div class="vt-dong"><span>Số lượng</span><b id="vt-sl"></b></div>
       <div class="vt-dong"><span>Giá trị khi mua</span><b id="vt-von"></b></div>
-      <div class="vt-dong"><span>Giá vàng hiện tại</span><span class="vt-nhap"><input id="vt-gia" inputmode="numeric" placeholder="nhập tay" aria-label="Giá vàng hiện tại, đồng mỗi chỉ"><i>/chỉ</i></span></div>
-      <div class="vt-dong"><span>Lãi / lỗ</span><b id="vt-lai"></b></div>
+      <div class="vt-dong"><span>Giá vàng hiện tại</span><span class="vt-gia"><span class="vt-nhap"><input id="vt-gia" inputmode="numeric" placeholder="nhập tay" aria-label="Giá vàng hiện tại, đồng mỗi chỉ"></span><b class="vt-dv">/chỉ</b></span></div>
+      <div class="vt-dong vt-cuoi"><span>Lãi / lỗ</span><b id="vt-lai" class="vt-big"></b></div>
+      <div class="vt-phu"><div class="vt-phu1"><span>Giá trị hiện tại</span><b id="vt-hn"></b></div><div class="vt-bar"><i id="vt-bar"></i></div><small id="vt-tb"></small></div>
     </div>
   </div>
   <div id="tq-sk" style="display:none">
@@ -1066,8 +1086,13 @@ function renderMenuTq() {
   const nay = vangGia ? Math.round(tongChi * vangGia) : null, ts = con + tkDangGui() + (nay ?? von);   // vàng tính theo giá hiện tại nếu đã nhập, không thì theo giá mua
   $('vt-sl').textContent = `${chiStr(tongChi)} chỉ`; $('vt-von').textContent = fmt(von);
   if (document.activeElement !== $('vt-gia')) $('vt-gia').value = vangGia ? fmt(vangGia) : '';
-  const lai = $('vt-lai'), ll = nay === null ? null : nay - von;
-  lai.textContent = ll === null ? '–' : co(ll, ll >= 0 ? '+' : '-'); lai.className = ll === null ? '' : ll >= 0 ? 'gm-thu' : 'gm-chi';
+  const lai = $('vt-lai'), ll = nay === null ? null : nay - von, pct = ll === null || !von ? null : ll / von * 100, bg = $('vt-pct');
+  lai.textContent = ll === null ? '–' : co(ll, ll >= 0 ? '+' : '-'); lai.className = 'vt-big ' + (ll === null ? '' : ll >= 0 ? 'gm-thu' : 'gm-chi');
+  bg.style.display = pct === null ? 'none' : ''; bg.className = 'vt-badge ' + (pct >= 0 ? 'lai' : 'lo');
+  if (pct !== null) bg.textContent = `${pct >= 0 ? '+' : '-'}${Math.abs(pct).toFixed(2).replace('.', ',')}%`;
+  $('vt-hn').textContent = nay === null ? '–' : fmt(nay);
+  $('vt-bar').style.width = nay === null || !von ? '0%' : `${Math.min(100, nay / von * 100).toFixed(1)}%`;
+  $('vt-tb').textContent = tongChi ? `Giá mua bình quân ${fmt(Math.round(von / tongChi))}/chỉ` : 'Chưa có khoản vàng nào';
   $('o-ts').querySelector('b').textContent = co(ts, ts >= 0 ? '' : '-');
 }
 
