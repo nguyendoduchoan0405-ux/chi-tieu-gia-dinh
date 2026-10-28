@@ -1398,11 +1398,11 @@ const tkDangGui = () => tietKiem.filter(dangGui).reduce((s, k) => s + k.soTien, 
 
 // Logo ngân hàng: ảnh trong thư mục logo/ nếu có (phần tử thứ 4), không thì ô chữ viết tắt theo màu thương hiệu
 const NH_LOGO = [['vietcombank|vcb', 'VCB', '#00693e'], ['techcombank|tcb', 'TCB', '#e31e24'], ['vietinbank|ctg|cong thuong', 'CTG', '#1f4e9e'], ['bidv', 'BIDV', '#0e6e9c'], ['agribank', 'AGR', '#a4123f'], ['mb|quan doi', 'MB', '#1b1fd1', 'logo/mb.png'],
-  ['acb', 'ACB', '#0b4ea2'], ['sacombank|stb', 'STB', '#0a4da2'], ['vpbank|vpb', 'VPB', '#00a651'], ['tpbank|tpb', 'TPB', '#6a1b9a', 'logo/tpbank.png'], ['hdbank|hdb', 'HDB', '#e31937'], ['shinhan', 'SHB', '#0046ff'], ['shb', 'SHB', '#f58220'],
+  ['acb', 'ACB', '#0b4ea2'], ['sacombank|stb', 'STB', '#0a4da2'], ['vpbank|vpb', 'VPB', '#00a651'], ['tpbank|tpb|tien phong', 'TPB', '#6a1b9a', 'logo/tpbank.png'], ['hdbank|hdb', 'HDB', '#e31937'], ['shinhan', 'SHB', '#0046ff'], ['shb', 'SHB', '#f58220'],
   ['hsbc', 'HSBC', '#db0011'], ['vib', 'VIB', '#0072bc'], ['ocb', 'OCB', '#00a14b'], ['msb|maritime', 'MSB', '#e30613'], ['seabank', 'SEA', '#d7282f'], ['lpbank|lienviet', 'LPB', '#0b8a3e'], ['eximbank', 'EIB', '#0066b3'], ['scb', 'SCB', '#003a8c'], ['momo|vi dien tu', 'MoMo', '#a50064']];
 const boDauNh = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
 function logoNh(ten) {
-  const t = boDauNh(ten), m = NH_LOGO.find(([k]) => k.split('|').some(x => x.length <= 3 ? new RegExp('(^|[^a-z])' + x + '([^a-z]|$)').test(t) : t.includes(x)));
+  const t = boDauNh(ten), ts = t.replace(/[^a-z0-9]/g, ''), m = NH_LOGO.find(([k]) => k.split('|').some(x => x.length <= 3 ? new RegExp('(^|[^a-z])' + x + '([^a-z]|$)').test(t) : ts.includes(x.replace(/ /g, ''))));   // bỏ khoảng trắng: "TP Bank" = "TPBank"
   if (m && m[3]) return `<img class="tk-logo-img" src="${m[3]}" alt="${m[1]}">`;
   const ma = m ? m[1] : (String(ten || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 3).toUpperCase() || '?'), mau = m ? m[2] : '#64748b';
   return `<span class="tk-logo" style="background:${mau}${ma.length > 3 ? ';font-size:8px' : ''}">${esc(ma)}</span>`;
