@@ -55,7 +55,7 @@
   #xn { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 60; align-items: center; justify-content: center; padding: 24px; } #xn.mo { display: flex; }
   .xn-hop { width: 100%; max-width: 340px; background: #fff; border-radius: 18px; padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,.3); }
   .xn-hop b { font-size: 17px; color: #d93025; } .xn-hop p { margin: 10px 0 0; font-size: 14px; line-height: 1.5; color: #444; }
-  .xn-nut { display: flex; gap: 8px; margin-top: 18px; } .xn-nut button { flex: 1; padding: 12px; font-size: 16px; font-family: inherit; border: 0; border-radius: 10px; color: #fff; background: #888; } .xn-nut button#xn-ok { background: #d93025; }
+  .xn-nut { display: flex; gap: 8px; margin-top: 18px; } .xn-nut button { flex: 1; padding: 12px; font-size: 16px; font-family: inherit; border: 0; border-radius: 10px; color: #fff; background: #888; } .xn-nut button#xn-ok { flex: none; padding: 9px 20px; font-size: 14px; align-self: center; background: #d93025; }
   #tkm .nut button.xoa-nho, #vgm .nut button.xoa-nho { flex: none; padding: 10px 14px; font-size: 14px; align-self: center; background: #fff; color: #d93025; border: 1px solid #d93025; }
   #rtm select { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; background: #fff; }
   #rtm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; } #rtm.mo { display: flex; }
@@ -414,7 +414,7 @@
   <div class="xn-hop" role="alertdialog" aria-labelledby="xn-t">
     <b id="xn-t">Xác nhận xóa</b>
     <p id="xn-nd"></p>
-    <div class="xn-nut"><button type="button" id="xn-huy">Hủy</button><button type="button" id="xn-ok">Xóa</button></div>
+    <div class="xn-nut"><button type="button" id="xn-ok">Xóa</button><button type="button" id="xn-huy">Hủy</button></div>
   </div>
 </div>
 <div id="rtm">
