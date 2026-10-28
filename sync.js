@@ -100,7 +100,7 @@ window.dongBo = (() => {
     // 3. Cài đặt dùng chung (danh sách nguồn, sổ tiết kiệm): máy chưa sửa gì thì theo mạng, máy vừa sửa thì đẩy lên
     const caiDat = [['nguon_ds', '__nguon', () => nguonDs, v => { nguonDs = v; }], ['tiet_kiem', '__tk', () => tietKiem, v => { tietKiem = v; }],
       ['the_td', '__the', () => theTd, v => { theTd = v; }], ['vang', '__vang', () => vang, v => { vang = v; }],
-      ['vang_gia', '__vgia', () => vangGia, v => { vangGia = v; }]];
+      ['vang_gia', '__vgia', () => vangGia, v => { vangGia = v; }], ['ngoai_te', '__nt', () => ngoaiTe, v => { ngoaiTe = v; }]];
     for (const [khoa, dau, lay, dat] of caiDat) {
       const cs = await api(`/cai_dat?khoa=eq.${khoa}&select=gia_tri`), tren = cs[0]?.gia_tri, local = JSON.stringify(lay());
       if (tren && (da[dau] === undefined || da[dau] === local)) {
@@ -128,7 +128,7 @@ window.dongBo = (() => {
     ghi('sync_da', da); ghi('sync_moc', moc);
     if (thayDoi) {
       xepNgay(); try { localStorage.setItem(KEY, JSON.stringify(items)); } catch {}
-      luuNguon(); lamMoiNguon(); ghi('tiet_kiem', tietKiem); ghi('the_td', theTd); ghi('vang', vang); ghi('vang_gia', vangGia);
+      luuNguon(); lamMoiNguon(); ghi('tiet_kiem', tietKiem); ghi('the_td', theTd); ghi('vang', vang); ghi('vang_gia', vangGia); ghi('ngoai_te', ngoaiTe);
       if (!$('p-tq').contains(document.activeElement)) { renderTq(); renderMenuTq(); if ($('tq-tk').style.display !== 'none') renderTk(); if ($('tq-vang').style.display !== 'none') renderVang(); if ($('tq-sk').style.display !== 'none') renderSk(); }
     }
   }

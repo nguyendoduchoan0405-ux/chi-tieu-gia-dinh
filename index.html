@@ -192,11 +192,25 @@
   .o-tq .ic svg { width: 20px; height: 20px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   #o-sk .ic { background: linear-gradient(135deg, #f97316, #ef4444); } #o-nam .ic { background: linear-gradient(135deg, #06b6d4, #3b82f6); }
   #o-tk .ic { background: linear-gradient(135deg, #10b981, #059669); } #o-vang .ic { background: linear-gradient(135deg, #fbbf24, #d97706); }
-  #o-ts { grid-column: 1 / -1; order: -1; min-height: 130px; background: linear-gradient(135deg, #6366f1, #8b5cf6 55%, #ec4899); box-shadow: 0 10px 24px rgba(99,102,241,.35); }
-  #o-ts .ic { background: rgba(255,255,255,.22); }
-  #o-ts small { color: rgba(255,255,255,.85); font-size: 14px; }
-  #o-ts b { color: #fff; font-size: 30px; }
-  #o-ts em { font-style: normal; font-weight: 400; font-size: 12px; color: rgba(255,255,255,.75); margin-top: 4px; }
+  #o-ts { grid-column: 1 / -1; order: -1; display: block; min-height: 0; padding: 0; background: none; box-shadow: none; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; font-weight: 400; color: #0f172a; }
+  .ts-hero { position: relative; overflow: hidden; border-radius: 24px 24px 0 0; padding: 20px 20px 22px; color: #fff; background: linear-gradient(135deg, #6366f1, #8b5cf6 55%, #c084fc); box-shadow: 0 12px 26px rgba(99,102,241,.35); }
+  .ts-top { display: flex; align-items: center; justify-content: space-between; }
+  .ts-ico { width: 34px; height: 34px; border-radius: 11px; background: rgba(255,255,255,.22); display: flex; align-items: center; justify-content: center; }
+  .ts-ico svg, .ts-eye svg { width: 19px; height: 19px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .ts-eye { border: 0; background: none; padding: 6px; margin: -6px; } .ts-eye svg { width: 22px; height: 22px; }
+  .ts-nhan { font-size: 16px; margin-top: 12px; color: rgba(255,255,255,.92); }
+  .ts-so { white-space: nowrap; font-size: 32px; font-weight: 700; letter-spacing: -.5px; margin-top: 2px; position: relative; z-index: 1; } .ts-so small { font-size: 21px; font-weight: 600; }
+  .ts-bd { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 6px 12px; border-radius: 999px; background: rgba(255,255,255,.18); font-size: 12.5px; }
+  .ts-bd i { width: 18px; height: 18px; border-radius: 50%; background: #34d399; display: flex; align-items: center; justify-content: center; } .ts-bd.giam i { background: #fb7185; transform: rotate(180deg); }
+  .ts-bd i svg { width: 11px; height: 11px; stroke: #fff; fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .ts-hinh { position: absolute; right: 8px; bottom: 0; width: 112px; height: 90px; }
+  .ts-card { background: #fff; border-radius: 0 0 22px 22px; padding: 18px 16px; box-shadow: 0 8px 22px rgba(30,41,99,.1); }
+  .ts-donut { display: flex; align-items: center; gap: 16px; }
+  .ts-dn { position: relative; width: 132px; height: 132px; flex: none; } .ts-dn svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ts-dn div { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; } .ts-dn small { font-size: 10px; color: #64748b; } .ts-dn b { font-size: 18px; color: #0f172a; }
+  .ts-lg { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 9px; }
+  .ts-lg > div { display: grid; grid-template-columns: 10px 1fr auto; gap: 1px 8px; align-items: center; font-size: 12.5px; } .ts-lg i { width: 10px; height: 10px; border-radius: 50%; }
+  .ts-lg .t { font-weight: 600; color: #0f172a; } .ts-lg .p { color: #64748b; font-size: 11.5px; text-align: right; } .ts-lg .m { grid-column: 2 / 4; color: #475569; font-size: 12.5px; font-weight: 500; }
   #o-mat .ic { background: linear-gradient(135deg, #8b5cf6, #6366f1); }
   #tabs { background: rgba(255,255,255,.92); backdrop-filter: blur(10px); border-top: 0; box-shadow: 0 -4px 16px rgba(30,41,99,.08); }
   #tabs button.on { color: #6366f1; box-shadow: inset 0 2px 0 #6366f1; }
@@ -265,6 +279,21 @@
   .tkt-p1 { display: flex; justify-content: space-between; font-size: 12px; font-weight: 400; color: #93a0bd; margin-bottom: 8px; } .tkt-p1 b { font-size: 13px; color: #f5e6c4; font-weight: 600; }
   .tkt-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; } .tkt-bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #c8952f, #f6dc9a); transition: width .3s; }
   .o-tq .tkt-hop small { display: block; margin: 8px 0 0; font-size: 12px; color: #93a0bd; }
+  #o-nt { grid-column: 1 / -1; position: relative; overflow: hidden; align-items: stretch; justify-content: flex-start; font-weight: 400; padding: 20px; border-radius: 24px; font-family: 'Inter', system-ui, sans-serif; color: #0f172a; border: 1px solid #cffafe; background: linear-gradient(135deg, #ffffff 40%, #ecfeff 100%); box-shadow: 0 10px 24px rgba(8,145,178,.14); }
+  .nt-h { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .nt-logo { width: 46px; height: 46px; flex: none; border-radius: 16px; background: linear-gradient(135deg, #22d3ee, #0891b2); display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(8,145,178,.3); }
+  .nt-logo svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .nt-tt { flex: 1; min-width: 0; } .nt-tt b { display: block; font-size: 18px; font-weight: 700; color: #0f172a; } .nt-tt small { font-size: 12px; color: #64748b; }
+  .nt-tong { font-size: 18px; font-weight: 700; color: #0e7490; white-space: nowrap; }
+  .nt-dong { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; padding: 11px 0; border: 0; border-bottom: 1px solid rgba(226,232,240,.9); background: none; font: inherit; color: inherit; text-align: left; }
+  .nt-dong b { display: block; font-size: 15px; color: #0f172a; } .nt-dong small { font-size: 12px; color: #64748b; font-weight: 400; } .nt-dong .nt-gt { text-align: right; font-weight: 700; font-size: 15px; color: #0e7490; white-space: nowrap; }
+  .nt-trong { padding: 14px 0 4px; color: #64748b; font-size: 13px; }
+  #o-nt .o-nut button.chinh { background: linear-gradient(135deg, #22d3ee, #0891b2); box-shadow: 0 6px 12px rgba(8,145,178,.3); }
+  #ntm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; } #ntm.mo { display: flex; }
+  #ntm .hop { box-sizing: border-box; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #ntm label { display: block; font-size: 13px; color: #666; margin-top: 10px; } #ntm input { width: 100%; box-sizing: border-box; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  #ntm .nut { display: flex; gap: 8px; margin-top: 16px; } #ntm .nut button { flex: 1; padding: 14px; font-size: 16px; border: 0; border-radius: 10px; color: #fff; background: #1a73e8; } #ntm .nut button.huy { background: #888; }
+  #ntm .nut button.xoa-nho { flex: none; padding: 10px 14px; font-size: 14px; align-self: center; background: #fff; color: #d93025; border: 1px solid #d93025; }
   .o-nut { display: flex; gap: 8px; margin-top: 12px; }
   .o-nut button { flex: 1; padding: 11px 6px; font-size: 14px; font-weight: 700; font-family: inherit; border-radius: 12px; border: 1px solid rgba(100,116,139,.35); background: rgba(255,255,255,.7); color: #334155; }
   .o-nut button.chinh { border: 0; color: #fff; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 6px 12px rgba(245,158,11,.3); }
@@ -303,7 +332,15 @@
   <div id="tq-menu" class="o-tq-ds">
     <button class="o-tq" id="o-sk"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></span>Sao kê tín dụng</button>
     <button class="o-tq" id="o-nam"><span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span>Thu - chi năm</button>
-    <div class="o-tq" id="o-ts"><span class="ic"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><small>Tổng tài sản</small><b></b><em>Tiền mặt + tiết kiệm đang gửi + vàng</em></div>
+    <div class="o-tq" id="o-ts">
+      <div class="ts-hero">
+        <div class="ts-top"><span class="ts-ico"><svg viewBox="0 0 24 24"><path d="M3 20h18M5 20V9l7-5 7 5v11M9 20v-6h6v6"/></svg></span><button type="button" class="ts-eye" id="ts-mat" aria-label="Ẩn hoặc hiện số tiền"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        <div class="ts-nhan">Tổng tài sản</div><div class="ts-so" id="ts-so"></div>
+        <span class="ts-bd" id="ts-bd"><i><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></i><span id="ts-bdt"></span></span>
+        <svg class="ts-hinh" viewBox="0 0 150 120" aria-hidden="true"><ellipse cx="102" cy="104" rx="46" ry="9" fill="rgba(60,30,120,.25)"/><path d="M40 62 L84 30 L128 62 V100 H40Z" fill="#7c5cf0"/><path d="M84 30 L128 62 H84Z" fill="#6a47e0"/><path d="M34 64 L84 26 L134 64" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><rect x="74" y="72" width="20" height="28" rx="3" fill="#fff"/><rect x="50" y="68" width="16" height="14" rx="2" fill="#ddd6fe"/><rect x="102" y="68" width="16" height="14" rx="2" fill="#ddd6fe"/><ellipse cx="30" cy="104" rx="17" ry="6" fill="#d97706"/><rect x="13" y="96" width="34" height="8" fill="#f59e0b"/><ellipse cx="30" cy="96" rx="17" ry="6" fill="#fbbf24"/><ellipse cx="30" cy="88" rx="17" ry="6" fill="#d97706"/><rect x="13" y="80" width="34" height="8" fill="#f59e0b"/><ellipse cx="30" cy="80" rx="17" ry="6" fill="#fcd34d"/></svg>
+      </div>
+      <div class="ts-card"><div class="ts-donut"><div class="ts-dn"><svg viewBox="0 0 120 120" id="ts-svg"></svg><div><small>Phân bổ tài sản</small><b id="ts-dnt"></b></div></div><div class="ts-lg" id="ts-lg"></div></div></div>
+    </div>
     <div class="o-tq" id="o-mat"><span class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/></svg></span><small>Tiền mặt (thu − chi)</small><b></b></div>
     <div class="o-tq" id="o-tk">
       <div class="tkt-h"><span class="tkt-logo"><svg viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></svg></span><div class="tkt-tt"><b>Tiền tiết kiệm</b><small id="tkt-so">0 sổ đang gửi</small></div><span class="tkt-bd" id="tkt-bd"></span></div>
@@ -320,6 +357,11 @@
       <div class="vt-dong vt-cuoi"><span>Lãi / lỗ</span><b id="vt-lai" class="vt-big"></b></div>
       <div class="vt-phu"><div class="vt-phu1"><span>Giá trị hiện tại</span><b id="vt-hn"></b></div><div class="vt-bar"><i id="vt-bar"></i></div><small id="vt-tb"></small></div>
       <div class="o-nut"><button type="button" id="vt-mua" class="chinh">Mua vàng</button><button type="button" id="vt-ban">Bán vàng</button><button type="button" id="vt-ls">Lịch sử</button></div>
+    </div>
+    <div class="o-tq" id="o-nt">
+      <div class="nt-h"><span class="nt-logo"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15 9.5c-.6-1-1.7-1.5-3-1.5-1.7 0-3 .8-3 2s1.2 1.7 3 2 3 .8 3 2-1.300 2-3 2c-1.300 0-2.400-.5-3-1.500M12 6v2M12 16v2"/></svg></span><div class="nt-tt"><b>Ngoại tệ</b><small id="nt-so"></small></div><b class="nt-tong" id="nt-tong"></b></div>
+      <div id="nt-ds"></div>
+      <div class="o-nut"><button type="button" id="nt-them" class="chinh">+ Thêm ngoại tệ</button></div>
     </div>
   </div>
   <div id="tq-sk" style="display:none">
@@ -420,6 +462,18 @@
     <b id="xn-t">Xác nhận xóa</b>
     <p id="xn-nd"></p>
     <div class="xn-nut"><button type="button" id="xn-ok">Xóa</button><button type="button" id="xn-huy">Hủy</button></div>
+  </div>
+</div>
+<div id="ntm">
+  <div class="hop">
+    <b id="ntm-ten">Thêm ngoại tệ</b>
+    <label>Đơn vị (vd USD, EUR, JPY)</label><input id="ntm-dv" list="ntm-ds" autocapitalize="characters" autocorrect="off" maxlength="8">
+    <datalist id="ntm-ds"><option value="USD"><option value="EUR"><option value="JPY"><option value="KRW"><option value="AUD"><option value="SGD"><option value="CNY"><option value="GBP"><option value="THB"></datalist>
+    <label>Số lượng</label><input id="ntm-sl" inputmode="decimal" placeholder="vd 1000 hoặc 2500,5">
+    <label>Tỉ giá (VNĐ cho 1 đơn vị)</label><input id="ntm-tg" inputmode="numeric" placeholder="vd 25.400">
+    <div id="ntm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
+    <div id="ntm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
+    <div class="nut"><button id="ntm-luu">Lưu</button><button class="huy" id="ntm-huy">Hủy</button><button class="xoa-nho" id="ntm-xoa" aria-label="Xóa khoản này">Xóa</button></div>
   </div>
 </div>
 <div id="rtm">
@@ -1088,6 +1142,7 @@ async function taoExcel(nhom) {
   tietKiem.forEach(k => sl.addRow(['tietkiem', JSON.stringify(k)]));
   vang.forEach(v => sl.addRow(['vang', JSON.stringify(v)]));
   theTd.forEach(t => sl.addRow(['the', JSON.stringify(t)]));
+  ngoaiTe.forEach(n => sl.addRow(['ngoaite', JSON.stringify(n)]));
   sl.addRow(['nguon_ds', JSON.stringify(nguonDs)]); sl.addRow(['vang_gia', JSON.stringify(vangGia)]);
   // Ảnh hóa đơn (chi tiêu và vàng): ảnh gốc trong kho, mã hóa base64, cắt khúc 30.000 ký tự cho vừa một ô Excel
   const khoaAnh = [...items.filter(i => i.anh).map(i => i.id), ...vang.filter(v => v.anh).map(v => 'vang_' + v.id)];
@@ -1135,7 +1190,7 @@ $('xk-chia').onclick = async () => {
 async function docSaoLuu(file) {
   const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
   const ws = wb.getWorksheet('SaoLuu'); if (!ws) return null;
-  const kq = { chitieu: [], tietkiem: [], vang: [], the: [], nguon_ds: null, vang_gia: null, anh: new Map() };
+  const kq = { chitieu: [], tietkiem: [], vang: [], the: [], ngoaite: [], nguon_ds: null, vang_gia: null, anh: new Map() };
   ws.eachRow(r => {
     const loai = String(r.getCell(1).value || ''), txt = r.getCell(2).value;
     if (!(loai in kq) || typeof txt !== 'string') return;
@@ -1154,12 +1209,13 @@ $('nhap-file').onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
   let kq; try { kq = await docSaoLuu(f); } catch { kq = undefined; }
   if (kq === undefined) { hoiXn('Không đọc được file', 'File này không phải file Excel hợp lệ.', 'Đóng', null, '#555', true); return; }
-  if (!kq || !(kq.chitieu.length || kq.tietkiem.length || kq.vang.length || kq.the.length)) { hoiXn('Không có dữ liệu sao lưu', 'File này không chứa dữ liệu sao lưu. Hãy dùng file do nút Xuất Excel của app tạo ra (từ bản có nút Nhập Excel).', 'Đóng', null, '#555', true); return; }
-  hoiXn('Nhập dữ liệu từ Excel', `File có ${kq.chitieu.length} giao dịch, ${kq.tietkiem.length} sổ tiết kiệm, ${kq.vang.length} lệnh vàng, ${kq.the.length} thẻ tín dụng. Mục cùng mã sẽ lấy theo file, mục chỉ có trên app được giữ nguyên. ${kq.anh.size ? `Có ${kq.anh.size} ảnh hóa đơn, sẽ khôi phục luôn.` : 'File này không có ảnh hóa đơn.'}`, 'Nhập', async () => {
+  if (!kq || !(kq.chitieu.length || kq.tietkiem.length || kq.vang.length || kq.the.length || kq.ngoaite.length)) { hoiXn('Không có dữ liệu sao lưu', 'File này không chứa dữ liệu sao lưu. Hãy dùng file do nút Xuất Excel của app tạo ra (từ bản có nút Nhập Excel).', 'Đóng', null, '#555', true); return; }
+  hoiXn('Nhập dữ liệu từ Excel', `File có ${kq.chitieu.length} giao dịch, ${kq.tietkiem.length} sổ tiết kiệm, ${kq.vang.length} lệnh vàng, ${kq.the.length} thẻ tín dụng, ${kq.ngoaite.length} khoản ngoại tệ. Mục cùng mã sẽ lấy theo file, mục chỉ có trên app được giữ nguyên. ${kq.anh.size ? `Có ${kq.anh.size} ảnh hóa đơn, sẽ khôi phục luôn.` : 'File này không có ảnh hóa đơn.'}`, 'Nhập', async () => {
     items = tronTheoId(items, kq.chitieu); xepNgay(); save();
     tietKiem = tronTheoId(tietKiem, kq.tietkiem); luuTk();
     vang = tronTheoId(vang, kq.vang); if (kq.vang_gia > 0) { vangGia = kq.vang_gia; ghiLS('vang_gia', vangGia); } luuVang();
     theTd = tronTheoId(theTd, kq.the); luuThe();
+    ngoaiTe = tronTheoId(ngoaiTe, kq.ngoaite); luuNt();
     if (Array.isArray(kq.nguon_ds)) { kq.nguon_ds.forEach(n => { if (!nguonDs.includes(n)) nguonDs.push(n); }); luuNguon(); lamMoiNguon?.(); }
     let anhOk = 0;
     for (const [k, m] of kq.anh) {                           // ghép các khúc base64 lại thành ảnh, ghi vào kho ảnh của máy
@@ -1167,7 +1223,7 @@ $('nhap-file').onchange = async e => {
       try { await kho.ghi(k, new Blob([b64Ra(m.p.join(''))], { type: 'image/jpeg' })); anhOk++; } catch {}
     }
     render(); renderMenuTq(); renderTk(); renderVang(); renderSk();
-    hoiXn('Đã nhập xong', `Đã khôi phục ${kq.chitieu.length} giao dịch, ${kq.tietkiem.length} sổ tiết kiệm, ${kq.vang.length} lệnh vàng, ${kq.the.length} thẻ tín dụng${kq.anh.size ? `, ${anhOk}/${kq.anh.size} ảnh hóa đơn` : ''}.`, 'Đóng', null, '#188038', true);
+    hoiXn('Đã nhập xong', `Đã khôi phục ${kq.chitieu.length} giao dịch, ${kq.tietkiem.length} sổ tiết kiệm, ${kq.vang.length} lệnh vàng, ${kq.the.length} thẻ tín dụng, ${kq.ngoaite.length} khoản ngoại tệ${kq.anh.size ? `, ${anhOk}/${kq.anh.size} ảnh hóa đơn` : ''}.`, 'Đóng', null, '#188038', true);
   }, '#1a73e8');
 };
 
@@ -1245,8 +1301,72 @@ function renderMenuTq() {
   $('vt-hn').textContent = nay === null ? '–' : fmt(nay);
   $('vt-bar').style.width = nay === null || !von ? '0%' : `${Math.min(100, nay / von * 100).toFixed(1)}%`;
   $('vt-tb').textContent = tongChi ? `Giá mua bình quân ${fmt(Math.round(von / tongChi))}/chỉ` : 'Chưa có khoản vàng nào';
-  $('o-ts').querySelector('b').textContent = co(ts, ts >= 0 ? '' : '-');
+  renderNt();
+  const ntVal = ngoaiTe.reduce((x, n) => x + giaTriNt(n), 0), vVal = nay ?? von, tsong = con + goc + vVal + ntVal;
+  veTaiSan([{ t: 'Tiền mặt', v: con, c: '#6366f1' }, { t: 'Tiết kiệm', v: goc, c: '#14b8a6' }, { t: 'Vàng', v: vVal, c: '#f59e0b' }, { t: 'Ngoại tệ', v: ntVal, c: '#ec4899' }], tsong);
 }
+let anSo = (() => { try { return localStorage.getItem('an_so') === '1'; } catch { return false; } })();
+const AN = '••••••';
+function taiSanThangTruoc() {                                // giá trị cuối tháng trước: tiền mặt theo sổ giao dịch, sổ gửi còn hiệu lực, vàng theo giá mua, ngoại tệ theo tỉ giá hiện tại
+  const h = new Date(), moc = new Date(h.getFullYear(), h.getMonth(), 1, 0, 0, 0), mocYmd = ymd(new Date(moc.getTime() - 1));
+  const mat = items.filter(it => new Date(it.thoiGian) < moc).reduce((x, it) => x + (laThu(it) ? it.soTien : -it.soTien), 0);
+  const tk = tietKiem.filter(k => k.ngay <= mocYmd && ymd(denHan(k)) >= mocYmd && !(k.rut && k.rut.ngay <= mocYmd)).reduce((x, k) => x + k.soTien, 0);
+  const vg = vangTinh(vang.filter(v => v.ngay <= mocYmd)).von, nt = ngoaiTe.filter(n => (n.ngay || '9999') <= mocYmd).reduce((x, n) => x + giaTriNt(n), 0);
+  return mat + tk + vg + nt;
+}
+function veTaiSan(nhom, tong) {
+  $('ts-so').innerHTML = anSo ? AN : `${co(tong, tong >= 0 ? '' : '-')} <small>đ</small>`;
+  const truoc = taiSanThangTruoc(), bd = $('ts-bd');
+  bd.style.display = truoc > 0 ? '' : 'none';
+  if (truoc > 0) { const p = (tong - truoc) / truoc * 100; bd.classList.toggle('giam', p < 0); $('ts-bdt').textContent = `${p >= 0 ? '+' : '-'}${Math.abs(p).toFixed(1).replace('.', ',')}% so với tháng trước`; }
+  const duong = nhom.map(x => ({ ...x, d: Math.max(0, x.v) })), tongD = duong.reduce((x, n) => x + n.d, 0), R = 48, C = 2 * Math.PI * R;
+  let off = 0;
+  $('ts-svg').innerHTML = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="#eef0f6" stroke-width="16"/>` + (tongD ? duong.filter(x => x.d).map(x => { const l = x.d / tongD * C, e = `<circle cx="60" cy="60" r="${R}" fill="none" stroke="${x.c}" stroke-width="16" stroke-dasharray="${Math.max(0, l - 1.5)} ${C - Math.max(0, l - 1.5)}" stroke-dashoffset="${-off}"/>`; off += l; return e; }).join('') : '');
+  $('ts-dnt').textContent = anSo ? AN : tong >= 1e9 ? `${(tong / 1e9).toFixed(2).replace('.', ',')} tỷ` : tong >= 1e6 ? `${(tong / 1e6).toFixed(1).replace('.', ',')} tr` : fmt(tong);
+  $('ts-lg').innerHTML = nhom.map(x => `<div><i style="background:${x.c}"></i><span class="t">${x.t}</span><span class="p">${tongD ? (Math.max(0, x.v) / tongD * 100).toFixed(1).replace('.', ',') + '%' : '–'}</span><span class="m">${anSo ? AN : co(x.v, x.v >= 0 ? '' : '-') + ' đ'}</span></div>`).join('');
+}
+$('ts-mat').onclick = () => { anSo = !anSo; try { localStorage.setItem('an_so', anSo ? '1' : '0'); } catch {} renderMenuTq(); };
+
+// ----- Ngoại tệ: mỗi khoản { id, dv (USD...), sl (số lượng), tg (tỉ giá VNĐ cho 1 đơn vị), ngay (yyyy-mm-dd) }; giá trị = sl x tg -----
+let ngoaiTe = docLS('ngoai_te', []);
+const luuNt = () => { ghiLS('ngoai_te', ngoaiTe); window.dongBo?.hen(); };
+const giaTriNt = n => Math.round(n.sl * n.tg);
+const slStr = n => Number(n).toLocaleString('vi-VN', { maximumFractionDigits: 4 });
+function renderNt() {
+  const ds = [...ngoaiTe].sort((a, b) => giaTriNt(b) - giaTriNt(a));
+  $('nt-so').textContent = ds.length ? `${ds.length} khoản · đã quy đổi VNĐ` : 'Chưa có khoản nào';
+  $('nt-tong').textContent = fmt(ds.reduce((x, n) => x + giaTriNt(n), 0)) + ' đ';
+  $('nt-ds').innerHTML = ds.map(n => `<button type="button" class="nt-dong" data-id="${n.id}"><span><b>${slStr(n.sl)} ${esc(n.dv)}</b><small>Tỉ giá ${fmt(n.tg)} đ</small></span><span class="nt-gt">${fmt(giaTriNt(n))} đ</span></button>`).join('') || '<div class="nt-trong">Bấm "+ Thêm ngoại tệ" để nhập số lượng, đơn vị và tỉ giá.</div>';
+  $('nt-ds').querySelectorAll('.nt-dong').forEach(b => { b.onclick = () => moNtm(b.dataset.id); });
+}
+let ntSua = null;
+function docNtm() {
+  const k = { id: ntSua || newId(), dv: $('ntm-dv').value.trim().toUpperCase(), sl: Number($('ntm-sl').value.replace(/\./g, '').replace(',', '.')) || 0, tg: soDuong($('ntm-tg').value) };
+  if (!k.dv) return { loi: 'Cần nhập đơn vị (vd USD).' };
+  if (k.sl <= 0 || !k.tg) return { loi: 'Cần nhập số lượng và tỉ giá lớn hơn 0.' };
+  return { k };
+}
+function xemNtm() { const { k } = docNtm(); $('ntm-xem').textContent = k ? `Giá trị quy đổi: ${fmt(giaTriNt(k))} đ` : ''; }
+function moNtm(id) {
+  ntSua = id || null; const k = ngoaiTe.find(x => x.id === id);
+  $('ntm-ten').textContent = k ? 'Sửa ngoại tệ' : 'Thêm ngoại tệ';
+  $('ntm-dv').value = k ? k.dv : 'USD'; $('ntm-sl').value = k ? String(k.sl).replace('.', ',') : ''; $('ntm-tg').value = k ? fmt(k.tg) : '';
+  $('ntm-xoa').style.display = k ? '' : 'none'; $('ntm-loi').textContent = ''; $('ntm').classList.add('mo'); xemNtm();
+}
+['ntm-dv', 'ntm-sl', 'ntm-tg'].forEach(id => { $(id).oninput = xemNtm; });
+$('ntm-tg').addEventListener('input', e => { const n = soDuong(e.target.value); e.target.value = n ? fmt(n) : ''; xemNtm(); });
+$('nt-them').onclick = () => moNtm(null);
+$('ntm-huy').onclick = () => $('ntm').classList.remove('mo');
+$('ntm-luu').onclick = () => {
+  const { k, loi } = docNtm(); if (loi) { $('ntm-loi').textContent = loi; return; }
+  const i = ngoaiTe.findIndex(x => x.id === k.id);
+  if (i >= 0) ngoaiTe[i] = { ...ngoaiTe[i], ...k }; else ngoaiTe.push({ ...k, ngay: ymd(new Date()) });
+  luuNt(); $('ntm').classList.remove('mo'); renderMenuTq();
+};
+$('ntm-xoa').onclick = () => {
+  const k = ngoaiTe.find(x => x.id === ntSua); if (!k) return;
+  hoiXoa(`Xóa khoản ${slStr(k.sl)} ${k.dv} (${fmt(giaTriNt(k))} đ)? Không hoàn tác được.`, () => { ngoaiTe = ngoaiTe.filter(x => x.id !== ntSua); luuNt(); $('ntm').classList.remove('mo'); renderMenuTq(); });
+};
 
 // ----- Sao kê tín dụng: mỗi thẻ gắn với một nguồn tiền; kỳ sao kê = (ngày chốt tháng trước + 1) đến ngày chốt tháng này -----
 let theTd = docLS('the_td', []);                            // { id, nguon, soThe, nganHang, chot (ngày), tt (ngày) }
