@@ -110,11 +110,21 @@
   .man-dau span { flex: 1; }
   .man-dau button.them { padding: 8px 12px; font-size: 14px; font-weight: normal; border: 1px solid #1a73e8; border-radius: 8px; background: #fff; color: #1a73e8; }
   .cuon-ngang { overflow-x: auto; margin-top: 10px; -webkit-overflow-scrolling: touch; }
-  #tk-bang { min-width: 640px; table-layout: auto; }
-  #tk-bang th, #tk-bang td { height: 40px; padding: 4px 8px; font-size: 13px; white-space: nowrap; text-align: right; }
-  #tk-bang th:first-child, #tk-bang td:first-child { text-align: left; }
-  #tk-bang tr.het td { color: #999; }
-  #tk-bang tr.tong-tk td { font-weight: bold; background: #fafafa; }
+  .tk-the { position: relative; overflow: hidden; margin-top: 12px; padding: 16px; border-radius: 22px; color: #f5e6c4; font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(160deg, #16233f, #0c1730 60%, #0a1226); box-shadow: 0 10px 24px rgba(10,18,38,.3); cursor: pointer; }
+  .tk-the::after { content: ''; position: absolute; right: -50px; bottom: -60px; width: 160px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(226,185,100,.22), transparent 70%); pointer-events: none; }
+  .tk-the > * { position: relative; z-index: 1; } .tk-the.het { opacity: .65; }
+  .tk-hd { display: flex; align-items: center; gap: 12px; }
+  .tk-kh { width: 46px; height: 46px; flex: none; border-radius: 50%; background: linear-gradient(135deg, #f6dc9a, #c8952f); color: #3b2a07; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; box-shadow: 0 6px 14px rgba(200,149,47,.3); }
+  .tk-kh b { font-size: 19px; font-weight: 800; color: #3b2a07; } .tk-kh small { font-size: 9px; font-weight: 700; margin-top: 1px; }
+  .tk-tn { flex: 1; min-width: 0; } .tk-tn b { display: block; font-size: 15px; color: #fff; font-weight: 700; } .tk-tn small { font-size: 12px; color: #93a0bd; }
+  .tk-st { padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: rgba(236,201,122,.14); color: #ecc97a; border: 1px solid rgba(236,201,122,.3); white-space: nowrap; }
+  .tk-goc { display: flex; justify-content: space-between; align-items: baseline; margin-top: 14px; font-size: 13px; color: #a9b4cc; } .tk-goc b { font-size: 20px; color: #ecc97a; font-weight: 700; }
+  .tk-bar { height: 7px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; margin-top: 8px; } .tk-bar i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #c8952f, #f6dc9a); }
+  .tk-nb { display: flex; justify-content: space-between; font-size: 12px; color: #93a0bd; margin-top: 6px; }
+  .tk-ln { border-top: 1px dashed rgba(255,255,255,.18); margin-top: 12px; padding-top: 4px; }
+  .tk-r { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 7px 0; font-size: 13px; color: #a9b4cc; line-height: 1.35; } .tk-r b { font-size: 15px; color: #6ee7b7; font-weight: 700; white-space: nowrap; } .tk-r em { font-style: normal; color: #7d89a6; font-size: 12px; }
+  #tk-tong { margin: 16px 4px 0; font-size: 13px; color: #475569; } #tk-tong div { display: flex; justify-content: space-between; padding: 3px 0; } #tk-tong b { font-size: 15px; color: #0f172a; }
+  .tk-trong { text-align: center; color: #888; padding: 24px 0; }
   #sk-bang th, #sk-bang td { height: 40px; padding: 4px 8px; font-size: 14px; }
   #sk-bang td:last-child, #sk-bang th:last-child { text-align: right; }
   #nhac { margin: 10px 0 0; padding: 10px 12px; background: #fef7e0; border: 1px solid #f9ab00; border-radius: 10px; font-size: 14px; line-height: 1.5; position: relative; }
@@ -302,10 +312,8 @@
   </div>
   <div id="tq-tk" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Tiền tiết kiệm</span><button class="them" id="tk-them">+ Thêm</button></div>
-    <div class="cuon-ngang"><table id="tk-bang">
-      <thead><tr><th>Ngày gửi</th><th>Ngày đáo hạn</th><th>Số tiền tiết kiệm</th><th>Kỳ hạn</th><th>Lãi suất/năm</th><th>Ngân hàng</th><th>Tổng tiền đáo hạn</th></tr></thead>
-      <tbody id="tk-ds"></tbody>
-    </table></div>
+    <div id="tk-ds"></div>
+    <div id="tk-tong"></div>
   </div>
   <div id="tq-noi" style="display:none">
   <table id="tq-bang">
@@ -390,6 +398,7 @@
     <label>Số tiền gửi</label><input id="tkm-tien" inputmode="numeric">
     <label>Kỳ hạn (tháng)</label><input id="tkm-ky" inputmode="numeric">
     <label>Lãi suất (%/năm)</label><input id="tkm-lai" inputmode="decimal" placeholder="vd 5,5">
+    <label>Lãi rút trước hạn (%/năm)</label><input id="tkm-som" inputmode="decimal" placeholder="mặc định 1">
     <label>Ngân hàng</label><input id="tkm-nh">
     <div id="tkm-xem" style="margin-top:10px;font-size:14px;color:#174ea6"></div>
     <div id="tkm-loi" style="color:#d93025;font-size:13px;min-height:16px"></div>
@@ -1372,28 +1381,37 @@ $('vgm-xoa').onclick = () => {
 };
 
 // ----- Tiền tiết kiệm: sổ gửi có kỳ hạn, lãi đơn (số tiền x lãi%/năm x số tháng / 12) -----
-let tietKiem = docLS('tiet_kiem', []);                      // { id, ngay (yyyy-mm-dd), soTien, ky (tháng), lai (%/năm), nganHang }
+let tietKiem = docLS('tiet_kiem', []);                      // { id, ngay (yyyy-mm-dd), soTien, ky (tháng), lai (%/năm), laiSom (%/năm rút trước hạn, mặc định 1), nganHang }
 const luuTk = () => { ghiLS('tiet_kiem', tietKiem); window.dongBo?.hen(); };
 const denHan = k => { const d = new Date(k.ngay + 'T12:00:00'); d.setMonth(d.getMonth() + k.ky); return d; };
-const tienDenHan = k => Math.round(k.soTien * (1 + k.lai / 100 * k.ky / 12));
+const NGAY_MS = 864e5, ngayGui = k => new Date(k.ngay + 'T12:00:00');
+const soNgayKy = k => Math.round((denHan(k) - ngayGui(k)) / NGAY_MS);                       // lãi tính theo số ngày thực tế / 365 như ngân hàng
+const ngayDaQua = k => Math.max(0, Math.min(soNgayKy(k), Math.round((new Date(new Date().toDateString() + ' 12:00') - ngayGui(k)) / NGAY_MS)));
+const tienDenHan = k => Math.round(k.soTien * (1 + k.lai / 100 * soNgayKy(k) / 365));
+const laiSomSuat = k => k.laiSom ?? 1;
+const laiRutSom = k => Math.round(k.soTien * laiSomSuat(k) / 100 * ngayDaQua(k) / 365);
 const ngayDayDu = d => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
 const dangGui = k => denHan(k) >= new Date(new Date().toDateString());
 const tkDangGui = () => tietKiem.filter(dangGui).reduce((s, k) => s + k.soTien, 0);
 
+const pctStr = n => String(n).replace('.', ',');
 function renderTk() {
-  const ds = [...tietKiem].sort((a, b) => a.ngay < b.ngay ? -1 : 1);
-  const hang = ds.map(k => `<tr data-id="${k.id}" class="${dangGui(k) ? '' : 'het'}"><td>${ngayDayDu(new Date(k.ngay + 'T12:00:00'))}</td><td>${ngayDayDu(denHan(k))}</td><td>${fmt(k.soTien)}</td><td>${k.ky} tháng</td><td>${String(k.lai).replace('.', ',')}%</td><td>${esc(k.nganHang)}</td><td>${fmt(tienDenHan(k))}</td></tr>`);
+  const ds = [...tietKiem].sort((a, b) => a.ngay < b.ngay ? -1 : 1), hom = new Date(new Date().toDateString() + ' 12:00');
+  $('tk-ds').innerHTML = ds.map(k => {
+    const gui = dangGui(k), pct = Math.round(ngayDaQua(k) / soNgayKy(k) * 1000) / 10, con = Math.max(0, Math.round((denHan(k) - hom) / NGAY_MS));
+    return `<div class="tk-the${gui ? '' : ' het'}" data-id="${k.id}"><div class="tk-hd"><div class="tk-kh"><b>${k.ky}</b><small>Tháng</small></div><div class="tk-tn"><b>${esc(k.nganHang || 'Chưa ghi ngân hàng')}</b><small>Lãi ${pctStr(k.lai)}%/năm</small></div><span class="tk-st">${gui ? `Còn ${con} ngày` : 'Đã đáo hạn'}</span></div>
+      <div class="tk-goc"><span>Gốc đã nạp:</span><b>${fmt(k.soTien)}đ</b></div><div class="tk-bar"><i style="width:${pct}%"></i></div><div class="tk-nb"><span>${ngayDayDu(ngayGui(k))}</span><span>${ngayDayDu(denHan(k))}</span></div>
+      <div class="tk-ln">${gui ? `<div class="tk-r"><span>Lợi nhuận rút trước hạn<br><em>(${pctStr(laiSomSuat(k))}%/năm)</em></span><b>+${fmt(laiRutSom(k))}đ</b></div>` : ''}<div class="tk-r"><span>Lợi nhuận sau ${k.ky} tháng<br><em>(${pctStr(k.lai)}%/năm)</em></span><b>+${fmt(tienDenHan(k) - k.soTien)}đ</b></div></div></div>`;
+  }).join('') || '<div class="tk-trong">Chưa có khoản nào. Bấm + Thêm.</div>';
   const gui = ds.filter(dangGui);
-  $('tk-ds').innerHTML = (hang.join('') || '<tr><td colspan="7" style="text-align:center;color:#888">Chưa có khoản nào. Bấm + Thêm.</td></tr>')
-    + (gui.length ? `<tr class="tong-tk"><td colspan="2">Đang gửi</td><td>${fmt(gui.reduce((s, k) => s + k.soTien, 0))}</td><td colspan="3"></td><td>${fmt(gui.reduce((s, k) => s + tienDenHan(k), 0))}</td></tr>` : '');
-  $('tk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => moTkm(tr.dataset.id); });
+  $('tk-tong').innerHTML = gui.length ? `<div><span>Tổng gốc đang gửi:</span><b>${fmt(gui.reduce((s, k) => s + k.soTien, 0))}đ</b></div><div><span>Tổng tiền đáo hạn:</span><b>${fmt(gui.reduce((s, k) => s + tienDenHan(k), 0))}đ</b></div>` : '';
+  $('tk-ds').querySelectorAll('.tk-the').forEach(el => { el.onclick = () => moTkm(el.dataset.id); });
 }
-
 let tkSua = null;                                           // id khoản đang sửa, null = thêm mới
 const soDuong = t => Number(String(t).replace(/\D/g, '')) || 0;
 function docTkm() {                                          // đọc form; trả về khoản hoặc lỗi
   const d = parseNgay($('tkm-ngay').value, new Date().toISOString());
-  const k = { id: tkSua || newId(), soTien: soDuong($('tkm-tien').value), ky: soDuong($('tkm-ky').value), lai: Number($('tkm-lai').value.replace(',', '.')) || 0, nganHang: $('tkm-nh').value.trim() };
+  const k = { id: tkSua || newId(), soTien: soDuong($('tkm-tien').value), ky: soDuong($('tkm-ky').value), lai: Number($('tkm-lai').value.replace(',', '.')) || 0, laiSom: $('tkm-som').value.trim() === '' ? 1 : Number($('tkm-som').value.replace(',', '.')) || 0, nganHang: $('tkm-nh').value.trim() };
   if (!d) return { loi: 'Ngày gửi chưa đúng (vd 26/10/2026).' };
   k.ngay = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   if (!k.soTien || !k.ky) return { loi: 'Cần nhập số tiền và kỳ hạn (tháng).' };
@@ -1409,11 +1427,11 @@ function moTkm(id) {
   $('tkm-ten').textContent = k ? 'Sửa khoản tiết kiệm' : 'Thêm khoản tiết kiệm';
   $('tkm-ngay').value = k ? ngayDayDu(new Date(k.ngay + 'T12:00:00')) : ngayDayDu(h);
   $('tkm-tien').value = k ? fmt(k.soTien) : ''; $('tkm-ky').value = k ? k.ky : '';
-  $('tkm-lai').value = k ? String(k.lai).replace('.', ',') : ''; $('tkm-nh').value = k ? k.nganHang : '';
+  $('tkm-lai').value = k ? String(k.lai).replace('.', ',') : ''; $('tkm-som').value = k ? String(laiSomSuat(k)).replace('.', ',') : ''; $('tkm-nh').value = k ? k.nganHang : '';
   $('tkm-xoa-hang').style.display = k ? '' : 'none'; $('tkm-loi').textContent = '';
   $('tkm').classList.add('mo'); xemTkm();
 }
-['tkm-ngay', 'tkm-tien', 'tkm-ky', 'tkm-lai'].forEach(id => { $(id).oninput = xemTkm; });
+['tkm-ngay', 'tkm-tien', 'tkm-ky', 'tkm-lai', 'tkm-som'].forEach(id => { $(id).oninput = xemTkm; });
 $('tk-them').onclick = () => moTkm(null);
 $('tkm-huy').onclick = () => $('tkm').classList.remove('mo');
 $('tkm-luu').onclick = () => {
