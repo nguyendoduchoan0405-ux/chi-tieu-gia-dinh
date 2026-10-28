@@ -257,6 +257,8 @@
   .tkt-p1 { display: flex; justify-content: space-between; font-size: 12px; font-weight: 400; color: #93a0bd; margin-bottom: 8px; } .tkt-p1 b { font-size: 13px; color: #f5e6c4; font-weight: 600; }
   .tkt-bar { height: 8px; border-radius: 999px; background: rgba(255,255,255,.1); overflow: hidden; } .tkt-bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, #c8952f, #f6dc9a); transition: width .3s; }
   .o-tq .tkt-hop small { display: block; margin: 8px 0 0; font-size: 12px; color: #93a0bd; }
+  #o-tk, #o-tk *:not(button), #o-vang, #o-vang *:not(button):not(input) { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  #o-tk, #o-vang { touch-action: manipulation; }
   .o-nut { display: flex; gap: 8px; margin-top: 12px; }
   .o-nut button { flex: 1; padding: 11px 6px; font-size: 14px; font-weight: 700; font-family: inherit; border-radius: 12px; border: 1px solid rgba(100,116,139,.35); background: rgba(255,255,255,.7); color: #334155; }
   .o-nut button.chinh { border: 0; color: #fff; background: linear-gradient(135deg, #f59e0b, #d97706); box-shadow: 0 6px 12px rgba(245,158,11,.3); }
@@ -1143,9 +1145,12 @@ function moMan(ten) {
 }
 $('o-sk').onclick = () => moMan('sk');
 $('o-nam').onclick = () => moMan('nam');
-$('o-tk').onclick = e => { if (!e.target.closest('button')) moMan('tk'); };
-$('o-tk').onkeydown = e => { if (e.key === 'Enter') moMan('tk'); };
-$('o-vang').onclick = e => { if (!e.target.closest('input, button')) moMan('vang'); };
+// Bấm bất kỳ đâu trên ô (trừ nút và ô nhập) thì mở màn lịch sử; gắn ở menu cha để iOS Safari luôn nhận cú chạm
+$('tq-menu').addEventListener('click', e => {
+  if (e.target.closest('button, input, select')) return;
+  const o = e.target.closest('#o-tk, #o-vang'); if (o) moMan(o.id === 'o-tk' ? 'tk' : 'vang');
+});
+$('o-tk').onkeydown = e => { if (e.key === 'Enter' && e.target === e.currentTarget) moMan('tk'); };
 $('vt-mua').onclick = () => moVgm(null, 'mua'); $('vt-ban').onclick = () => moVgm(null, 'ban'); $('vt-ls').onclick = () => moMan('vang');   // bấm ô nhập giá thì không mở bảng
 document.querySelectorAll('#p-tq button.lai').forEach(b => { b.onclick = () => moMan('menu'); });
 
