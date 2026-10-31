@@ -111,6 +111,23 @@ window.dongBo = (() => {
         da[dau] = local;
       }
     }
+    // 3b. Danh mục từng khoản (cai_dat 'danh_muc': id -> tên): trộn theo từng khoản, máy nào vừa đổi khoản nào thì khoản đó thắng.
+    // Ghi xong đọc lại để chắc không bị máy kia ghi đè cùng lúc; chưa chắc thì giữ nguyên bản chụp cũ, lần sau đẩy lại.
+    {
+      let goc = {}; try { goc = JSON.parse(da.__dm || '{}'); } catch {}
+      const local = {}; items.forEach(it => { if (it.dm) local[it.id] = it.dm; });
+      for (let lan = 0; lan < 3; lan++) {
+        const cs = await api('/cai_dat?khoa=eq.danh_muc&select=gia_tri'), tren = cs[0]?.gia_tri || {}, tron = { ...tren };
+        for (const id of Object.keys(local)) if (local[id] !== goc[id]) tron[id] = local[id];       // máy này vừa đổi
+        for (const id of Object.keys(goc)) if (!(id in local) && !items.some(x => x.id === id)) delete tron[id];   // dòng đã xóa
+        if (JSON.stringify(tron) === JSON.stringify(tren)) {
+          for (const it of items) if (tren[it.id] && it.dm !== tren[it.id]) { it.dm = tren[it.id]; thayDoi = true; }
+          da.__dm = JSON.stringify(tren);
+          break;
+        }
+        await api('/cai_dat?on_conflict=khoa', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify([{ khoa: 'danh_muc', gia_tri: tron }]) });
+      }
+    }
     // 4. Ảnh hóa đơn vàng (khóa 'vang_<id>'): tải ảnh máy khác đưa lên, đưa ảnh mới của máy này lên, xóa ảnh đã gỡ
     for (const v of vang) {
       const k = 'vang_' + v.id;

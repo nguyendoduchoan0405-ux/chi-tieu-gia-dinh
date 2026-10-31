@@ -244,7 +244,7 @@
   .ngay-ten { flex: 1; display: flex; flex-direction: column; font-size: 14px; }
   .ngay-ten small { color: #888; font-size: 12px; }
   .ngay-tong { font-size: 16px; }
-  .gd { display: flex; align-items: flex-start; gap: 8px; padding: 12px 0; border-bottom: 1px solid #f3f3f7; }
+  .gd { display: flex; align-items: center; gap: 8px; padding: 12px 0; border-bottom: 1px solid #f3f3f7; }
   .gd:last-child { border-bottom: 0; }
   .gd-ck { padding: 4px 4px 4px 0; }
   .gd-giua { flex: 1; min-width: 0; }
@@ -255,6 +255,23 @@
   .gd .ng .ng-hien { display: inline; padding: 0; }
   .gd .ng::after { content: '\25BE'; position: absolute; right: 0; top: 0; font-size: 10px; pointer-events: none; }
   .gd-anh.co { color: #1a73e8; font-weight: 600; text-decoration: underline; }
+  .gd-ic { flex: none; width: 36px; height: 36px; padding: 0; border: 0; border-radius: 50%; display: grid; place-items: center; color: #fff; }
+  .gd-ic svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .gd-ic.chua { background: #e5e7eb !important; color: #9ca3af; }
+  .gd .phu .ng-dm { color: #555; font-weight: 600; }
+  #st-tools { flex-wrap: wrap; }
+  #st-tools #st-loc, #st-tools #st-locdm { flex: 1 1 0; min-width: 96px; overflow: hidden; }
+  #st-tools #export, #st-tools #import { flex: 1 1 40%; justify-content: center; margin-left: 0; }
+  #locdm-hien { overflow: hidden; text-overflow: ellipsis; }
+  #st-locdm.co { background: #eef2ff; border-color: #c7d2fe; color: #4f46e5; }
+  #dmm { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 20; align-items: flex-end; } #dmm.mo { display: flex; }
+  #dmm .hop { box-sizing: border-box; background: #fff; width: 100%; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; max-height: 90vh; overflow: auto; }
+  #dmm .hop h4 { margin: 0 0 4px; font-size: 16px; } #dmm .hop p { margin: 0 0 14px; font-size: 13px; color: #888; }
+  #dmm .luoi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px 4px; }
+  #dmm .luoi button { border: 0; background: none; padding: 0; font: inherit; font-size: 12px; color: #444; text-align: center; }
+  #dmm .luoi .gd-ic { width: 46px; height: 46px; margin: 0 auto 4px; } #dmm .luoi .gd-ic svg { width: 23px; height: 23px; }
+  #dmm .luoi button.on .gd-ic { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #6366f1; }
+  #dmm .dong { width: 100%; margin-top: 16px; padding: 13px; font-size: 16px; border: 0; border-radius: 10px; background: #888; color: #fff; }
   .gd .tien { margin-left: auto; padding-left: 8px; font-size: 15px; font-weight: 600; text-align: right; white-space: nowrap; outline: none; }
   .row select { width: 74px; padding: 0 2px; }
   #manual { padding: 10px 8px; }
@@ -402,6 +419,7 @@
 <div id="st-tools">
   <label class="st-btn"><input type="checkbox" id="chkall" aria-label="Chọn tất cả"> Tất cả</label>
   <span class="st-btn" id="st-loc"><span id="loc-hien">Tất cả nguồn</span> ▾<select id="loc-nguon" class="ng-chon" aria-label="Xem theo nguồn"></select></span>
+  <span class="st-btn" id="st-locdm"><span id="locdm-hien">Mọi danh mục</span> ▾<select id="loc-dm" class="ng-chon" aria-label="Xem theo danh mục"></select></span>
   <button id="export" class="st-btn">Xuất Excel</button>
   <button id="import" class="st-btn">Nhập Excel</button>
   <input type="file" id="nhap-file" accept=".xlsx" hidden>
@@ -476,6 +494,14 @@
     <div class="nut"><button id="ntm-luu">Lưu</button><button class="huy" id="ntm-huy">Hủy</button><button class="xoa-nho" id="ntm-xoa" aria-label="Xóa khoản này">Xóa</button></div>
   </div>
 </div>
+<div id="dmm">
+  <div class="hop">
+    <h4>Chọn danh mục</h4><p id="dmm-nd"></p>
+    <div class="luoi" id="dmm-ds"></div>
+    <button class="dong" id="dmm-dong">Đóng</button>
+  </div>
+</div>
+
 <div id="rtm">
   <div class="hop">
     <b>Rút tiền tiết kiệm</b>
@@ -566,6 +592,7 @@
 <script src="brands.js"></script>
 <script src="ocr.js"></script>
 <script src="parse.js"></script>
+<script src="danhmuc.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 const $ = id => document.getElementById(id);
@@ -578,6 +605,8 @@ const laThu = it => /lương|thưởng|thu nhập|thu khác|bán vàng|rút ti�
 // Lọc theo nguồn tiền ở tab Chi tiết: '' = tất cả, '__trong__' = chưa chọn nguồn
 let locNguon = '';
 const khopLoc = (it, n = locNguon) => !n || (n === '__trong__' ? !it.nguon : it.nguon === n);
+let locDm = '';                                             // lọc theo danh mục: '' = mọi danh mục, '__trong__' = chưa phân loại
+const khopDm = it => !locDm || (locDm === '__trong__' ? !it.dm : it.dm === locDm);
 const hien = () => items.filter(it => khopLoc(it));
 const tenLoc = n => n === '__trong__' ? '(trống)' : n;
 const co = (n, dau) => (n && dau ? dau : '') + fmt(Math.abs(n));    // dấu +/- trước số (số 0 không dấu)
@@ -705,7 +734,7 @@ function khoangThang() {
   for (const it of items) { const k = khoaT(thangDau(new Date(it.thoiGian))); if (k < lo) lo = k; if (k > hi) hi = k; }
   return [lo, hi];
 }
-const dsThang = () => items.filter(it => khopLoc(it) && khoaT(thangDau(new Date(it.thoiGian))) === khoaT(thangXem));
+const dsThang = () => items.filter(it => khopLoc(it) && khopDm(it) && khoaT(thangDau(new Date(it.thoiGian))) === khoaT(thangXem));
 const nhanThang = k => {
   const d = k - khoaT(thangDau(new Date())), t = tuKhoa(k);
   return d === 0 ? 'THÁNG NÀY' : d === -1 ? 'THÁNG TRƯỚC' : d === 1 ? 'THÁNG SAU' : `${pad(t.m)}/${t.y}`;
@@ -716,13 +745,39 @@ const tenNgay = d => {
   return n === 0 ? 'Hôm nay' : n === 1 ? 'Hôm qua' : THU_TRONG_TUAN[d.getDay()];
 };
 
+// Danh mục: icon tròn màu ở đầu dòng; chạm icon mở bảng chọn
+const nutDm = it => {
+  const d = DM[it.dm];
+  return `<button class="gd-ic${d ? '' : ' chua'}" aria-label="Danh mục" ${d ? `style="background:${d[0]}"` : ''}><svg viewBox="0 0 24 24"><path d="${d ? d[1] : 'M9 9a3 3 0 1 1 4 2.8c-.7.4-1 1-1 1.7M12 17h.01'}"/></svg></button>`;
+};
+function moDm(it) {
+  $('dmm-nd').textContent = `Khoản: ${it.noiDung || ''}`;
+  $('dmm-ds').innerHTML = Object.entries(DM).map(([ten, d]) => `<button data-dm="${esc(ten)}" class="${it.dm === ten ? 'on' : ''}"><span class="gd-ic" style="background:${d[0]}"><svg viewBox="0 0 24 24"><path d="${d[1]}"/></svg></span>${esc(ten)}</button>`).join('');
+  $('dmm-ds').onclick = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    it.dm = b.dataset.dm; save(); $('dmm').classList.remove('mo'); render();
+  };
+  $('dmm').classList.add('mo');
+}
+$('dmm-dong').onclick = () => $('dmm').classList.remove('mo');
+$('dmm').onclick = e => { if (e.target === $('dmm')) $('dmm').classList.remove('mo'); };
+function veLocDm() {
+  const sel = $('loc-dm');
+  sel.innerHTML = '<option value="">Mọi danh mục</option><option value="__trong__">Chưa phân loại</option>' + Object.keys(DM).map(t => `<option>${esc(t)}</option>`).join('');
+  sel.value = locDm;
+  $('locdm-hien').textContent = locDm === '__trong__' ? 'Chưa phân loại' : locDm || 'Mọi danh mục';
+  $('st-locdm').classList.toggle('co', !!locDm);
+}
+$('loc-dm').onchange = e => { locDm = e.target.value; chon.clear(); veLocDm(); render(); };
+veLocDm();
+
 // Một khoản trong thẻ ngày: nội dung + (ngày · nguồn · Ảnh) bên trái, số tiền bên phải; các ô đều sửa được tại chỗ
 function dongGd(it) {
   const thu = laThu(it), r = document.createElement('div');
   r.className = 'gd';
-  r.innerHTML = `<label class="gd-ck"><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></label>
+  r.innerHTML = `<label class="gd-ck"><input type="checkbox" ${chon.has(it.id) ? 'checked' : ''}></label>${nutDm(it)}
     <div class="gd-giua"><div class="nd" contenteditable>${esc(it.noiDung)}</div>
-      <div class="phu"><span class="ng-ngay" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</span> · <span class="ng"><span class="ng-hien"></span><select class="ng-chon"></select></span><span class="gd-anh"></span></div></div>
+      <div class="phu"><span class="ng-dm">${esc(it.dm || 'Chưa phân loại')}</span> · <span class="ng-ngay" contenteditable inputmode="numeric">${ngay(it.thoiGian)}</span> · <span class="ng"><span class="ng-hien"></span><select class="ng-chon"></select></span><span class="gd-anh"></span></div></div>
     <div class="tien ${thu ? 'gm-thu' : 'gm-chi'}" contenteditable inputmode="numeric">${co(it.soTien, thu ? '+' : '-')}</div>`;
   const ck = r.querySelector('input'), nd = r.querySelector('.nd'), dt = r.querySelector('.ng-ngay'), st = r.querySelector('.tien');
   const hien = r.querySelector('.ng-hien');
@@ -736,6 +791,7 @@ function dongGd(it) {
       if (b) moPhong(URL.createObjectURL(b), true); else alert('Ảnh chưa tải về máy này, thử lại sau ít giây.');
     };
   }
+  r.querySelector('.gd-ic').onclick = () => moDm(it);
   ck.onchange = e => { e.target.checked ? chon.add(it.id) : chon.delete(it.id); capNhatChon(); };
   dt.onblur = () => {
     const d = parseNgay(dt.textContent, it.thoiGian);
@@ -745,9 +801,10 @@ function dongGd(it) {
   nd.onblur = () => {
     const moi = nd.textContent.trim();
     if (moi !== it.noiDung) learnFix(it.noiDung, moi);      // nhớ cách sửa cho lần sau
-    const truoc = laThu(it);
-    it.noiDung = moi; save(); gdSangVang(it); gdSangTk(it);
-    if (laThu(it) !== truoc) render();                      // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
+    const truoc = laThu(it), truocDm = !!it.dm;
+    it.noiDung = moi; if (!it.dm) it.dm = doanDanhMuc(moi, laThu(it));   // khoản chưa có danh mục thì đoán theo nội dung mới
+    save(); gdSangVang(it); gdSangTk(it);
+    if (laThu(it) !== truoc || !truocDm) render();                      // đổi từ chi sang thu (hoặc ngược lại): vẽ lại dấu và tổng
   };
   st.onblur = () => { it.soTien = Number(st.textContent.replace(/\D/g, '')) || 0; save(); gdSangVang(it); gdSangTk(it); render(); };
   return r;
@@ -831,7 +888,7 @@ function addText(text) {
   const r = parseExpense(fixBrands(nd)), bay = new Date();
   const thoiGian = ngay ? new Date(ngay.y, ngay.m - 1, ngay.d, bay.getHours(), bay.getMinutes()) : bay;
   const id = newId(), mv = VANG_ND.exec(r.noiDung || '');
-  items.push({ ...r, id, thoiGian: thoiGian.toISOString(), cauGoc: text, nguon: nguonMd });
+  items.push({ ...r, id, thoiGian: thoiGian.toISOString(), cauGoc: text, nguon: nguonMd, dm: doanDanhMuc(r.noiDung, laThu(r)) });
   if (mv && r.soTien > 0) {                                   // "mua/bán vàng N chỉ <nơi> <số tiền>": tạo luôn lệnh vàng cùng id
     const chi = Number(mv[2].replace(',', '.')), d = thoiGian;
     if (chi > 0) { vang.push({ id, ngay: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`, noi: mv[3].trim(), chi, gia: Math.round(r.soTien / chi), loai: /^m/i.test(mv[1]) ? 'mua' : 'ban', hd: '' }); luuVang(); renderMenuTq(); }
@@ -1053,7 +1110,7 @@ $('x-them').onclick = () => {
     if (!d) { loi.textContent = 'Ngày chưa đúng, vd 23/10 hoặc 23/10/2026.'; continue; }
     const id = newId(), luu = the._anh?.luu;
     if (luu) kho.ghi(id, luu).catch(() => {});
-    items.push({ id, noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '', anh: !!luu });
+    items.push({ id, noiDung: nd, soTien: st, thoiGian: d.toISOString(), cauGoc: 'quét ảnh', nguon: the.dataset.nguon || '', dm: doanDanhMuc(nd, laThu({ noiDung: nd })), anh: !!luu });
     xemThangCua(d.toISOString());
     boThe(the);                                            // thẻ nào hợp lệ thì thêm và bỏ khỏi danh sách, thẻ lỗi ở lại để sửa
   }
@@ -1110,29 +1167,29 @@ const b64Tu = u8 => { let s = ''; for (let i = 0; i < u8.length; i += 8192) s +=
 const b64Ra = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
 async function taoExcel(nhom) {
   const wb = new ExcelJS.Workbook(), ws = wb.addWorksheet('Chi tiêu');
-  ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 38 }, { width: 15 }, { width: 24 }];
+  ws.columns = [{ width: 6 }, { width: 9 }, { width: 14 }, { width: 16 }, { width: 38 }, { width: 15 }, { width: 24 }];
   const dam = r => { r.font = { bold: true }; };
-  dam(ws.addRow(['STT', 'Ngày', 'Nguồn tiền', 'Nội dung', 'Số tiền', 'Ảnh']));
+  dam(ws.addRow(['STT', 'Ngày', 'Nguồn tiền', 'Danh mục', 'Nội dung', 'Số tiền', 'Ảnh']));
   for (const [gi, g] of nhom.entries()) {
     if (gi > 0) ws.addRow([]);
     dam(ws.addRow([`Tháng ${g.key}`]));
     for (const [i, it] of g.ds.entries()) {
       const d = new Date(it.thoiGian);
-      const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.noiDung, laThu(it) ? it.soTien : -it.soTien]);
-      r.getCell(2).numFmt = 'dd/mm'; r.getCell(5).numFmt = SO_DAU; r.getCell(5).font = { color: { argb: laThu(it) ? 'FF188038' : 'FFD93025' } };
+      const r = ws.addRow([i + 1, new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())), it.nguon || '', it.dm || '', it.noiDung, laThu(it) ? it.soTien : -it.soTien]);
+      r.getCell(2).numFmt = 'dd/mm'; r.getCell(6).numFmt = SO_DAU; r.getCell(6).font = { color: { argb: laThu(it) ? 'FF188038' : 'FFD93025' } };
       r.alignment = { vertical: 'middle' }; r.getCell(1).alignment = r.getCell(2).alignment = { horizontal: 'center', vertical: 'middle' };
-      r.getCell(4).alignment = { vertical: 'middle', wrapText: true };
+      r.getCell(5).alignment = { vertical: 'middle', wrapText: true };
       const a = it.anh ? await anhChoExcel(it.id) : null;
       if (a) {
         const k = Math.min(165 / a.w, 200 / a.h);           // vừa ô: tối đa 165 x 200 px
         const w = Math.round(a.w * k), h = Math.round(a.h * k);
         r.height = Math.max(20, h * 0.75 + 6);
-        ws.addImage(wb.addImage({ buffer: a.buf, extension: 'jpeg' }), { tl: { col: 5.05, row: r.number - 1 + 0.05 }, ext: { width: w, height: h } });
+        ws.addImage(wb.addImage({ buffer: a.buf, extension: 'jpeg' }), { tl: { col: 6.05, row: r.number - 1 + 0.05 }, ext: { width: w, height: h } });
       }
     }
     for (const [ten, v, fm] of [[`Tổng thu tháng ${g.key}`, g.thu, SO_DAU], [`Tổng chi tháng ${g.key}`, -g.chi, SO_DAU], [`Còn lại tháng ${g.key}`, g.thu - g.chi, SO_DAU]]) {
-      const t = ws.addRow(['', '', '', ten, v]); t.getCell(5).numFmt = fm; dam(t);
-      t.getCell(5).font = { bold: true, color: { argb: v < 0 ? 'FFD93025' : 'FF188038' } };
+      const t = ws.addRow(['', '', '', '', ten, v]); t.getCell(6).numFmt = fm; dam(t);
+      t.getCell(6).font = { bold: true, color: { argb: v < 0 ? 'FFD93025' : 'FF188038' } };
     }
   }
   // Sheet ẩn "SaoLuu": toàn bộ dữ liệu gốc (không theo bộ lọc tháng/nguồn), mỗi dòng [loại, JSON]; nút Nhập Excel đọc lại sheet này
@@ -1485,7 +1542,7 @@ const ndVang = v => `${laBan(v) ? 'Bán' : 'Mua'} vàng ${chiStr(v.chi)} chỉ${
 const ngayIso = ngay => new Date(ngay + 'T12:00:00').toISOString();
 function vangSangGd(v) {
   let it = items.find(x => x.id === v.id);
-  if (!it) { it = { id: v.id, cauGoc: 'vàng', nguon: nguonMd }; items.push(it); }
+  if (!it) { it = { id: v.id, cauGoc: 'vàng', nguon: nguonMd, dm: 'Đầu tư' }; items.push(it); }
   it.noiDung = ndVang(v); it.soTien = Math.round(v.chi * v.gia); it.thoiGian = ngayIso(v.ngay);
   xepNgay(); save(); render();
 }
@@ -1653,10 +1710,10 @@ const isoNgay = ngay => new Date(ngay + 'T12:00:00').toISOString();
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 function tkSangGd(k, moi) {                                  // moi = true: sổ mới tạo, cần tạo dòng giao dịch; sổ cũ chỉ cập nhật nếu đã có dòng
   let it = items.find(x => x.id === k.id);
-  if (!it && moi) { it = { id: k.id, cauGoc: 'tiết kiệm', nguon: nguonMd }; items.push(it); }
+  if (!it && moi) { it = { id: k.id, cauGoc: 'tiết kiệm', nguon: nguonMd, dm: 'Đầu tư' }; items.push(it); }
   if (it) { it.noiDung = ndGui(k); it.soTien = k.soTien; it.thoiGian = isoNgay(k.ngay); }
   let rt = items.find(x => x.id === k.id + '_rut');
-  if (k.rut) { if (!rt) { rt = { id: k.id + '_rut', cauGoc: 'tiết kiệm', nguon: nguonMd }; items.push(rt); } rt.noiDung = ndRut(k); rt.soTien = k.rut.nhan; rt.thoiGian = isoNgay(k.rut.ngay); }
+  if (k.rut) { if (!rt) { rt = { id: k.id + '_rut', cauGoc: 'tiết kiệm', nguon: nguonMd, dm: 'Đầu tư' }; items.push(rt); } rt.noiDung = ndRut(k); rt.soTien = k.rut.nhan; rt.thoiGian = isoNgay(k.rut.ngay); }
   else if (rt) items = items.filter(x => x !== rt);
   xepNgay(); save(); render();
 }
