@@ -854,10 +854,10 @@ function render() {
 
   const ds = dsThang();
   // Tiền ra theo kỳ lương: khoản thẻ tính vào tháng của kỳ sao kê (klKy), tiền mặt/CK theo ngày chi
-  const kXem = `${thangXem.y}-${pad(thangXem.m)}`, kSau = klCong(kXem, 1), loc = items.filter(it => khopLoc(it) && khopDm(it)), homNay = new Date();
+  const kXem = `${thangXem.y}-${pad(thangXem.m)}`, kSau = klCong(kXem, 1), loc = items.filter(it => khopLoc(it) && khopDm(it));
   let vao = 0, ra = 0, sau = 0;
   ds.forEach(it => { if (laThu(it)) vao += it.soTien; });
-  loc.forEach(it => { if (laThu(it)) return; const k = klKy(it); if (k === kXem) ra += it.soTien; else if (k === kSau && klThe(it) && klKhoa(new Date(it.thoiGian)) <= kXem && new Date(it.thoiGian) <= homNay) sau += it.soTien; });
+  loc.forEach(it => { if (laThu(it)) return; const k = klKy(it); if (k === kXem) ra += it.soTien; else if (k === kSau && klThe(it) && klKhoa(new Date(it.thoiGian)) <= kXem) sau += it.soTien; });
   $('st-sau').style.display = sau ? '' : 'none'; $('st-sau').querySelector('b').textContent = fmt(sau);
   const keo = loc.filter(it => !laThu(it) && klKy(it) === kXem && klKhoa(new Date(it.thoiGian)) !== kXem).sort((a, b) => new Date(b.thoiGian) - new Date(a.thoiGian));
   $('st-vao').textContent = co(vao, '+'); $('st-ra').textContent = co(ra, '-');
@@ -1522,8 +1522,8 @@ function renderSk() {
   $('sk-ds').querySelectorAll('a[data-sua]').forEach(a => { a.onclick = e => { e.preventDefault(); moThm(a.dataset.sua); }; });
   $('sk-ds').querySelectorAll('select').forEach(x => { x.onclick = e => e.stopPropagation(); });
   // Thẻ đã quẹt, sẽ trừ vào lương tháng sau
-  const kXem = `${kySk.y}-${pad(kySk.m)}`, kSau = klCong(kXem, 1), homNay = new Date();
-  const sau = items.filter(it => !laThu(it) && klThe(it) && klKy(it) === kSau && klKhoa(new Date(it.thoiGian)) <= kXem && new Date(it.thoiGian) <= homNay).sort((a, b) => new Date(b.thoiGian) - new Date(a.thoiGian));
+  const kXem = `${kySk.y}-${pad(kySk.m)}`, kSau = klCong(kXem, 1);
+  const sau = items.filter(it => !laThu(it) && klThe(it) && klKy(it) === kSau && klKhoa(new Date(it.thoiGian)) <= kXem).sort((a, b) => new Date(b.thoiGian) - new Date(a.thoiGian));
   $('cl-dss-t').textContent = `Thẻ quẹt rồi, trừ vào ${klTen(kSau)} (${sau.length})`;
   $('cl-dss').innerHTML = sau.map(it => `<div class="cl-gd">${klIcon(it)}<div class="cl-t"><div>${esc(it.noiDung)}</div><small>${ddmm(new Date(it.thoiGian))} · ${esc(it.nguon)} · ghi sổ ${ddmm(klHieuLuc(it, klThe(it)))}</small></div><div class="cl-p"><b class="gm-chi">-${fmt(it.soTien)}</b>${klNhanKy(it)}</div></div>`).join('') || '<small>Không có khoản thẻ nào dời sang tháng sau.</small>';
   // Cài đặt nhanh ngày sao kê và độ trễ
