@@ -340,6 +340,29 @@
   .vt-bar { height: 8px; border-radius: 999px; background: #f1f5f9; overflow: hidden; } .vt-bar i { display: block; height: 100%; border-radius: 999px; background: #f59e0b; transition: width .3s; }
   .vt-phu small { display: block; margin-top: 8px; font-size: 12px; color: #64748b; }
   .st-trong { margin-top: 60px; text-align: center; color: #9ca3af; font-size: 15px; }
+  /* Kỳ lương: nhãn T.. ở khoản thẻ (chạm để chuyển kỳ), thẻ trừ tháng sau, cài đặt thẻ, mục "thẻ tháng trước" ở Sổ giao dịch */
+  .cl-khoi { margin-top: 12px; padding: 4px 14px; border-radius: 18px; background: #fff; box-shadow: 0 4px 14px rgba(30,41,99,.06); font-family: 'Inter', system-ui, sans-serif; }
+  .cl-khoi h3 { margin: 12px 0 4px; font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: #64748b; }
+  .cl-khoi > small, .cl-gd small, .cl-the1 small { display: block; font-size: 12px; color: #64748b; margin-top: 2px; }
+  .cl-khoi > small { padding: 4px 0 12px; }
+  .cl-the1 { padding: 12px 0; border-top: 1px solid #eef0f3; } .cl-khoi h3 + div > .cl-the1:first-child { border-top: 0; }
+  .cl-o { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 8px 0 6px; }
+  .cl-o label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #64748b; }
+  .cl-o input { width: 100%; box-sizing: border-box; min-width: 0; padding: 8px 10px; font-size: 16px; border: 1px solid #e2e8f0; border-radius: 10px; background: #f8fafc; }
+  .cl-gd { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: 1px solid #eef0f3; }
+  .cl-khoi h3 + div > .cl-gd:first-child { border-top: 0; }
+  .cl-ic { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; }
+  .cl-ic svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .cl-t { flex: 1; min-width: 0; font-size: 15px; } .cl-t > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cl-p { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; } .cl-p b { white-space: nowrap; font-size: 15px; }
+  .cl-ky { position: relative; display: inline-block; padding: 3px 18px 3px 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #e7f5f1; color: #0d7a68; white-space: nowrap; }
+  .cl-ky::after { content: '\25BE'; position: absolute; right: 6px; top: 50%; transform: translateY(-50%); font-size: 9px; }
+  .cl-ky.tay { background: #fff4e0; color: #b45309; }
+  .cl-ky select { position: absolute; inset: 0; width: 100%; opacity: 0; font-size: 16px; }
+  #sk-bang .ct-dong { align-items: center; padding: 5px 0; } #sk-bang .ct-dong .cl-ky { margin-left: 6px; }
+  .cl-gc { font-size: 12px; color: #64748b; line-height: 1.5; margin: 12px 4px; }
+  #st-sau span { font-size: 13px; color: #b45309; } #st-sau b { font-size: 14px; color: #b45309; }
+  .kl-keo { background: #fff8eb !important; } .kl-keo summary { list-style: none; cursor: pointer; } .kl-keo summary::-webkit-details-marker { display: none; } .kl-keo .ngay-ten b { color: #b45309; }
 </style>
 </head>
 <body>
@@ -385,6 +408,9 @@
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Sao kê tín dụng</span><button class="them" id="sk-them">+ Thẻ</button></div>
     <div class="thang-nav"><button id="sk-truoc" aria-label="Kỳ trước">‹</button><b id="sk-ten"></b><button id="sk-sau" aria-label="Kỳ sau">›</button></div>
     <table id="sk-bang"><thead><tr><th>Thẻ</th><th>Kỳ</th><th>Thanh toán</th><th>Số tiền</th></tr></thead><tbody id="sk-ds"></tbody></table>
+    <div class="cl-khoi"><h3 id="cl-dss-t"></h3><div id="cl-dss"></div></div>
+    <div class="cl-khoi"><h3>Cài đặt thẻ</h3><div id="cl-the"></div></div>
+    <p class="cl-gc">Mỗi khoản thẻ trừ vào lương tháng có kỳ sao kê chứa ngày ghi sổ (ngày quẹt + độ trễ). Chạm thẻ để xem từng khoản, chạm nhãn T.. để chuyển kỳ bằng tay.</p>
   </div>
   <div id="tq-vang" class="vg-nen" style="display:none">
     <div class="man-dau"><button class="lai" aria-label="Quay lại Tổng quan">‹</button><span>Lịch sử tích lũy vàng</span><button class="them" id="vg-them">+ Thêm</button></div>
@@ -415,6 +441,7 @@
   <div class="st-dong"><span>Tiền vào</span><b id="st-vao" class="gm-thu"></b></div>
   <div class="st-dong"><span>Tiền ra</span><b id="st-ra" class="gm-chi"></b></div>
   <div class="st-dong st-net"><span>Còn lại</span><b id="st-con"></b></div>
+  <div class="st-dong" id="st-sau" style="display:none"><span>Thẻ đã quẹt, trừ tháng sau</span><b></b></div>
 </div>
 <div id="st-tools">
   <label class="st-btn"><input type="checkbox" id="chkall" aria-label="Chọn tất cả"> Tất cả</label>
@@ -826,8 +853,13 @@ function render() {
   if (on) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2;
 
   const ds = dsThang();
-  let vao = 0, ra = 0;
-  ds.forEach(it => { if (laThu(it)) vao += it.soTien; else ra += it.soTien; });
+  // Tiền ra theo kỳ lương: khoản thẻ tính vào tháng của kỳ sao kê (klKy), tiền mặt/CK theo ngày chi
+  const kXem = `${thangXem.y}-${pad(thangXem.m)}`, kSau = klCong(kXem, 1), loc = items.filter(it => khopLoc(it) && khopDm(it)), homNay = new Date();
+  let vao = 0, ra = 0, sau = 0;
+  ds.forEach(it => { if (laThu(it)) vao += it.soTien; });
+  loc.forEach(it => { if (laThu(it)) return; const k = klKy(it); if (k === kXem) ra += it.soTien; else if (k === kSau && klThe(it) && new Date(it.thoiGian) <= homNay) sau += it.soTien; });
+  $('st-sau').style.display = sau ? '' : 'none'; $('st-sau').querySelector('b').textContent = fmt(sau);
+  const keo = loc.filter(it => !laThu(it) && klKy(it) === kXem && klKhoa(new Date(it.thoiGian)) !== kXem).sort((a, b) => new Date(b.thoiGian) - new Date(a.thoiGian));
   $('st-vao').textContent = co(vao, '+'); $('st-ra').textContent = co(ra, '-');
   $('st-con').textContent = co(vao - ra, vao >= ra ? '+' : '-'); $('st-con').className = vao >= ra ? 'gm-thu' : 'gm-chi';
 
@@ -846,6 +878,16 @@ function render() {
     the.innerHTML = `<div class="ngay-dau"><span class="ngay-so">${d.getDate()}</span><span class="ngay-ten"><b>${tenNgay(d)}</b><small>tháng ${d.getMonth() + 1} ${d.getFullYear()}</small></span><b class="ngay-tong">${co(rong, rong >= 0 ? '+' : '-')}</b></div>`;
     dsN.forEach(it => the.appendChild(dongGd(it)));
     box.appendChild(the);
+  }
+  if (keo.length) {                                         // thẻ quẹt tháng khác nhưng trừ vào tháng này: một mục xổ ở đầu danh sách
+    box.querySelector('.st-trong')?.remove();
+    const tong = keo.reduce((x, it) => x + it.soTien, 0), the = document.createElement('div'), nhan = () => `${keo.length} khoản · chạm để ${klMoKeo ? 'thu gọn' : 'xem'}`;
+    the.className = 'ngay-the kl-keo';
+    the.innerHTML = `<details${klMoKeo ? ' open' : ''}><summary class="ngay-dau"><span class="ngay-ten"><b>Thẻ quẹt tháng trước, trừ tháng này</b><small></small></span><b class="ngay-tong">${co(tong, '-')}</b></summary></details>`;
+    const det = the.querySelector('details'); det.querySelector('small').textContent = nhan();
+    keo.forEach(it => det.appendChild(dongGd(it)));
+    det.addEventListener('toggle', () => { klMoKeo = det.open; det.querySelector('small').textContent = nhan(); });
+    box.prepend(the);
   }
   capNhatChon();
 }
@@ -1200,7 +1242,7 @@ async function taoExcel(nhom) {
   vang.forEach(v => sl.addRow(['vang', JSON.stringify(v)]));
   theTd.forEach(t => sl.addRow(['the', JSON.stringify(t)]));
   ngoaiTe.forEach(n => sl.addRow(['ngoaite', JSON.stringify(n)]));
-  sl.addRow(['nguon_ds', JSON.stringify(nguonDs)]); sl.addRow(['vang_gia', JSON.stringify(vangGia)]);
+  sl.addRow(['nguon_ds', JSON.stringify(nguonDs)]); sl.addRow(['vang_gia', JSON.stringify(vangGia)]); sl.addRow(['ky_tay', JSON.stringify(kyTay)]);
   // Ảnh hóa đơn (chi tiêu và vàng): ảnh gốc trong kho, mã hóa base64, cắt khúc 30.000 ký tự cho vừa một ô Excel
   const khoaAnh = [...items.filter(i => i.anh).map(i => i.id), ...vang.filter(v => v.anh).map(v => 'vang_' + v.id)];
   for (const k of khoaAnh) {
@@ -1247,7 +1289,7 @@ $('xk-chia').onclick = async () => {
 async function docSaoLuu(file) {
   const wb = new ExcelJS.Workbook(); await wb.xlsx.load(await file.arrayBuffer());
   const ws = wb.getWorksheet('SaoLuu'); if (!ws) return null;
-  const kq = { chitieu: [], tietkiem: [], vang: [], the: [], ngoaite: [], nguon_ds: null, vang_gia: null, anh: new Map() };
+  const kq = { chitieu: [], tietkiem: [], vang: [], the: [], ngoaite: [], nguon_ds: null, vang_gia: null, ky_tay: null, anh: new Map() };
   ws.eachRow(r => {
     const loai = String(r.getCell(1).value || ''), txt = r.getCell(2).value;
     if (!(loai in kq) || typeof txt !== 'string') return;
@@ -1273,6 +1315,7 @@ $('nhap-file').onchange = async e => {
     vang = tronTheoId(vang, kq.vang); if (kq.vang_gia > 0) { vangGia = kq.vang_gia; ghiLS('vang_gia', vangGia); } luuVang();
     theTd = tronTheoId(theTd, kq.the); luuThe();
     ngoaiTe = tronTheoId(ngoaiTe, kq.ngoaite); luuNt();
+    if (kq.ky_tay && typeof kq.ky_tay === 'object') { Object.assign(kyTay, kq.ky_tay); luuKyTay(); }
     if (Array.isArray(kq.nguon_ds)) { kq.nguon_ds.forEach(n => { if (!nguonDs.includes(n)) nguonDs.push(n); }); luuNguon(); lamMoiNguon?.(); }
     let anhOk = 0;
     for (const [k, m] of kq.anh) {                           // ghép các khúc base64 lại thành ảnh, ghi vào kho ảnh của máy
@@ -1439,10 +1482,31 @@ function kyCua(the, y, m) {
 }
 const tenThe = t => `${t.nguon}${t.soThe ? ' ' + t.soThe : ''}`;
 const moThe = new Set();                                    // thẻ đang xổ chi tiết
-function khoanCuaKy(the, k) {                              // chi của thẻ trong kỳ; ngày chi + độ trễ phải nằm trong kỳ
-  const tre = (the.tre || 0) * 86400000, tu = k.dau.getTime() - tre, den = k.cuoi.getTime() + 86400000 - tre;
-  return items.filter(it => { const t = new Date(it.thoiGian).getTime(); return !laThu(it) && it.nguon === the.nguon && t >= tu && t < den; })
-    .sort((a, b) => new Date(a.thoiGian) - new Date(b.thoiGian));
+// ----- Kỳ lương: khoản chi trừ vào lương tháng nào -----
+// Tiền mặt/CK: tháng dương lịch. Thẻ: ngày ghi sổ = ngày chi + tre; không quá ngày chốt của tháng đó thì thuộc tháng đó, quá thì tháng sau
+// (trùng với kỳ sao kê tháng đó). Chuyển kỳ bằng tay: ky_tay {id: 'YYYY-MM'}, đồng bộ qua cai_dat.
+let kyTay = docLS('ky_tay', {}), klMoKeo = false;
+const luuKyTay = () => { ghiLS('ky_tay', kyTay); window.dongBo?.hen(); };
+const klKhoa = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
+const klCong = (k, n) => { const [y, m] = k.split('-').map(Number); return klKhoa(new Date(y, m - 1 + n, 1)); };
+const klTen = k => 'tháng ' + Number(k.slice(5));
+const klThe = it => it.nguon ? theTd.find(t => t.nguon === it.nguon) : undefined;
+const klHieuLuc = (it, the) => { const d = new Date(it.thoiGian); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + (the.tre || 0)); return d; };
+function klKyTuDong(it) {
+  const the = klThe(it);
+  if (!the) return klKhoa(new Date(it.thoiGian));
+  const hl = klHieuLuc(it, the), chot = ngayTrongThang(hl.getFullYear(), hl.getMonth() + 1, the.chot).getDate();
+  return hl.getDate() <= chot ? klKhoa(hl) : klCong(klKhoa(hl), 1);
+}
+const klKy = it => kyTay[it.id] || klKyTuDong(it);
+const klNhanKy = it => {
+  const k = klKy(it), tay = !!kyTay[it.id], tu = klKyTuDong(it);
+  return `<span class="cl-ky${tay ? ' tay' : ''}">${tay ? 'Tay: ' : ''}T${Number(k.slice(5))}<select data-id="${it.id}" aria-label="Chuyển kỳ"><option value="">Tự động (${klTen(tu)})</option>${[-1, 1, 2].map(n => klCong(tu, n)).map(o => `<option value="${o}"${tay && o === k ? ' selected' : ''}>Chuyển sang ${klTen(o)}</option>`).join('')}</select></span>`;
+};
+const klIcon = it => { const d = DM[it.dm]; return `<span class="cl-ic" style="background:${d ? d[0] : '#94a3b8'}"><svg viewBox="0 0 24 24"><path d="${d ? d[1] : 'M6 12h.01M12 12h.01M18 12h.01'}"/></svg></span>`; };
+function khoanCuaKy(the, k) {                              // chi của thẻ trong kỳ sao kê tháng k = các khoản trừ vào lương tháng đó (có tính chuyển kỳ tay)
+  const key = klKhoa(k.cuoi);
+  return items.filter(it => !laThu(it) && klThe(it) === the && klKy(it) === key).sort((a, b) => new Date(a.thoiGian) - new Date(b.thoiGian));
 }
 function renderSk() {
   $('sk-ten').textContent = `Kỳ sao kê tháng ${pad(kySk.m)}/${kySk.y}`;
@@ -1451,12 +1515,33 @@ function renderSk() {
     const k = kyCua(the, kySk.y, kySk.m), ds = khoanCuaKy(the, k), tien = ds.reduce((s, it) => s + it.soTien, 0), mo = moThe.has(the.id);
     tong += tien;
     return `<tr data-id="${the.id}"><td>${mo ? '▾' : '▸'} ${esc(tenThe(the))}${the.nganHang ? '<br><small style="color:#777">' + esc(the.nganHang) + '</small>' : ''}</td><td>${ddmm(k.dau)} - ${ddmm(k.cuoi)}</td><td>${ngayDayDu(k.tt)}</td><td class="money chi">${fmt(tien)}</td></tr>`
-      + (mo ? `<tr class="ct-the"><td colspan="4"><div class="ct-dong ct-dau"><span>Ngày</span><span>Nội dung</span><span>Số tiền</span></div>${ds.map(it => `<div class="ct-dong"><span>${ddmm(new Date(it.thoiGian))}</span><span>${esc(it.noiDung)}</span><span class="money chi">${fmt(it.soTien)}</span></div>`).join('') || '<div style="color:#888">Chưa có khoản chi trong kỳ này</div>'}<a href="#" data-sua="${the.id}" style="font-size:13px;color:#1a73e8">Sửa thông tin thẻ</a></td></tr>` : '');
+      + (mo ? `<tr class="ct-the"><td colspan="4"><div class="ct-dong ct-dau"><span>Ngày</span><span>Nội dung</span><span>Số tiền</span></div>${ds.map(it => `<div class="ct-dong"><span>${ddmm(new Date(it.thoiGian))}</span><span>${esc(it.noiDung)}</span><span class="money chi">${fmt(it.soTien)}${klNhanKy(it)}</span></div>`).join('') || '<div style="color:#888">Chưa có khoản chi trong kỳ này</div>'}<a href="#" data-sua="${the.id}" style="font-size:13px;color:#1a73e8">Sửa thông tin thẻ</a></td></tr>` : '');
   });
   $('sk-ds').innerHTML = hang.join('') + (theTd.length ? `<tr class="tong"><td colspan="3">Cần thanh toán kỳ này</td><td class="money chi">${fmt(tong)}</td></tr>` : '<tr><td colspan="4" style="text-align:center;color:#888">Bấm "+ Thẻ" để khai báo thẻ</td></tr>');
   $('sk-ds').querySelectorAll('tr[data-id]').forEach(tr => { tr.onclick = () => { moThe.has(tr.dataset.id) ? moThe.delete(tr.dataset.id) : moThe.add(tr.dataset.id); renderSk(); }; });
   $('sk-ds').querySelectorAll('a[data-sua]').forEach(a => { a.onclick = e => { e.preventDefault(); moThm(a.dataset.sua); }; });
+  $('sk-ds').querySelectorAll('select').forEach(x => { x.onclick = e => e.stopPropagation(); });
+  // Thẻ đã quẹt, sẽ trừ vào lương tháng sau
+  const kXem = `${kySk.y}-${pad(kySk.m)}`, kSau = klCong(kXem, 1), homNay = new Date();
+  const sau = items.filter(it => !laThu(it) && klThe(it) && klKy(it) === kSau && new Date(it.thoiGian) <= homNay).sort((a, b) => new Date(b.thoiGian) - new Date(a.thoiGian));
+  $('cl-dss-t').textContent = `Thẻ quẹt rồi, trừ vào ${klTen(kSau)} (${sau.length})`;
+  $('cl-dss').innerHTML = sau.map(it => `<div class="cl-gd">${klIcon(it)}<div class="cl-t"><div>${esc(it.noiDung)}</div><small>${ddmm(new Date(it.thoiGian))} · ${esc(it.nguon)} · ghi sổ ${ddmm(klHieuLuc(it, klThe(it)))}</small></div><div class="cl-p"><b class="gm-chi">-${fmt(it.soTien)}</b>${klNhanKy(it)}</div></div>`).join('') || '<small>Không có khoản thẻ nào dời sang tháng sau.</small>';
+  // Cài đặt nhanh ngày sao kê và độ trễ
+  $('cl-the').innerHTML = theTd.length ? theTd.map(t => {
+    const han = t.chot - (t.tre || 0);
+    return `<div class="cl-the1"><b>Thẻ ${esc(tenThe(t))}</b><div class="cl-o"><label>Ngày sao kê<input data-the="${t.id}" data-f="chot" inputmode="numeric" value="${t.chot}"></label><label>Độ trễ ghi sổ (ngày)<input data-the="${t.id}" data-f="tre" inputmode="numeric" value="${t.tre || 0}"></label></div>
+      <small>${han >= 1 ? `Quẹt đến hết ngày <b>${han}</b> thì trừ lương tháng đó; từ ngày <b>${han + 1}</b> trừ lương tháng sau.` : 'Độ trễ lớn hơn ngày sao kê: mọi khoản quẹt đều trừ lương tháng sau.'}</small></div>`;
+  }).join('') : '<small>Chưa khai báo thẻ. Bấm "+ Thẻ" ở trên.</small>';
 }
+$('tq-sk').addEventListener('change', e => {
+  const el = e.target;
+  if (el.matches('.cl-ky select')) { if (el.value) kyTay[el.dataset.id] = el.value; else delete kyTay[el.dataset.id]; luuKyTay(); renderSk(); }
+  if (el.dataset.the) {
+    const t = theTd.find(x => x.id === el.dataset.the), v = parseInt(el.value, 10);
+    if (t && !isNaN(v)) { t[el.dataset.f] = el.dataset.f === 'chot' ? Math.min(31, Math.max(1, v)) : Math.min(15, Math.max(0, v)); luuThe(); }
+    renderSk();
+  }
+});
 // Nhắc thanh toán: hạn thanh toán của thẻ còn 0-2 ngày và kỳ đó có khoản cần trả; ✕ để ẩn trong ngày
 const NGAY_NHAC = 2;
 function nhacSaoKe() {
